@@ -1,0 +1,343 @@
+# Murmur — Product Requirements Document
+
+**Versión:** 1.0  
+**Fecha:** Abril 2026  
+**Estado:** Draft
+
+---
+
+## 1. Visión del producto
+
+**Murmur** es una red social web-first para builders que buscan a las personas correctas para construir.
+
+> *"Construye con las personas correctas."*
+
+La red donde los builders encuentran co-founders, talento, mentores e inversionistas.
+
+---
+
+## 2. El problema
+
+Encontrar a la persona correcta para construir algo es uno de los problemas más difíciles del ecosistema emprendedor:
+
+- El proceso actual depende del azar: networking en eventos, contactos de contactos, LinkedIn frío
+- No existe un lugar donde declarar explícitamente qué buscas y que los matches lleguen a ti
+- Las plataformas existentes (LinkedIn, Twitter, comunidades de Slack) no fueron diseñadas para este tipo de conexión intencional
+- No hay forma de estar "disponible para conectar" de manera controlada sin exponerse a spam
+
+---
+
+## 3. Usuarios objetivo
+
+Murmur es para **cualquier persona que construya algo** — no solo founders con startup registrada.
+
+### Perfiles principales
+
+| Perfil | Descripción |
+|--------|-------------|
+| **Founder / co-founder** | Tiene un proyecto en marcha, busca al equipo fundador completo |
+| **Builder independiente** | Dev, diseñador, PM — quiere unirse a construir algo como early hire o co-founder |
+| **Experto de dominio** | Profesional de salud, finanzas, educación — quiere aplicar su expertise en una startup |
+| **Inversionista ángel** | Busca proyectos early-stage para invertir y agregar valor |
+| **Mentor / advisor** | Ha construido antes, quiere acompañar a otros en su camino |
+
+### Lo que tienen en común
+Todos tienen **intención de construir** — ya sea con su propio proyecto o contribuyendo al de alguien más.
+
+---
+
+## 4. Propuesta de valor
+
+**Para el que tiene el proyecto:**
+Encuentra al co-founder, primer empleado o advisor que necesitas — sin depender del azar del networking.
+
+**Para el que quiere contribuir:**
+Descúbrete a ti mismo ante los proyectos correctos, cuando tú quieras, sin mandar mensajes en frío.
+
+**Para todos:**
+Una red donde las conexiones tienen contexto y propósito. Sabes exactamente por qué alguien quiere conectar contigo.
+
+---
+
+## 5. Diferenciadores clave
+
+1. **Búsquedas paralelas** — Puedes tener múltiples búsquedas activas simultáneamente. Una para buscar co-founder técnico, otra para buscar primer diseñador. Cada búsqueda tiene su propio perfil y genera sus propios matches.
+
+2. **Visibilidad controlable** — Estás oculto por defecto. Tú decides cuándo aparecer en búsquedas. Puedes activarte para un evento específico y desactivarte al terminar.
+
+3. **Contexto en cada conexión** — Cuando alguien te envía una solicitud, sabes exactamente para qué proyecto te está considerando y por qué. No hay mensajes en frío genéricos.
+
+4. **Matching con propósito** — El sistema cruza lo que tú buscas con lo que el otro es, y viceversa. La compatibilidad es bidireccional.
+
+---
+
+## 6. Funcionalidades del producto
+
+### 6.1 Registro y onboarding
+
+El proceso de registro captura la información necesaria para el matching desde el primer momento.
+
+**Paso 1 — Registro**
+- Email + contraseña, Google OAuth, LinkedIn OAuth
+- Validación de email en tiempo real
+- Indicador de fortaleza de contraseña
+
+**Paso 2 — Rol inicial**
+- ¿Tienes un proyecto? (Tengo proyecto / Quiero contribuir / Las dos)
+- Define el flujo del onboarding subsecuente
+
+**Paso 3 — Tipos de relación buscada** *(multi-select)*
+- Co-founder / socio
+- Empleo / contratación
+- Colaboración puntual
+- Mentoría / advisor
+- Inversión
+- Abierto a explorar
+
+**Paso 4 — Perfil personal**
+- Nombre y foto
+- Título o rol actual
+- Bio corta (máx. 200 caracteres)
+- Área funcional: Técnico/Ing., Producto, Negocio/Growth, Operaciones, Ciencia/Experto
+- Años de experiencia: 0-2 / 3-5 / 6-10 / 10+
+- Logro más relevante (una línea)
+- Disponibilidad: Full-time ya / Part-time explorando / En 3-6 meses
+- Industrias de afinidad *(multi-select, expandible)*
+- Forma de trabajar *(multi-select)*: Remoto, Presencial, Híbrido, Decisiones rápidas, Proceso estructurado, Async
+
+**Paso 5 — Contexto del proyecto o búsqueda**
+- *Si tiene proyecto:* nombre, etapa, descripción de qué busca
+- *Si quiere contribuir:* tipo de oportunidad buscada, qué puede aportar
+
+**Paso 6 — Ubicación**
+- Detección automática por GPS (con permiso del usuario)
+- Selección manual de ciudad como fallback
+- Ciudades adicionales donde opera / considera trabajar
+- Radio de búsqueda (cuando hay ciudades manuales)
+
+---
+
+### 6.2 Feed — Descubrir
+
+La pantalla principal donde el usuario encuentra personas afines.
+
+**Activación**
+- Pantalla inicial con botón "Buscar" — el usuario activa la búsqueda intencionalmente
+- Animación de activación: anillos de radar + pájaros que vuelan
+- Al activar, el sistema filtra y rankea perfiles según las búsquedas activas del usuario
+
+**Selector de búsquedas**
+- Barra horizontal encima de los resultados
+- Chips por cada búsqueda activa: "Co-founder técnico", "Primer dev", etc.
+- Opción "Todas" que mezcla resultados de todas las búsquedas
+- Acceso directo a crear nueva búsqueda
+
+**Cards de perfil**
+Cada card muestra:
+- Avatar e iniciales
+- Nombre y rol actual
+- Área funcional + experiencia
+- Logro destacado
+- Disponibilidad
+- Industrias de afinidad
+- Indicador de compatibilidad: Baja / Media / Alta
+
+**Panel de detalle**
+- Slide desde la derecha (desktop: panel lateral; mobile: pantalla completa)
+- Perfil completo + bio + workStyle
+- Botón de conectar con mensaje pre-generado por IA
+- El mensaje es editable antes de enviar
+
+**Filtros**
+- Ciudad / región
+- Disponibilidad
+- Área funcional
+- Tipo de relación buscada
+- Industria
+
+---
+
+### 6.3 Mis búsquedas
+
+Sección dedicada para gestionar múltiples búsquedas paralelas.
+
+**Por cada búsqueda:**
+- Título descriptivo
+- Descripción libre de lo que busca
+- Tipo de relación *(multi-select)*
+- Área funcional buscada *(mismo catálogo que onboarding)*
+- Industrias *(multi-select con expandible)*
+- Estado: Activa / Pausada
+
+**Acciones:**
+- Crear nueva búsqueda
+- Editar búsqueda existente
+- Pausar / activar
+- Eliminar
+
+**Visibilidad en el feed:**
+- Solo las búsquedas activas alimentan el selector del feed
+- Los matches se calculan búsqueda por búsqueda
+
+---
+
+### 6.4 Conexiones
+
+Gestión de solicitudes recibidas y enviadas.
+
+**Recibidas**
+- Card con: avatar, nombre, rol, tipo de relación que busca, mensaje de la solicitud
+- El mensaje se muestra en 3 líneas con opción de expandir
+- Acciones: Aceptar → abre chat directo / Ignorar → va a historial
+
+**Enviadas**
+- Estado por solicitud: Pendiente / Aceptada / Rechazada
+- Cancelar solicitud pendiente
+- Ver conversación si fue aceptada
+
+**Historial**
+- Solicitudes que el usuario ignoró
+- Colapsable, sin acción disponible
+
+---
+
+### 6.5 Mensajes
+
+Chat entre usuarios con conexión aceptada.
+
+**Layout**
+- Desktop: lista de chats (280px) + conversación a la derecha
+- Mobile: pantalla completa alternando entre lista y conversación (slide)
+
+**Lista de chats**
+- Avatar + nombre + último mensaje + hora
+- Punto de no leído
+- Indicador de en línea
+- Búsqueda de conversaciones
+
+**Conversación**
+- Mensajes agrupados por emisor
+- Timestamps por grupo
+- Enter para enviar, Shift+Enter para nueva línea
+- Botón de acceso al perfil del contacto
+
+---
+
+### 6.6 Mi perfil
+
+Pantalla de gestión del perfil propio del usuario.
+
+**Secciones editables:**
+- Hero: foto, nombre, rol, bio
+- Logro destacado
+- Disponibilidad y forma de trabajar
+- Industrias de afinidad
+- Tipos de relación que busco + área funcional
+
+**Stats:**
+- Matches recibidos
+- Conexiones activas
+- Mensajes
+
+**Cada sección** se edita en un drawer (sheet desde abajo) para no perder el contexto.
+
+---
+
+### 6.7 Visibilidad y privacidad
+
+- **Toggle de visibilidad** accesible desde el menú de configuración (en mobile) y sidebar (en desktop)
+- Estado Visible: el usuario aparece en búsquedas de otros
+- Estado Oculto: el usuario no aparece en ninguna búsqueda
+- El estado persiste entre sesiones
+- El usuario puede cambiar su visibilidad en cualquier momento sin perder su perfil
+
+---
+
+## 7. Modelo de negocio — Freemium
+
+### Plan gratuito
+- 1 búsqueda activa
+- Máximo 10 conexiones en total
+- Acceso al feed y mensajes sin límite para conexiones existentes
+
+### Plan Premium
+- Búsquedas activas ilimitadas
+- Conexiones ilimitadas
+- Acceso completo a todos los filtros
+- Prioridad en el ranking del feed
+
+### Precios
+| Plan | Precio |
+|------|--------|
+| Gratuito | $0 |
+| Premium semanal | $120 MXN / semana |
+| Premium anual | $999 MXN / año |
+
+---
+
+## 8. Métricas de éxito
+
+### Activación
+- % de usuarios que completan el onboarding (objetivo: >60%)
+- % que activan el feed y ven al menos 5 perfiles (objetivo: >50%)
+
+### Engagement
+- Conexiones enviadas por usuario activo / semana
+- % de solicitudes aceptadas (objetivo: >30%)
+- Mensajes enviados por conversación activa
+
+### Retención
+- D7: % de usuarios que regresan a los 7 días (objetivo: >25%)
+- D30: % activos al mes (objetivo: >15%)
+
+### Negocio
+- Conversión free → premium (objetivo: >5% en 90 días)
+- CAC (costo de adquisición por usuario)
+- MRR (monthly recurring revenue)
+
+---
+
+## 9. Flujos críticos
+
+### Flujo principal de valor
+```
+Registro → Onboarding → Crear búsqueda → Activar feed → 
+Ver match → Enviar conexión → Aceptación → Chat → Reunión
+```
+
+### Flujo de visibilidad
+```
+Usuario entra a evento → Activa visibilidad → Aparece en búsquedas 
+de otros → Recibe solicitudes → Acepta las relevantes → Desactiva
+```
+
+### Flujo de búsqueda múltiple
+```
+Crear búsqueda A (co-founder) → Crear búsqueda B (primer dev) →
+Feed muestra selector → Cambiar entre búsquedas → 
+Cada búsqueda genera sus propios matches
+```
+
+---
+
+## 10. Restricciones y consideraciones
+
+- **Sin mensajes en frío a desconocidos** — solo puedes chatear con conexiones aceptadas
+- **Sin notificaciones intrusivas** — el usuario controla cuándo está disponible
+- **Privacidad por default** — oculto hasta que el usuario decide activarse
+- **Moderación** — sistema de reporte de perfiles inapropiados desde el chat
+- **Solo web por ahora** — PWA instalable, sin App Store en V1
+
+---
+
+## 11. Lo que Murmur NO es
+
+- No es un job board — no hay publicaciones de vacantes
+- No es LinkedIn — no es para networking profesional general
+- No es Tinder para founders — no hay swipe ni match instantáneo sin contexto
+- No es una herramienta de gestión de proyectos
+- No reemplaza el proceso de due diligence entre founders — facilita el primer contacto
+
+---
+
+*Murmur — Construye con las personas correctas.*

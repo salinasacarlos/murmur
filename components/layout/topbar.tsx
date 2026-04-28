@@ -1,0 +1,100 @@
+"use client"
+
+import * as React from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+
+import { Logo } from "@/components/brand/logo"
+import { Toggle } from "@/components/ui/toggle"
+import { useVisibility } from "@/components/providers/visibility-provider"
+import { IconSearch } from "@/components/icons"
+import { cn } from "@/lib/utils"
+
+const PAGE_TITLES: Record<string, string> = {
+  "/feed": "Descubrir",
+  "/searches": "Mis búsquedas",
+  "/searches/new": "Nueva búsqueda",
+  "/connections": "Conexiones",
+  "/messages": "Mensajes",
+  "/profile": "Mi perfil",
+}
+
+function getTitle(pathname: string) {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  if (pathname.startsWith("/searches/")) return "Editar búsqueda"
+  if (pathname.startsWith("/messages/")) return "Mensajes"
+  return ""
+}
+
+export function Topbar() {
+  const pathname = usePathname()
+  const { visible, toggle } = useVisibility()
+  const title = getTitle(pathname)
+
+  return (
+    <>
+      <header
+        className="hidden md:flex sticky top-0 z-30 items-center justify-between px-6 bg-[var(--bg)]/95 backdrop-blur border-b-[0.5px] border-[var(--border)]"
+        style={{
+          height: "calc(var(--topbar-h) + var(--sat))",
+          paddingTop: "var(--sat)",
+        }}
+      >
+        <h1 className="text-[18px] font-extrabold tracking-[-0.4px]">
+          {title}
+        </h1>
+
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg",
+              "border border-[var(--border)] bg-[var(--bg2)]",
+              "text-[12px] text-[var(--text3)] w-64"
+            )}
+          >
+            <IconSearch size={14} />
+            <span>Buscar...</span>
+          </div>
+        </div>
+      </header>
+
+      <header
+        className="md:hidden sticky top-0 z-30 bg-[var(--bg)]/95 backdrop-blur border-b-[0.5px] border-[var(--border)]"
+        style={{ paddingTop: "var(--sat)" }}
+      >
+        <div className="flex items-center justify-between h-14 px-4">
+          <Link href="/feed">
+            <Logo size="sm" />
+          </Link>
+          <div
+            className={cn(
+              "flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] border",
+              visible
+                ? "border-[var(--g)]/40 bg-[var(--gl)] text-[var(--g)]"
+                : "border-[var(--border)] bg-[var(--bg2)] text-[var(--text2)]"
+            )}
+          >
+            <button
+              type="button"
+              onClick={toggle}
+              className="flex flex-1 min-w-0 items-center gap-2 rounded-full border-0 bg-transparent p-0 font-inherit text-inherit cursor-pointer"
+            >
+              <span
+                className={cn(
+                  "w-1.5 h-1.5 shrink-0 rounded-full",
+                  visible ? "bg-[var(--g)]" : "bg-[var(--text3)]"
+                )}
+              />
+              {visible ? "Visible" : "Oculto"}
+            </button>
+            <Toggle
+              checked={visible}
+              onCheckedChange={() => toggle()}
+              label="Cambiar visibilidad"
+            />
+          </div>
+        </div>
+      </header>
+    </>
+  )
+}
