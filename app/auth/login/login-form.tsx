@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
-import { Field, Input } from "@/components/ui/input"
+import { Field, Input, PasswordInput } from "@/components/ui/input"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export function LoginForm() {
@@ -73,8 +73,7 @@ export function LoginForm() {
         />
       </Field>
       <Field label="Contraseña">
-        <Input
-          type="password"
+        <PasswordInput
           placeholder="••••••••"
           autoComplete="current-password"
           required

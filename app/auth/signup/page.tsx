@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
-import { Field, Input } from "@/components/ui/input"
+import { Field, Input, PasswordInput } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
@@ -100,8 +100,7 @@ export default function SignupPage() {
           label="Contraseña"
           hint="Mínimo 8 caracteres."
         >
-          <Input
-            type="password"
+          <PasswordInput
             placeholder="••••••••"
             autoComplete="new-password"
             minLength={8}

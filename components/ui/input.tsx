@@ -1,5 +1,6 @@
 import * as React from "react"
 
+import { IconEye, IconEyeOff } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
@@ -17,6 +18,31 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 )
 Input.displayName = "Input"
+
+export type PasswordInputProps = Omit<InputProps, "type">
+
+export function PasswordInput({ className, ...props }: PasswordInputProps) {
+  const [visible, setVisible] = React.useState(false)
+
+  return (
+    <div className="relative w-full">
+      <Input
+        type={visible ? "text" : "password"}
+        className={cn("pr-11", className)}
+        {...props}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[var(--text2)] transition-colors hover:bg-[var(--bg2)] hover:text-[var(--text)]"
+        aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+        aria-pressed={visible}
+      >
+        {visible ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+      </button>
+    </div>
+  )
+}
 
 export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
 
