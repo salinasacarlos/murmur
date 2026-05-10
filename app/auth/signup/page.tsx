@@ -26,39 +26,44 @@ export default function SignupPage() {
     setError(null)
     setInfo(null)
 
-    if (password.length < 8) {
-      setSubmitting(false)
-      setError("La contraseña debe tener al menos 8 caracteres.")
-      return
-    }
+    try {
+      if (password.length < 8) {
+        setError("La contraseña debe tener al menos 8 caracteres.")
+        return
+      }
 
-    const supabase = getSupabaseBrowserClient()
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
-          name: name.trim(),
+      const supabase = getSupabaseBrowserClient()
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+          },
         },
-      },
-    })
+      })
 
-    if (signUpError) {
+      if (signUpError) {
+        setError(signUpError.message)
+        return
+      }
+
+      if (!data.session) {
+        setInfo(
+          "Te enviamos un correo para confirmar tu cuenta. Confirma desde el enlace y vuelve a iniciar sesión."
+        )
+        return
+      }
+
+      router.replace("/onboarding")
+      router.refresh()
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "No pudimos crear tu cuenta. Intenta de nuevo."
+      setError(message)
+    } finally {
       setSubmitting(false)
-      setError(signUpError.message)
-      return
     }
-
-    if (!data.session) {
-      setSubmitting(false)
-      setInfo(
-        "Te enviamos un correo para confirmar tu cuenta. Confirma desde el enlace y vuelve a iniciar sesión."
-      )
-      return
-    }
-
-    router.replace("/onboarding")
-    router.refresh()
   }
 
   return (

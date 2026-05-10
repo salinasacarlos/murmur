@@ -22,35 +22,42 @@ export function LoginForm() {
     setSubmitting(true)
     setError(null)
 
-    const supabase = getSupabaseBrowserClient()
-    const { data, error: signInError } = await supabase.auth.signInWithPassword(
-      {
-        email: email.trim(),
-        password,
+    try {
+      const supabase = getSupabaseBrowserClient()
+      const { data, error: signInError } = await supabase.auth.signInWithPassword(
+        {
+          email: email.trim(),
+          password,
+        }
+      )
+
+      if (signInError || !data.user) {
+        setError(signInError?.message ?? "No pudimos iniciar tu sesión.")
+        return
       }
-    )
 
-    if (signInError || !data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", data.user.id)
+        .maybeSingle()
+
+      const next = searchParams.get("next")
+      const target = profile?.onboarding_completed
+        ? next && next.startsWith("/")
+          ? next
+          : "/feed"
+        : "/onboarding"
+
+      router.replace(target)
+      router.refresh()
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "No pudimos iniciar tu sesión."
+      setError(message)
+    } finally {
       setSubmitting(false)
-      setError(signInError?.message ?? "No pudimos iniciar tu sesión.")
-      return
     }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("onboarding_completed")
-      .eq("id", data.user.id)
-      .maybeSingle()
-
-    const next = searchParams.get("next")
-    const target = profile?.onboarding_completed
-      ? next && next.startsWith("/")
-        ? next
-        : "/feed"
-      : "/onboarding"
-
-    router.replace(target)
-    router.refresh()
   }
 
   return (

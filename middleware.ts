@@ -4,6 +4,8 @@ import { createServerClient } from "@supabase/ssr"
 
 import type { Database } from "@/lib/database.types"
 
+import { getSupabasePublicEnv } from "@/lib/supabase/public-env"
+
 const PROTECTED_PREFIXES = [
   "/feed",
   "/searches",
@@ -16,15 +18,15 @@ const PROTECTED_PREFIXES = [
 const AUTH_PAGES = ["/auth/login", "/auth/signup"]
 
 export async function middleware(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const env = getSupabasePublicEnv()
 
   let response = NextResponse.next({ request })
 
-  if (!url || !key) {
+  if (!env) {
     return response
   }
 
+  const { url, key } = env
   const supabase = createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
