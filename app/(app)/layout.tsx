@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/layout/bottom-nav"
 import { Topbar } from "@/components/layout/topbar"
 import { CurrentUserProvider } from "@/components/providers/current-user-provider"
 import { DiscoverFeedProvider } from "@/components/providers/discover-feed-provider"
+import { NotificationsUnreadProvider } from "@/components/providers/notifications-unread-provider"
 import { ActivityPing } from "@/components/providers/activity-ping"
 import { VisibilityDbSync } from "@/components/providers/visibility-db-sync"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
@@ -36,20 +37,22 @@ export default async function AppLayout({
 
   return (
     <CurrentUserProvider initialUser={user} initialProfile={profile}>
-      <DiscoverFeedProvider>
-        <VisibilityDbSync />
-        <ActivityPing />
-        <div className="min-h-svh bg-[var(--bg)]">
-          <Sidebar />
-          <div className="md:pl-[224px] flex flex-col min-h-svh">
-            <Topbar />
-            <main className="flex-1 pb-[calc(56px+var(--sab))] md:pb-0">
-              {children}
-            </main>
-            <BottomNav />
+      <NotificationsUnreadProvider>
+        <DiscoverFeedProvider>
+          <VisibilityDbSync />
+          <ActivityPing />
+          <div className="min-h-svh bg-[var(--bg)]">
+            <Sidebar />
+            <div className="md:pl-[224px] flex flex-col min-h-svh">
+              <Topbar />
+              <main className="flex min-h-0 flex-1 flex-col pb-[calc(56px+var(--sab))] md:pb-0">
+                {children}
+              </main>
+              <BottomNav />
+            </div>
           </div>
-        </div>
-      </DiscoverFeedProvider>
+        </DiscoverFeedProvider>
+      </NotificationsUnreadProvider>
     </CurrentUserProvider>
   )
 }

@@ -10,6 +10,10 @@ import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
+  NotificationUnreadDot,
+  useNotificationsUnread,
+} from "@/components/providers/notifications-unread-provider"
+import {
   IconCompass,
   IconUsers,
   IconMessage,
@@ -35,6 +39,7 @@ export function BottomNav() {
   const [signingOut, setSigningOut] = React.useState(false)
   const { visible, toggle } = useVisibility()
   const { signOut } = useCurrentUser()
+  const { hasUnread } = useNotificationsUnread()
 
   const moreActive =
     pathname === "/profile" || pathname.startsWith("/profile/")
@@ -121,7 +126,13 @@ export function BottomNav() {
             className="ds-card p-4 flex items-center justify-between hover:border-[var(--border2)] transition-colors"
           >
             <div className="flex items-center gap-3">
-              <IconBell size={16} />
+              <span className="relative inline-flex text-[var(--text)]">
+                <IconBell size={16} />
+                <NotificationUnreadDot
+                  show={hasUnread}
+                  ringClassName="ring-[var(--bg)]"
+                />
+              </span>
               <span className="text-[13px] font-medium">Avisos</span>
             </div>
             <IconChevronRight size={14} />

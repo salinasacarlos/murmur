@@ -868,6 +868,10 @@ export type Database = {
         Args: Record<string, never>
         Returns: undefined
       }
+      ensure_high_compatibility_suggestions: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
       touch_profile_activity: { Args: Record<string, never>; Returns: undefined }
       profiles_by_event_code: {
         Args: { p_code: string }
@@ -933,6 +937,7 @@ export type Database = {
         | "connection_accepted"
         | "discovery_batch"
         | "event_nearby"
+        | "high_compatibility_suggestion"
         | "project_invite"
         | "profile_incomplete"
         | "inactivity_nudge"
@@ -1096,6 +1101,7 @@ export const Constants = {
         "connection_accepted",
         "discovery_batch",
         "event_nearby",
+        "high_compatibility_suggestion",
         "project_invite",
         "profile_incomplete",
         "inactivity_nudge",

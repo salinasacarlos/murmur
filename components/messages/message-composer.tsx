@@ -36,7 +36,7 @@ export function MessageComposer({ onSend }: MessageComposerProps) {
 
   return (
     <div
-      className="border-t-[0.5px] border-[var(--border)] bg-[var(--bg)] px-3 py-3 flex items-end gap-2"
+      className="relative z-10 shrink-0 border-t-[0.5px] border-[var(--border)] bg-[var(--bg)] px-3 py-3 flex items-end gap-2 touch-manipulation"
       style={{ paddingBottom: "calc(12px + var(--sab))" }}
     >
       <textarea
@@ -46,8 +46,12 @@ export function MessageComposer({ onSend }: MessageComposerProps) {
         onChange={autoResize}
         onKeyDown={onKeyDown}
         placeholder="Escribe un mensaje..."
+        enterKeyHint="send"
+        autoComplete="off"
+        autoCorrect="on"
         className={cn(
-          "ds-input flex-1 min-h-[38px] max-h-[140px] resize-none py-2"
+          /* ≥16px en móvil evita zoom automático de iOS/Safari al enfocar (rompe foco/teclado). */
+          "ds-input flex-1 min-h-[44px] max-h-[140px] resize-none py-2.5 text-[16px] leading-snug md:min-h-[38px] md:py-2 md:text-[13px] md:leading-normal"
         )}
       />
       <button

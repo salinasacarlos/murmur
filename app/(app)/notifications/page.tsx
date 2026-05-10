@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { useNotificationsUnread } from "@/components/providers/notifications-unread-provider"
 import {
   fetchNotifications,
   markAllNotificationsRead,
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils"
 export default function NotificationsPage() {
   const router = useRouter()
   const { user } = useCurrentUser()
+  const { refresh: refreshUnreadBadge } = useNotificationsUnread()
   const [items, setItems] = React.useState<AppNotification[]>([])
   const [loading, setLoading] = React.useState(true)
 
@@ -31,7 +33,8 @@ export default function NotificationsPage() {
     await runDigestNotifications(supabase)
     const next = await fetchNotifications(supabase, user.id)
     setItems(next)
-  }, [user?.id])
+    await refreshUnreadBadge()
+  }, [user?.id, refreshUnreadBadge])
 
   React.useEffect(() => {
     if (!user?.id) return
@@ -55,6 +58,7 @@ export default function NotificationsPage() {
         x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x
       )
     )
+    await refreshUnreadBadge()
     const dest = primaryHref(n)
     if (dest) router.push(dest)
   }
@@ -69,6 +73,7 @@ export default function NotificationsPage() {
           x.read_at ? x : { ...x, read_at: new Date().toISOString() }
         )
       )
+      await refreshUnreadBadge()
     }
   }
 
@@ -148,7 +153,9 @@ function NotificationRow({
         ? meta.inviter_photo_url
         : null
   const showAvatar =
-    (n.kind === "connection_request" || n.kind === "project_invite") &&
+    (n.kind === "connection_request" ||
+      n.kind === "project_invite" ||
+      n.kind === "high_compatibility_suggestion") &&
     (senderPhoto || senderName)
 
   const { label } = ctaForKind(n.kind)
@@ -204,6 +211,8 @@ function ctaForKind(kind: NotificationKind): { label: string } {
       return { label: "Abrir el chat" }
     case "discovery_batch":
       return { label: "Ir a Descubrir" }
+    case "high_compatibility_suggestion":
+      return { label: "Abrir Descubrir" }
     case "event_nearby":
       return { label: "Explorar Descubrir" }
     case "project_invite":
@@ -230,6 +239,13 @@ function primaryHref(n: AppNotification): string | null {
     case "event_nearby":
     case "inactivity_nudge":
       return "/feed"
+    case "high_compatibility_suggestion": {
+      const sid =
+        typeof meta?.suggested_profile_id === "string"
+          ? meta.suggested_profile_id
+          : null
+      return sid ? `/feed?spotlight=${encodeURIComponent(sid)}` : "/feed"
+    }
     case "project_invite": {
       const path =
         typeof meta?.context_path === "string" && meta.context_path.startsWith("/")

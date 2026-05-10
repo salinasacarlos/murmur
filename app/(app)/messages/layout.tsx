@@ -14,19 +14,19 @@ export default function MessagesLayout({
   const hasActiveChat = !!segment
 
   return (
-    <div className="flex h-[calc(100svh-var(--sat))] md:h-[calc(100svh-var(--topbar-h)-var(--sat))]">
+    <div className="flex min-h-0 w-full flex-1 flex-col md:flex-row">
       <ChatList
         className={
           hasActiveChat
-            ? "hidden md:flex md:w-[280px] md:flex-shrink-0"
-            : "flex w-full md:w-[280px] md:flex-shrink-0"
+            ? "hidden md:flex md:h-auto md:w-[280px] md:flex-shrink-0"
+            : "flex h-full min-h-0 w-full md:h-auto md:w-[280px] md:flex-shrink-0"
         }
       />
       <div
         className={
           hasActiveChat
-            ? "flex-1 flex flex-col min-w-0"
-            : "hidden md:flex md:flex-1 md:flex-col md:min-w-0"
+            ? "flex min-h-0 flex-1 flex-col min-w-0"
+            : "hidden md:flex md:min-h-0 md:flex-1 md:flex-col md:min-w-0"
         }
       >
         {children}

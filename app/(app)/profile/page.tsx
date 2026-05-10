@@ -53,6 +53,7 @@ import {
   mergeEnrichedIntoCurrentUser,
 } from "@/lib/current-user-mapping"
 import { fetchProfileById } from "@/lib/data/profiles"
+import { fetchLiveProfileStats, type LiveProfileStats } from "@/lib/data/profile-stats"
 import {
   replaceProfileCities,
   replaceProfileIndustries,
@@ -77,6 +78,27 @@ export default function ProfilePage() {
     const next = await fetchProfileById(supabase, authUser.id)
     setEnrichedProfile(next)
   }, [authUser?.id])
+
+  const [liveStats, setLiveStats] = React.useState<LiveProfileStats | null>(null)
+
+  const reloadLiveStats = React.useCallback(async () => {
+    if (!authUser?.id) return
+    const supabase = getSupabaseBrowserClient()
+    const s = await fetchLiveProfileStats(supabase, authUser.id)
+    setLiveStats(s)
+  }, [authUser?.id])
+
+  React.useEffect(() => {
+    void reloadLiveStats()
+  }, [reloadLiveStats])
+
+  React.useEffect(() => {
+    function onVis() {
+      if (document.visibilityState === "visible") void reloadLiveStats()
+    }
+    document.addEventListener("visibilitychange", onVis)
+    return () => document.removeEventListener("visibilitychange", onVis)
+  }, [reloadLiveStats])
 
   React.useEffect(() => {
     void reloadEnriched()
@@ -129,6 +151,7 @@ export default function ProfilePage() {
   const [locationEditOpen, setLocationEditOpen] = React.useState(false)
   const [workPrefsEditOpen, setWorkPrefsEditOpen] = React.useState(false)
   const [achievementEditOpen, setAchievementEditOpen] = React.useState(false)
+  const [experienceEditOpen, setExperienceEditOpen] = React.useState(false)
   const [industriesEditOpen, setIndustriesEditOpen] = React.useState(false)
   const [relationsEditOpen, setRelationsEditOpen] = React.useState(false)
 
@@ -139,6 +162,7 @@ export default function ProfilePage() {
   const [savingLocation, setSavingLocation] = React.useState(false)
   const [savingWorkPrefs, setSavingWorkPrefs] = React.useState(false)
   const [savingAchievement, setSavingAchievement] = React.useState(false)
+  const [savingExperience, setSavingExperience] = React.useState(false)
   const [savingIndustries, setSavingIndustries] = React.useState(false)
   const [savingRelations, setSavingRelations] = React.useState(false)
   const [savingVisibility, setSavingVisibility] = React.useState(false)
@@ -150,7 +174,6 @@ export default function ProfilePage() {
       role: "",
       bio: "",
       funFact: "",
-      experience: "3-5" as ExperienceRange,
     }),
     []
   )
@@ -180,6 +203,9 @@ export default function ProfilePage() {
   })
 
   const [achievementDraft, setAchievementDraft] = React.useState("")
+  const [experienceDraft, setExperienceDraft] = React.useState<ExperienceRange>(
+    "3-5"
+  )
   const [industriesDraft, setIndustriesDraft] = React.useState<string[]>([])
   const [relationsDraft, setRelationsDraft] = React.useState<RelationType[]>(
     []
@@ -204,6 +230,7 @@ export default function ProfilePage() {
   async function afterSuccessfulSave() {
     await refresh()
     await reloadEnriched()
+    await reloadLiveStats()
   }
 
   function openProfileEdit() {
@@ -214,7 +241,6 @@ export default function ProfilePage() {
       role: profileUser.role,
       bio: profileUser.bio,
       funFact: profileUser.funFact,
-      experience: profileUser.experience,
     })
     setProfileEditOpen(true)
   }
@@ -295,7 +321,6 @@ export default function ProfilePage() {
       role: profileDraft.role.trim(),
       bio: profileDraft.bio,
       fun_fact: profileDraft.funFact.trim().slice(0, 500),
-      experience: profileDraft.experience,
       photo_url: profileDraft.photoUrl ?? null,
     }
     try {
@@ -572,6 +597,31 @@ export default function ProfilePage() {
     void afterSuccessfulSave()
   }
 
+  function openExperienceEdit() {
+    if (!profileUser) return
+    setExperienceDraft(profileUser.experience)
+    setExperienceEditOpen(true)
+  }
+
+  async function saveExperienceEdit() {
+    if (!authUser || savingExperience || !profileUser) return
+    setSavingExperience(true)
+    const supabase = getSupabaseBrowserClient()
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        experience: experienceDraft,
+      })
+      .eq("id", authUser.id)
+    setSavingExperience(false)
+    if (error) {
+      console.error("Failed to save experience", error)
+      return
+    }
+    setExperienceEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
   function openIndustriesEdit() {
     if (!profileUser) return
     setIndustriesDraft([...profileUser.industries])
@@ -654,6 +704,7 @@ export default function ProfilePage() {
   }
 
   const user = profileUser
+  const statsDisplay = liveStats ?? user.stats
   const cityTags = user.cities?.length
     ? user.cities
     : user.city
@@ -790,7 +841,7 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Datos básicos"
-          description="Foto, nombre, cómo te presentas, bio, un dato curioso opcional y tu experiencia. Industria, expertise y talentos los editas desde la sección Profesional, cada uno por separado."
+          description="Foto, nombre, cómo te presentas, bio y un dato curioso opcional. Industria, expertise, años de experiencia y talentos los editas desde la sección Profesional."
         />
 
         <div className="flex flex-col gap-3 mb-4">
@@ -858,23 +909,6 @@ export default function ProfilePage() {
             <p className="text-[11px] text-[var(--text3)] mt-1">
               {profileDraft.funFact.length}/500 caracteres
             </p>
-          </Field>
-
-          <Field label="Años de experiencia">
-            <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(EXPERIENCE_LABELS) as ExperienceRange[]).map(
-                (id) => (
-                  <ProfileEditChip
-                    key={id}
-                    label={EXPERIENCE_LABELS[id]}
-                    selected={profileDraft.experience === id}
-                    onClick={() =>
-                      setProfileDraft((prev) => ({ ...prev, experience: id }))
-                    }
-                  />
-                )
-              )}
-            </div>
           </Field>
         </div>
 
@@ -1015,10 +1049,55 @@ export default function ProfilePage() {
         </div>
       </Drawer>
 
+      <Drawer
+        open={experienceEditOpen}
+        onOpenChange={setExperienceEditOpen}
+        ariaLabel="Editar años de experiencia"
+      >
+        <DrawerHeader
+          title="Años de experiencia"
+          description="Cuánto llevas recorriendo tu camino profesional en este tipo de roles."
+        />
+        <div className="flex flex-col gap-3 mb-4">
+          <Field label="Rango">
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.keys(EXPERIENCE_LABELS) as ExperienceRange[]).map(
+                (id) => (
+                  <ProfileEditChip
+                    key={id}
+                    label={EXPERIENCE_LABELS[id]}
+                    selected={experienceDraft === id}
+                    onClick={() => setExperienceDraft(id)}
+                  />
+                )
+              )}
+            </div>
+          </Field>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setExperienceEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => void saveExperienceEdit()}
+            disabled={savingExperience}
+          >
+            {savingExperience ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
       <Card padding="default" className="ds-fade-up grid grid-cols-3 gap-4">
-        <Stat label="Matches" value={user.stats.matches} />
-        <Stat label="Conexiones" value={user.stats.connections} />
-        <Stat label="Mensajes" value={user.stats.messages} />
+        <Stat label="Matches" value={statsDisplay.matches} />
+        <Stat label="Conexiones" value={statsDisplay.connections} />
+        <Stat label="Mensajes" value={statsDisplay.messages} />
       </Card>
 
       <Card padding="default" className="ds-fade-up flex items-center justify-between gap-3">
@@ -1046,7 +1125,8 @@ export default function ProfilePage() {
           <div>
             <h3 className="ds-label-uppercase">Profesional</h3>
             <p className="text-[12px] text-[var(--text2)] mt-1">
-              Industria, especialidades y talentos: edita cada bloque con su enlace.
+              Industria, especialidades, años de experiencia y talentos: edita
+              cada bloque con su enlace.
             </p>
           </div>
           <button
@@ -1084,7 +1164,7 @@ export default function ProfilePage() {
         <ProfileValueRow
           label="Experiencia"
           value={EXPERIENCE_LABELS[user.experience]}
-          onEdit={openProfileEdit}
+          onEdit={openExperienceEdit}
         />
         <ProfileValueRow
           label="Logro destacado"

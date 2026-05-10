@@ -7,6 +7,10 @@ import { usePathname } from "next/navigation"
 import { Logo } from "@/components/brand/logo"
 import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
+import {
+  NotificationUnreadDot,
+  useNotificationsUnread,
+} from "@/components/providers/notifications-unread-provider"
 import { IconSearch, IconBell } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -30,6 +34,7 @@ function getTitle(pathname: string) {
 export function Topbar() {
   const pathname = usePathname()
   const { visible, toggle } = useVisibility()
+  const { hasUnread } = useNotificationsUnread()
   const title = getTitle(pathname)
 
   return (
@@ -48,10 +53,16 @@ export function Topbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/notifications"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg2)] text-[var(--text2)] hover:text-[var(--text)] hover:border-[var(--border2)] transition-colors"
-            aria-label="Avisos"
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg2)] text-[var(--text2)] hover:text-[var(--text)] hover:border-[var(--border2)] transition-colors"
+            aria-label={hasUnread ? "Avisos, hay mensajes sin leer" : "Avisos"}
           >
-            <IconBell size={16} />
+            <span className="relative inline-flex">
+              <IconBell size={16} />
+              <NotificationUnreadDot
+                show={hasUnread}
+                ringClassName="ring-[var(--bg2)]"
+              />
+            </span>
           </Link>
           <div
             className={cn(

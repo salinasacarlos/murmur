@@ -10,6 +10,10 @@ import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
+  NotificationUnreadDot,
+  useNotificationsUnread,
+} from "@/components/providers/notifications-unread-provider"
+import {
   IconCompass,
   IconSearch,
   IconUsers,
@@ -33,6 +37,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { visible, toggle } = useVisibility()
   const { profile, user, signOut } = useCurrentUser()
+  const { hasUnread } = useNotificationsUnread()
   const [signingOut, setSigningOut] = React.useState(false)
 
   const displayName =
@@ -109,13 +114,21 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors",
+                "relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors",
                 active
                   ? "bg-[var(--pl)] text-[var(--p)] font-medium"
                   : "text-[var(--text2)] hover:bg-[var(--bg2)] hover:text-[var(--text)]"
               )}
             >
-              <Icon size={14} />
+              <span className="relative inline-flex shrink-0">
+                <Icon size={14} />
+                {item.href === "/notifications" ? (
+                  <NotificationUnreadDot
+                    show={hasUnread}
+                    ringClassName={active ? "ring-[var(--pl)]" : "ring-[var(--bg)]"}
+                  />
+                ) : null}
+              </span>
               {item.label}
             </Link>
           )

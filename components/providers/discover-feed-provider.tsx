@@ -14,6 +14,7 @@ import {
   writeFeedFilters,
 } from "@/lib/discover-feed-storage"
 import { fetchEventByCode } from "@/lib/data/events"
+import { ensureHighCompatibilitySuggestionsSessionOnce } from "@/lib/data/notifications"
 import { fetchVisibleProfilesForFeed } from "@/lib/data/profiles"
 import { fetchSearchesForOwner } from "@/lib/data/searches"
 import {
@@ -163,6 +164,7 @@ export function DiscoverFeedProvider({ children }: { children: React.ReactNode }
       ])
       setProfiles(p)
       setSearches(s)
+      void ensureHighCompatibilitySuggestionsSessionOnce(supabase, userId)
     } finally {
       setFeedLoading(false)
     }
@@ -190,6 +192,7 @@ export function DiscoverFeedProvider({ children }: { children: React.ReactNode }
         if (!cancelled) {
           setProfiles(p)
           setSearches(s)
+          void ensureHighCompatibilitySuggestionsSessionOnce(supabase, userId)
         }
       } finally {
         if (!cancelled) setFeedLoading(false)

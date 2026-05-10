@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { EventCodeJoin } from "@/components/feed/event-code-join"
 import { ProfileCard } from "@/components/feed/profile-card"
@@ -41,7 +43,9 @@ function profileMatchesSearchChip(p: Profile, s: Search): boolean {
   return true
 }
 
-export default function FeedPage() {
+function FeedPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const {
     activated,
     activateFeed,
@@ -60,6 +64,15 @@ export default function FeedPage() {
 
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [eventOpen, setEventOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    const spotlight = searchParams.get("spotlight")
+    if (!spotlight || feedLoading) return
+
+    const match = profiles.find((p) => p.id === spotlight)
+    if (match) setSelected(match)
+    router.replace("/feed")
+  }, [searchParams, profiles, feedLoading, setSelected, router])
 
   const visibleProfiles = React.useMemo(() => {
     let list = profiles.filter((p) =>
@@ -207,5 +220,19 @@ export default function FeedPage() {
         }}
       />
     </div>
+  )
+}
+
+export default function FeedPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="px-4 md:px-6 py-16 text-center text-[12px] text-[var(--text2)]">
+          Cargando…
+        </div>
+      }
+    >
+      <FeedPageContent />
+    </Suspense>
   )
 }
