@@ -22,7 +22,7 @@ export function getSupabaseBrowserClient() {
   const env = getSupabasePublicEnv()
   if (!env) {
     throw new Error(
-      "Faltan variables de Supabase. Crea murmur1/.env.local (copia .env.local.example) con la URL y la clave publishable/anon del dashboard, o configúralas en Vercel → Settings → Environment Variables y vuelve a desplegar."
+      "Faltan variables de Supabase. En tu Mac: murmur1/.env.local con NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, luego reinicia npm run dev. En producción: Vercel → Settings → Environment Variables y Redeploy. Si .env.local se ve atenuado en el editor, es porque no sube a Git; la app sí lo usa."
     )
   }
   const { url, key } = env

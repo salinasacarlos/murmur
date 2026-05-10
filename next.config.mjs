@@ -23,13 +23,20 @@ function normalizeSupabaseUrl(raw) {
 /** First matching non-empty env (Supabase docs / templates use several names). */
 function firstNonEmpty(...values) {
   for (const v of values) {
-    const s = typeof v === "string" ? v.trim() : ""
+    let s = typeof v === "string" ? v.trim() : ""
+    if (
+      (s.startsWith('"') && s.endsWith('"')) ||
+      (s.startsWith("'") && s.endsWith("'"))
+    ) {
+      s = s.slice(1, -1).trim()
+    }
     if (s) return s
   }
   return ""
 }
 
 // Expose URL + key to the browser bundle even if only unprefixed or ANON vars exist in .env.local.
+// IMPORTANT: do not set keys to "" — that can override real values from .env.local in the client bundle.
 const resolvedSupabaseUrl = normalizeSupabaseUrl(
   firstNonEmpty(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -45,8 +52,12 @@ const resolvedSupabaseKey = firstNonEmpty(
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    NEXT_PUBLIC_SUPABASE_URL: resolvedSupabaseUrl,
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: resolvedSupabaseKey,
+    ...(resolvedSupabaseUrl
+      ? { NEXT_PUBLIC_SUPABASE_URL: resolvedSupabaseUrl }
+      : {}),
+    ...(resolvedSupabaseKey
+      ? { NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: resolvedSupabaseKey }
+      : {}),
   },
   turbopack: {
     root: projectRoot,
