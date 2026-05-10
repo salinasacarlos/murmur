@@ -175,8 +175,10 @@ export type Database = {
           description: string | null
           ends_at: string | null
           name: string
+          primary_industry_slug: string | null
           starts_at: string | null
           updated_at: string
+          venue_city: string | null
         }
         Insert: {
           code: string
@@ -185,8 +187,10 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           name: string
+          primary_industry_slug?: string | null
           starts_at?: string | null
           updated_at?: string
+          venue_city?: string | null
         }
         Update: {
           code?: string
@@ -195,8 +199,10 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           name?: string
+          primary_industry_slug?: string | null
           starts_at?: string | null
           updated_at?: string
+          venue_city?: string | null
         }
         Relationships: [
           {
@@ -205,6 +211,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_primary_industry_slug_fkey"
+            columns: ["primary_industry_slug"]
+            isOneToOne: false
+            referencedRelation: "industries"
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -336,6 +349,95 @@ export type Database = {
           {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          kind: Database["public"]["Enums"]["notification_kind"]
+          title: string
+          body: string
+          metadata: Json
+          read_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          kind: Database["public"]["Enums"]["notification_kind"]
+          title: string
+          body: string
+          metadata?: Json
+          read_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          kind?: Database["public"]["Enums"]["notification_kind"]
+          title?: string
+          body?: string
+          metadata?: Json
+          read_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_invites: {
+        Row: {
+          context_path: string
+          created_at: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          status: Database["public"]["Enums"]["project_invite_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          context_path?: string
+          created_at?: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          status?: Database["public"]["Enums"]["project_invite_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          context_path?: string
+          created_at?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          status?: Database["public"]["Enums"]["project_invite_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_invites_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_invites_inviter_id_fkey"
+            columns: ["inviter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -506,7 +608,9 @@ export type Database = {
           fun_fact: string
           id: string
           initials: string
+          last_active_at: string
           name: string
+          notifications_enabled: boolean
           onboarding_completed: boolean
           online: boolean
           photo_url: string | null
@@ -536,7 +640,9 @@ export type Database = {
           fun_fact?: string
           id: string
           initials?: string
+          last_active_at?: string
           name?: string
+          notifications_enabled?: boolean
           onboarding_completed?: boolean
           online?: boolean
           photo_url?: string | null
@@ -566,7 +672,9 @@ export type Database = {
           fun_fact?: string
           id?: string
           initials?: string
+          last_active_at?: string
           name?: string
+          notifications_enabled?: boolean
           onboarding_completed?: boolean
           online?: boolean
           photo_url?: string | null
@@ -704,6 +812,10 @@ export type Database = {
           connection_id: string
         }[]
       }
+      decline_project_invite: {
+        Args: { p_invite_id: string }
+        Returns: undefined
+      }
       find_event_by_code: {
         Args: { p_code: string }
         Returns: {
@@ -713,8 +825,10 @@ export type Database = {
           description: string | null
           ends_at: string | null
           name: string
+          primary_industry_slug: string | null
           starts_at: string | null
           updated_at: string
+          venue_city: string | null
         }
         SetofOptions: {
           from: "*"
@@ -736,8 +850,10 @@ export type Database = {
           description: string | null
           ends_at: string | null
           name: string
+          primary_industry_slug: string | null
           starts_at: string | null
           updated_at: string
+          venue_city: string | null
         }
         SetofOptions: {
           from: "*"
@@ -748,6 +864,11 @@ export type Database = {
       }
       leave_event: { Args: { p_code: string }; Returns: undefined }
       mark_chat_read: { Args: { p_chat_id: string }; Returns: undefined }
+      ensure_digest_notifications: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
+      touch_profile_activity: { Args: Record<string, never>; Returns: undefined }
       profiles_by_event_code: {
         Args: { p_code: string }
         Returns: {
@@ -787,6 +908,14 @@ export type Database = {
         Args: { p_connection_id: string }
         Returns: undefined
       }
+      send_project_invite: {
+        Args: {
+          p_context_path?: string
+          p_invitee_id: string
+          p_title: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       availability: "full-time" | "part-time" | "3-6m"
@@ -799,6 +928,15 @@ export type Database = {
         | "negocio"
         | "operaciones"
         | "ciencia"
+      notification_kind:
+        | "connection_request"
+        | "connection_accepted"
+        | "discovery_batch"
+        | "event_nearby"
+        | "project_invite"
+        | "profile_incomplete"
+        | "inactivity_nudge"
+      project_invite_status: "pending" | "declined"
       relation_type:
         | "co-founder"
         | "empleo"
@@ -952,6 +1090,15 @@ export const Constants = {
         "negocio",
         "operaciones",
         "ciencia",
+      ],
+      notification_kind: [
+        "connection_request",
+        "connection_accepted",
+        "discovery_batch",
+        "event_nearby",
+        "project_invite",
+        "profile_incomplete",
+        "inactivity_nudge",
       ],
       relation_type: [
         "co-founder",

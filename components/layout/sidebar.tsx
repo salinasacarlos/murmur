@@ -16,6 +16,7 @@ import {
   IconMessage,
   IconUser,
   IconLogOut,
+  IconBell,
 } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { href: "/searches", label: "Mis búsquedas", icon: IconSearch },
   { href: "/connections", label: "Conexiones", icon: IconUsers },
   { href: "/messages", label: "Mensajes", icon: IconMessage },
+  { href: "/notifications", label: "Avisos", icon: IconBell },
   { href: "/profile", label: "Mi perfil", icon: IconUser },
 ] as const
 

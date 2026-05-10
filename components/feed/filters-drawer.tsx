@@ -4,53 +4,62 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
-import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
+import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
+import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { Field, Input } from "@/components/ui/input"
+import {
+  emptyDiscoverFeedFilters,
+  type DiscoverFeedFilters,
+} from "@/lib/feed-filters"
 import { cn } from "@/lib/utils"
 import {
-  AREA_LABELS,
   AVAILABILITY_LABELS,
   RELATION_LABELS,
   type Availability,
-  type FunctionalArea,
   type RelationType,
 } from "@/lib/types"
 
 interface FiltersDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  filters: DiscoverFeedFilters
+  onFiltersChange: (next: DiscoverFeedFilters) => void
 }
 
-export function FiltersDrawer({ open, onOpenChange }: FiltersDrawerProps) {
-  const [city, setCity] = React.useState("")
-  const [availability, setAvailability] = React.useState<Availability | null>(
-    null
-  )
-  const [area, setArea] = React.useState<FunctionalArea | null>(null)
-  const [relation, setRelation] = React.useState<RelationType | null>(null)
-  const [industries, setIndustries] = React.useState<string[]>([])
+export function FiltersDrawer({
+  open,
+  onOpenChange,
+  filters,
+  onFiltersChange,
+}: FiltersDrawerProps) {
+  function setIndustry(slug: string | null) {
+    onFiltersChange({
+      ...filters,
+      primaryIndustrySlug: slug,
+      expertiseSlugs: slug !== filters.primaryIndustrySlug ? [] : filters.expertiseSlugs,
+    })
+  }
 
   function clear() {
-    setCity("")
-    setAvailability(null)
-    setArea(null)
-    setRelation(null)
-    setIndustries([])
+    onFiltersChange(emptyDiscoverFeedFilters())
   }
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} ariaLabel="Filtros">
       <DrawerHeader
         title="Filtros"
-        description="Refina los resultados de la búsqueda activa."
+        description="Misma taxonomía que el perfil: industria de referencia, expertise y talentos."
       />
 
       <div className="flex flex-col gap-4 mb-4">
         <Field label="Ciudad / región">
           <Input
             placeholder="ej. Ciudad de México"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            value={filters.city}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, city: e.target.value })
+            }
           />
         </Field>
 
@@ -60,21 +69,13 @@ export function FiltersDrawer({ open, onOpenChange }: FiltersDrawerProps) {
               <FilterChip
                 key={id}
                 label={AVAILABILITY_LABELS[id]}
-                selected={availability === id}
-                onClick={() => setAvailability(availability === id ? null : id)}
-              />
-            ))}
-          </div>
-        </Field>
-
-        <Field label="Área funcional">
-          <div className="flex flex-wrap gap-1.5">
-            {(Object.keys(AREA_LABELS) as FunctionalArea[]).map((id) => (
-              <FilterChip
-                key={id}
-                label={AREA_LABELS[id]}
-                selected={area === id}
-                onClick={() => setArea(area === id ? null : id)}
+                selected={filters.availability === id}
+                onClick={() =>
+                  onFiltersChange({
+                    ...filters,
+                    availability: filters.availability === id ? null : id,
+                  })
+                }
               />
             ))}
           </div>
@@ -86,17 +87,52 @@ export function FiltersDrawer({ open, onOpenChange }: FiltersDrawerProps) {
               <FilterChip
                 key={id}
                 label={RELATION_LABELS[id]}
-                selected={relation === id}
-                onClick={() => setRelation(relation === id ? null : id)}
+                selected={filters.relation === id}
+                onClick={() =>
+                  onFiltersChange({
+                    ...filters,
+                    relation: filters.relation === id ? null : id,
+                  })
+                }
               />
             ))}
           </div>
         </Field>
 
-        <Field label="Industrias">
-          <HierarchicalIndustrySelector
-            value={industries}
-            onChange={setIndustries}
+        <Field
+          label="Industria de referencia"
+          hint="Como «Industria principal» en el perfil. «Cualquiera» no filtra por sector."
+        >
+          <IndustrySingleSelect
+            allowClear
+            value={filters.primaryIndustrySlug}
+            onChange={setIndustry}
+          />
+        </Field>
+
+        <Field
+          label="Expertise"
+          hint="Opcional: al menos una coincidencia con las especialidades del perfil."
+        >
+          <ExpertiseMultiSelect
+            industrySlug={filters.primaryIndustrySlug}
+            value={filters.expertiseSlugs}
+            onChange={(slugs) =>
+              onFiltersChange({ ...filters, expertiseSlugs: slugs })
+            }
+            footerNote="Elige primero una industria arriba para ver opciones del mismo catálogo que en tu perfil."
+          />
+        </Field>
+
+        <Field
+          label="Talentos"
+          hint="Opcional: al menos un talento en común con el perfil."
+        >
+          <TalentMultiSelect
+            value={filters.talentSlugs}
+            onChange={(slugs) =>
+              onFiltersChange({ ...filters, talentSlugs: slugs })
+            }
           />
         </Field>
       </div>

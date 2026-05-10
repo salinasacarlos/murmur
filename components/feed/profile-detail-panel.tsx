@@ -1,12 +1,17 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerHeader, SidePanel } from "@/components/ui/drawer"
 import { Tag } from "@/components/ui/tag"
 import { Textarea } from "@/components/ui/input"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { sendConnectionRequest } from "@/lib/data/connections"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { cn } from "@/lib/utils"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -16,6 +21,7 @@ import {
   RELATION_LABELS,
   WORK_STYLE_LABELS,
   type Profile,
+  type RelationType,
 } from "@/lib/types"
 import {
   defaultIndustryForFunctionalArea,
@@ -43,18 +49,30 @@ export function ProfileDetailPanel({
   open,
   onOpenChange,
 }: ProfileDetailPanelProps) {
+  const router = useRouter()
+  const { user: authUser } = useCurrentUser()
   const [connectOpen, setConnectOpen] = React.useState(false)
   const [message, setMessage] = React.useState("")
-  const [messageProfileId, setMessageProfileId] = React.useState<string | null>(
-    null
-  )
+  const [connectRelation, setConnectRelation] = React.useState<
+    RelationType | null
+  >(null)
+  const [sending, setSending] = React.useState(false)
+  const [sendError, setSendError] = React.useState<string | null>(null)
 
-  if (profile && messageProfileId !== profile.id) {
-    setMessageProfileId(profile.id)
+  React.useEffect(() => {
+    if (!profile) return
     setMessage(generateMessage(profile))
-  }
+    const opts =
+      profile.relationsLooking.length > 0
+        ? profile.relationsLooking
+        : (["abierto"] as RelationType[])
+    setConnectRelation(opts[0] ?? "abierto")
+    setSendError(null)
+  }, [profile?.id])
 
   if (!profile) return null
+
+  const isSelf = Boolean(authUser?.id && profile.id === authUser.id)
 
   const heroIndustrySlug =
     profile.primaryIndustrySlug ??
@@ -234,7 +252,11 @@ export function ProfileDetailPanel({
             <Button
               size="lg"
               className="flex-1 justify-center"
-              onClick={() => setConnectOpen(true)}
+              disabled={isSelf || !authUser?.id}
+              onClick={() => {
+                setSendError(null)
+                setConnectOpen(true)
+              }}
             >
               Conectar
             </Button>
@@ -249,34 +271,96 @@ export function ProfileDetailPanel({
       >
         <DrawerHeader
           title={`Conectar con ${profile.name.split(" ")[0]}`}
-          description="Edita el mensaje generado o envíalo tal cual."
+          description="Elige el tipo de relación que propones y revisa el mensaje antes de enviar."
         />
+
+        <div className="mb-3">
+          <p className="text-[11px] uppercase tracking-wide text-[var(--text3)] mb-1.5">
+            Tipo de relación
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {(profile.relationsLooking.length > 0
+              ? profile.relationsLooking
+              : (["abierto"] as RelationType[])
+            ).map((r: RelationType) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setConnectRelation(r)}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-[12px] border transition-colors",
+                  connectRelation === r
+                    ? "bg-[var(--primary-solid)] text-[var(--primary-solid-foreground)] border-[var(--primary-solid)]"
+                    : "bg-[var(--bg)] text-[var(--text2)] border-[var(--border)] hover:border-[var(--border2)]"
+                )}
+              >
+                {RELATION_LABELS[r]}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <Textarea
           rows={6}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="mb-4"
+          className="mb-3"
         />
+
+        {sendError ? (
+          <p className="text-[12px] text-red-600 dark:text-red-400 mb-3">
+            {sendError}
+          </p>
+        ) : null}
 
         <div className="flex gap-2">
           <Button
             variant="secondary"
             size="lg"
             className="flex-1 justify-center"
-            onClick={() => setConnectOpen(false)}
+            disabled={sending}
+            onClick={() => {
+              setConnectOpen(false)
+              setSendError(null)
+            }}
           >
             Cancelar
           </Button>
           <Button
             size="lg"
             className="flex-1 justify-center"
+            disabled={
+              sending ||
+              !authUser?.id ||
+              isSelf ||
+              !connectRelation ||
+              !message.trim()
+            }
             onClick={() => {
-              setConnectOpen(false)
-              onOpenChange(false)
+              void (async () => {
+                if (!authUser?.id || !connectRelation || isSelf) return
+                setSending(true)
+                setSendError(null)
+                const supabase = getSupabaseBrowserClient()
+                const res = await sendConnectionRequest(supabase, {
+                  senderId: authUser.id,
+                  receiverId: profile.id,
+                  relation: connectRelation,
+                  message: message.trim(),
+                  searchId: null,
+                })
+                setSending(false)
+                if (!res.ok) {
+                  setSendError(res.error)
+                  return
+                }
+                setConnectOpen(false)
+                onOpenChange(false)
+                router.push("/connections?tab=sent")
+              })()
             }}
           >
-            Enviar solicitud
+            {sending ? "Enviando…" : "Enviar solicitud"}
           </Button>
         </div>
       </Drawer>

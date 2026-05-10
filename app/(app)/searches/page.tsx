@@ -12,6 +12,7 @@ import {
   fetchSearchesForOwner,
   updateSearchStatus,
 } from "@/lib/data/searches"
+import { peekSearchesList, putSearchesList } from "@/lib/searches-list-cache"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Search } from "@/lib/types"
 
@@ -20,13 +21,27 @@ export default function SearchesPage() {
   const [searches, setSearches] = React.useState<Search[]>([])
   const [loading, setLoading] = React.useState(true)
 
+  React.useLayoutEffect(() => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+    const c = peekSearchesList(user.id)
+    if (c?.length) {
+      setSearches(c)
+      setLoading(false)
+    }
+  }, [user?.id])
+
   React.useEffect(() => {
     if (!user?.id) return
     let cancelled = false
     ;(async () => {
-      setLoading(true)
+      const cached = peekSearchesList(user.id)
+      if (!cached?.length) setLoading(true)
       const supabase = getSupabaseBrowserClient()
       const rows = await fetchSearchesForOwner(supabase, user.id)
+      putSearchesList(user.id, rows)
       if (!cancelled) {
         setSearches(rows)
         setLoading(false)
@@ -49,11 +64,13 @@ export default function SearchesPage() {
       console.error(res.error)
       return
     }
-    setSearches((prev) =>
-      prev.map((s) =>
+    setSearches((prev) => {
+      const nextRows = prev.map((s) =>
         s.id === id ? { ...s, status: next } : s
       )
-    )
+      putSearchesList(user.id, nextRows)
+      return nextRows
+    })
   }
 
   async function remove(id: string) {
@@ -64,7 +81,11 @@ export default function SearchesPage() {
       console.error(res.error)
       return
     }
-    setSearches((prev) => prev.filter((s) => s.id !== id))
+    setSearches((prev) => {
+      const nextRows = prev.filter((s) => s.id !== id)
+      putSearchesList(user.id, nextRows)
+      return nextRows
+    })
   }
 
   return (

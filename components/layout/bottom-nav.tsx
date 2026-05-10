@@ -18,6 +18,7 @@ import {
   IconUser,
   IconChevronRight,
   IconLogOut,
+  IconBell,
 } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -113,6 +114,18 @@ export function BottomNav() {
           </div>
 
           <ThemeModeSetting />
+
+          <Link
+            href="/notifications"
+            onClick={() => setMoreOpen(false)}
+            className="ds-card p-4 flex items-center justify-between hover:border-[var(--border2)] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <IconBell size={16} />
+              <span className="text-[13px] font-medium">Avisos</span>
+            </div>
+            <IconChevronRight size={14} />
+          </Link>
 
           <Link
             href="/profile"

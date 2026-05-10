@@ -12,6 +12,7 @@ const PROTECTED_PREFIXES = [
   "/connections",
   "/messages",
   "/profile",
+  "/notifications",
   "/onboarding",
 ]
 

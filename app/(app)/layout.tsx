@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { Topbar } from "@/components/layout/topbar"
 import { CurrentUserProvider } from "@/components/providers/current-user-provider"
+import { DiscoverFeedProvider } from "@/components/providers/discover-feed-provider"
+import { ActivityPing } from "@/components/providers/activity-ping"
 import { VisibilityDbSync } from "@/components/providers/visibility-db-sync"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
@@ -34,17 +36,20 @@ export default async function AppLayout({
 
   return (
     <CurrentUserProvider initialUser={user} initialProfile={profile}>
-      <VisibilityDbSync />
-      <div className="min-h-svh bg-[var(--bg)]">
-        <Sidebar />
-        <div className="md:pl-[224px] flex flex-col min-h-svh">
-          <Topbar />
-          <main className="flex-1 pb-[calc(56px+var(--sab))] md:pb-0">
-            {children}
-          </main>
-          <BottomNav />
+      <DiscoverFeedProvider>
+        <VisibilityDbSync />
+        <ActivityPing />
+        <div className="min-h-svh bg-[var(--bg)]">
+          <Sidebar />
+          <div className="md:pl-[224px] flex flex-col min-h-svh">
+            <Topbar />
+            <main className="flex-1 pb-[calc(56px+var(--sab))] md:pb-0">
+              {children}
+            </main>
+            <BottomNav />
+          </div>
         </div>
-      </div>
+      </DiscoverFeedProvider>
     </CurrentUserProvider>
   )
 }

@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation"
 import { Logo } from "@/components/brand/logo"
 import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
-import { IconSearch } from "@/components/icons"
+import { IconSearch, IconBell } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 const PAGE_TITLES: Record<string, string> = {
@@ -17,6 +17,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/connections": "Conexiones",
   "/messages": "Mensajes",
   "/profile": "Mi perfil",
+  "/notifications": "Avisos",
 }
 
 function getTitle(pathname: string) {
@@ -45,6 +46,13 @@ export function Topbar() {
         </h1>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/notifications"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg2)] text-[var(--text2)] hover:text-[var(--text)] hover:border-[var(--border2)] transition-colors"
+            aria-label="Avisos"
+          >
+            <IconBell size={16} />
+          </Link>
           <div
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg",

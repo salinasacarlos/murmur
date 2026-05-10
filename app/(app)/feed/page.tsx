@@ -9,99 +9,72 @@ import { RadarCTA } from "@/components/feed/radar-cta"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
 import { FiltersDrawer } from "@/components/feed/filters-drawer"
 import { IconSpark, IconX } from "@/components/icons"
-import { useCurrentUser } from "@/components/providers/current-user-provider"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { fetchVisibleProfilesForFeed } from "@/lib/data/profiles"
-import { fetchSearchesForOwner } from "@/lib/data/searches"
-import { fetchEventByCode } from "@/lib/data/events"
-import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
-import type { EventEntry, Profile, Search } from "@/lib/types"
+import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
+import { profileMatchesDiscoverFilters } from "@/lib/feed-filters"
+import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
+import type { Profile, Search } from "@/lib/types"
+
+/** Alinea tarjeta de búsqueda activa con criterios del perfil. */
+function profileMatchesSearchChip(p: Profile, s: Search): boolean {
+  if (s.primaryIndustrySlug) {
+    const hero = resolveHeroIndustrySlug({
+      primaryIndustrySlug: p.primaryIndustrySlug,
+      expertiseSlugs: p.expertiseSlugs,
+      functionalAreaTags: p.functionalAreaTags,
+      area: p.area,
+    })
+    if (hero !== s.primaryIndustrySlug) return false
+  }
+  if (s.expertiseSlugs?.length) {
+    const pe = new Set(
+      p.expertiseSlugs?.length ? p.expertiseSlugs : p.functionalAreaTags ?? []
+    )
+    if (!s.expertiseSlugs.some((x) => pe.has(x))) return false
+  }
+  if (s.talentSlugs?.length) {
+    const pt = new Set(p.talentSlugs ?? [])
+    if (!s.talentSlugs.some((x) => pt.has(x))) return false
+  }
+  if (s.relations?.length) {
+    if (!s.relations.some((r) => p.relationsLooking.includes(r))) return false
+  }
+  return true
+}
 
 export default function FeedPage() {
-  const { user } = useCurrentUser()
-  const [activated, setActivated] = React.useState(false)
-  const [activeSearch, setActiveSearch] = React.useState<string>("all")
-  const [selected, setSelected] = React.useState<Profile | null>(null)
+  const {
+    activated,
+    activateFeed,
+    activeSearch,
+    setActiveSearch,
+    selected,
+    setSelected,
+    discoverFilters,
+    setDiscoverFilters,
+    activeEvent,
+    setActiveEvent,
+    profiles,
+    searches,
+    feedLoading,
+  } = useDiscoverFeed()
+
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [eventOpen, setEventOpen] = React.useState(false)
-  const [activeEvent, setActiveEvent] = React.useState<EventEntry | null>(null)
-  const [profiles, setProfiles] = React.useState<Profile[]>([])
-  const [searches, setSearches] = React.useState<Search[]>([])
-  const [feedLoading, setFeedLoading] = React.useState(false)
-  const [pendingEventCode, setPendingEventCode] = React.useState<string | null>(
-    null
-  )
 
-  function handleActivateFeed() {
-    let code: string | undefined
-    try {
-      const raw = localStorage.getItem(PENDING_EVENT_STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw) as { code?: string }
-        code = parsed?.code
-      }
-    } catch {
-      // ignore
-    } finally {
-      try {
-        localStorage.removeItem(PENDING_EVENT_STORAGE_KEY)
-      } catch {
-        // ignore
-      }
+  const visibleProfiles = React.useMemo(() => {
+    let list = profiles.filter((p) =>
+      profileMatchesDiscoverFilters(p, discoverFilters)
+    )
+    if (activeSearch !== "all") {
+      const s = searches.find((x) => x.id === activeSearch)
+      if (!s) return list
+      list = list.filter((p) => profileMatchesSearchChip(p, s))
     }
-
-    if (code) setPendingEventCode(code)
-    setActivated(true)
-  }
-
-  React.useEffect(() => {
-    if (!activated || !user?.id || !pendingEventCode) return
-    let cancelled = false
-    ;(async () => {
-      try {
-        const supabase = getSupabaseBrowserClient()
-        const ev = await fetchEventByCode(supabase, pendingEventCode)
-        if (!cancelled && ev) setActiveEvent(ev)
-      } finally {
-        if (!cancelled) setPendingEventCode(null)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [activated, user?.id, pendingEventCode])
-
-  React.useEffect(() => {
-    if (!activated || !user?.id) return
-    let cancelled = false
-    ;(async () => {
-      setFeedLoading(true)
-      try {
-        const supabase = getSupabaseBrowserClient()
-        const [p, s] = await Promise.all([
-          fetchVisibleProfilesForFeed(supabase, {
-            excludeUserId: user.id,
-            eventCode: activeEvent?.code ?? null,
-          }),
-          fetchSearchesForOwner(supabase, user.id),
-        ])
-        if (!cancelled) {
-          setProfiles(p)
-          setSearches(s)
-        }
-      } finally {
-        if (!cancelled) setFeedLoading(false)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [activated, user?.id, activeEvent?.code])
-
-  const visibleProfiles = profiles
+    return list
+  }, [profiles, discoverFilters, activeSearch, searches])
 
   if (!activated) {
-    return <RadarCTA onActivate={handleActivateFeed} />
+    return <RadarCTA onActivate={activateFeed} />
   }
 
   return (
@@ -173,17 +146,28 @@ export default function FeedPage() {
               <IconSpark size={20} />
             </div>
             <h3 className="text-[15px] font-bold text-[var(--text)]">
-              Aún no hay nadie más conectado a este evento
+              {activeEvent
+                ? "Aún no hay nadie más conectado a este evento"
+                : "Nadie coincide con lo que pediste"}
             </h3>
             <p className="mt-1 max-w-xs text-[12px] text-[var(--text2)]">
-              Cuando alguien se una con el código{" "}
-              <span
-                className="font-mono uppercase tracking-[0.12em] text-[var(--text)]"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                {activeEvent?.code}
-              </span>
-              , aparecerá aquí.
+              {activeEvent ? (
+                <>
+                  Cuando alguien se una con el código{" "}
+                  <span
+                    className="font-mono uppercase tracking-[0.12em] text-[var(--text)]"
+                    style={{ fontFamily: "var(--font-mono)" }}
+                  >
+                    {activeEvent.code}
+                  </span>
+                  , aparecerá aquí.
+                </>
+              ) : (
+                <>
+                  Prueba otros filtros, otra búsqueda activa, o vuelve en un rato
+                  al radar.
+                </>
+              )}
             </p>
           </div>
         ) : (
@@ -207,7 +191,12 @@ export default function FeedPage() {
         }}
       />
 
-      <FiltersDrawer open={filtersOpen} onOpenChange={setFiltersOpen} />
+      <FiltersDrawer
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        filters={discoverFilters}
+        onFiltersChange={setDiscoverFilters}
+      />
 
       <EventCodeJoin
         open={eventOpen}

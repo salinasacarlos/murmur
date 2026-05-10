@@ -5,6 +5,7 @@ import { fetchProfilesByIds } from "@/lib/data/profiles"
 import type {
   IgnoredConnection,
   ReceivedConnection,
+  RelationType,
   SentConnection,
 } from "@/lib/types"
 
@@ -212,6 +213,70 @@ export async function cancelPendingConnection(
     .eq("id", connectionId)
     .eq("sender_id", senderId)
     .eq("status", "pending")
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+/** Solicitud desde feed / perfil (sender = auth.uid() vía RLS). */
+export async function sendConnectionRequest(
+  supabase: Client,
+  input: {
+    senderId: string
+    receiverId: string
+    relation: RelationType
+    message: string
+    searchId?: string | null
+  }
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (input.senderId === input.receiverId) {
+    return { ok: false, error: "No puedes enviarte una solicitud a ti mismo." }
+  }
+
+  const { data: pendingSameDirection } = await supabase
+    .from("connections")
+    .select("id")
+    .eq("sender_id", input.senderId)
+    .eq("receiver_id", input.receiverId)
+    .eq("status", "pending")
+    .maybeSingle()
+
+  if (pendingSameDirection) {
+    return {
+      ok: false,
+      error: "Ya enviaste una solicitud pendiente a esta persona.",
+    }
+  }
+
+  const { data: acceptedAB } = await supabase
+    .from("connections")
+    .select("id")
+    .eq("sender_id", input.senderId)
+    .eq("receiver_id", input.receiverId)
+    .eq("status", "accepted")
+    .maybeSingle()
+
+  const { data: acceptedBA } = await supabase
+    .from("connections")
+    .select("id")
+    .eq("sender_id", input.receiverId)
+    .eq("receiver_id", input.senderId)
+    .eq("status", "accepted")
+    .maybeSingle()
+
+  if (acceptedAB || acceptedBA) {
+    return { ok: false, error: "Ya tienen una conexión aceptada." }
+  }
+
+  const body = input.message.trim() || "—"
+  const { error } = await supabase.from("connections").insert({
+    sender_id: input.senderId,
+    receiver_id: input.receiverId,
+    relation: input.relation,
+    message: body,
+    search_id: input.searchId ?? null,
+    status: "pending",
+  })
 
   if (error) return { ok: false, error: error.message }
   return { ok: true }
