@@ -11,6 +11,7 @@ import {
   RELATION_LABELS,
   type Search,
 } from "@/lib/types"
+import { labelForOnboardingAreaSlug } from "@/lib/onboarding-functional-areas"
 import { IconEdit, IconPause, IconPlay, IconTrash } from "@/components/icons"
 
 interface SearchCardProps {
@@ -24,6 +25,10 @@ export function SearchCard({
   onToggleStatus,
   onDelete,
 }: SearchCardProps) {
+  const areaSlugs = search.functionalAreaTags?.length
+    ? search.functionalAreaTags
+    : null
+
   return (
     <Card padding="default" className="ds-fade-up flex flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
@@ -46,9 +51,15 @@ export function SearchCard({
             {RELATION_LABELS[r]}
           </Tag>
         ))}
-        {search.area && (
+        {areaSlugs ? (
+          areaSlugs.map((slug) => (
+            <Tag key={slug} variant="amber">
+              {labelForOnboardingAreaSlug(slug)}
+            </Tag>
+          ))
+        ) : search.area ? (
           <Tag variant="amber">{AREA_LABELS[search.area]}</Tag>
-        )}
+        ) : null}
         {search.industries.map((i) => (
           <Tag key={i} variant="green">
             {i}

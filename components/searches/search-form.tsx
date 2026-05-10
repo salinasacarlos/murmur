@@ -7,18 +7,13 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
+import { FunctionalAreasOnboardingSelect } from "@/components/ui/functional-areas-onboarding-select"
 import { Field, Input, Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { createSearch, updateSearch } from "@/lib/data/searches"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import {
-  AREA_LABELS,
-  RELATION_LABELS,
-  type FunctionalArea,
-  type RelationType,
-  type Search,
-} from "@/lib/types"
+import { RELATION_LABELS, type RelationType, type Search } from "@/lib/types"
 
 interface SearchFormProps {
   initial?: Search
@@ -36,8 +31,8 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
   const [relations, setRelations] = React.useState<RelationType[]>(
     initial?.relations ?? []
   )
-  const [area, setArea] = React.useState<FunctionalArea | null>(
-    initial?.area ?? null
+  const [areaTagSlugs, setAreaTagSlugs] = React.useState<string[]>(
+    () => (initial?.functionalAreaTags ? [...initial.functionalAreaTags] : [])
   )
   const [industries, setIndustries] = React.useState<string[]>(
     initial?.industries ?? []
@@ -71,7 +66,7 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
         title,
         description,
         relations,
-        area,
+        areaTagSlugs,
         industryLabels: industries,
       }
 
@@ -146,17 +141,15 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
           </div>
         </Field>
 
-        <Field label="Área funcional buscada">
-          <div className="flex flex-wrap gap-1.5">
-            {(Object.keys(AREA_LABELS) as FunctionalArea[]).map((id) => (
-              <ChipChoice
-                key={id}
-                label={AREA_LABELS[id]}
-                selected={area === id}
-                onClick={() => setArea(area === id ? null : id)}
-              />
-            ))}
-          </div>
+        <Field
+          label="Ámbitos funcionales buscados"
+          hint="Mismo catálogo que tu perfil: hasta 5; el primero define el bucket principal para matching."
+        >
+          <FunctionalAreasOnboardingSelect
+            value={areaTagSlugs}
+            onChange={setAreaTagSlugs}
+            footerNote="Máximo 5. Opcional: si no eliges ninguna, la búsqueda no añade filtro por ámbito (en ediciones antiguas se conserva el área amplia si ya estaba guardada)."
+          />
         </Field>
 
         <Field label="Industrias">

@@ -7,7 +7,10 @@ export interface OnboardingFunctionalAreaOption {
   mapsTo: FunctionalArea
 }
 
-/** Broader list for onboarding; max 5 slugs stored in `profiles.functional_area_tags`. */
+/**
+ * Shared catalog: onboarding profile, search preferences, and similar UIs.
+ * Max 5 slugs on profile and on each saved search; coarse `mapsTo` drives enum matching.
+ */
 export const ONBOARDING_FUNCTIONAL_AREA_OPTIONS: readonly OnboardingFunctionalAreaOption[] =
   [
     {
@@ -103,6 +106,141 @@ export const ONBOARDING_FUNCTIONAL_AREA_OPTIONS: readonly OnboardingFunctionalAr
     {
       slug: "sostenibilidad-impacto",
       label: "Sostenibilidad, impacto y ESG",
+      mapsTo: "ciencia",
+    },
+    {
+      slug: "consultoria-advisory",
+      label: "Consultoría y advisory transversal",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "innovacion-laboratorio",
+      label: "Innovación, I+D y laboratorios",
+      mapsTo: "ciencia",
+    },
+    {
+      slug: "sector-publico-policy",
+      label: "Sector público, regulación y políticas públicas",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "consumo-retail",
+      label: "Retail, consumo masivo y ecommerce",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "real-estate-proptech",
+      label: "Real estate, urbanismo y proptech",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "hospitality-travel",
+      label: "Hospitality, travel y turismo",
+      mapsTo: "operaciones",
+    },
+    {
+      slug: "industria-manufactura",
+      label: "Industria, manufactura y calidad",
+      mapsTo: "operaciones",
+    },
+    {
+      slug: "agrifood-cadena",
+      label: "Agro, alimentación y cadena de suministro",
+      mapsTo: "operaciones",
+    },
+    {
+      slug: "wellness-sports",
+      label: "Wellness, deporte y salud orientada al consumidor",
+      mapsTo: "producto",
+    },
+    {
+      slug: "gaming-comunidades",
+      label: "Gaming, entretenimiento digital y comunidades",
+      mapsTo: "producto",
+    },
+    {
+      slug: "hardware-iot",
+      label: "Hardware, IoT y sistemas embebidos",
+      mapsTo: "tecnico",
+    },
+    {
+      slug: "qa-automation",
+      label: "QA, calidad de software y automatización",
+      mapsTo: "tecnico",
+    },
+    {
+      slug: "customer-success",
+      label: "Customer success, implementación y cuentas clave",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "creator-media",
+      label: "Creator economy, medios y narrativa",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "impacto-social-ong",
+      label: "Impacto social, fundaciones y tercer sector",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "expansion-internacional",
+      label: "Internacionalización y expansión de mercados",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "pmo-delivery",
+      label: "PMO, proyectos y delivery multifuncional",
+      mapsTo: "operaciones",
+    },
+    {
+      slug: "insights-research-ops",
+      label: "Research ops, insights y conocimiento del usuario",
+      mapsTo: "producto",
+    },
+    {
+      slug: "riesgo-auditoria",
+      label: "Riesgo, auditoría interna y controles",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "energia-utilities",
+      label: "Energía, utilities y transición energética",
+      mapsTo: "operaciones",
+    },
+    {
+      slug: "quimica-materiales",
+      label: "Química, materiales y procesos industriales",
+      mapsTo: "ciencia",
+    },
+    {
+      slug: "fintech-insurtech-ops",
+      label: "Operaciones en fintech, insurtech y pagos",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "generalista-producto-negocio",
+      label: "Generalista puente producto–negocio",
+      mapsTo: "producto",
+    },
+    {
+      slug: "generalista-tech-producto",
+      label: "Generalista puente ingeniería–producto",
+      mapsTo: "tecnico",
+    },
+    {
+      slug: "cross-industria-estrategia",
+      label: "Estrategia y desarrollo cross-industria",
+      mapsTo: "negocio",
+    },
+    {
+      slug: "multisector-operaciones",
+      label: "Operaciones y eficiencia multisector",
+      mapsTo: "operaciones",
+    },
+    {
+      slug: "multidisciplina-investigacion",
+      label: "Perfil multidisciplina en investigación aplicada",
       mapsTo: "ciencia",
     },
     {

@@ -558,6 +558,7 @@ export type Database = {
           area: Database["public"]["Enums"]["functional_area"] | null
           created_at: string
           description: string
+          functional_area_tags: string[]
           id: string
           matches_count: number
           owner_id: string
@@ -569,6 +570,7 @@ export type Database = {
           area?: Database["public"]["Enums"]["functional_area"] | null
           created_at?: string
           description?: string
+          functional_area_tags?: string[]
           id?: string
           matches_count?: number
           owner_id: string
@@ -580,6 +582,7 @@ export type Database = {
           area?: Database["public"]["Enums"]["functional_area"] | null
           created_at?: string
           description?: string
+          functional_area_tags?: string[]
           id?: string
           matches_count?: number
           owner_id?: string

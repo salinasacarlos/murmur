@@ -64,6 +64,8 @@ export interface Search {
   description: string
   relations: RelationType[]
   area?: FunctionalArea
+  /** Slugs from shared catalog (max 5); first drives coarse `area` for matching. */
+  functionalAreaTags?: string[]
   industries: string[]
   status: SearchStatus
   matchesCount: number

@@ -125,6 +125,8 @@ export function mapSearchJoinRow(row: SearchJoinRow): Search {
     description: row.description,
     relations,
     area: (row.area ?? undefined) as FunctionalArea | undefined,
+    functionalAreaTags:
+      row.functional_area_tags?.length ? row.functional_area_tags : undefined,
     industries,
     status: row.status as SearchStatus,
     matchesCount: row.matches_count,

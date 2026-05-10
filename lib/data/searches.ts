@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import { industryLabelToSlug } from "@/lib/catalogs"
 import type { Database } from "@/lib/database.types"
 import { mapSearchJoinRow } from "@/lib/data/mappers"
+import { mapsToForOnboardingSlug } from "@/lib/onboarding-functional-areas"
 import type { Search } from "@/lib/types"
 
 type Client = SupabaseClient<Database>
@@ -90,8 +91,21 @@ export interface SearchFormPayload {
   title: string
   description: string
   relations: Database["public"]["Enums"]["relation_type"][]
-  area: Database["public"]["Enums"]["functional_area"] | null
+  /** Up to 5 slugs; coarse `area` is derived from the first for DB matching. */
+  areaTagSlugs: string[]
   industryLabels: string[]
+}
+
+function areaAndTagsForCreate(payload: SearchFormPayload): {
+  area: Database["public"]["Enums"]["functional_area"] | null
+  tags: string[]
+} {
+  const tags = payload.areaTagSlugs.slice(0, 5)
+  const area =
+    tags.length > 0
+      ? (mapsToForOnboardingSlug(tags[0]) ?? null)
+      : null
+  return { area, tags }
 }
 
 export async function createSearch(
@@ -99,11 +113,13 @@ export async function createSearch(
   ownerId: string,
   payload: SearchFormPayload
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const { area, tags } = areaAndTagsForCreate(payload)
   const insert: Database["public"]["Tables"]["searches"]["Insert"] = {
     owner_id: ownerId,
     title: payload.title.trim(),
     description: payload.description.trim(),
-    area: payload.area,
+    area,
+    functional_area_tags: tags,
     status: "active",
   }
 
@@ -145,12 +161,36 @@ export async function updateSearch(
   ownerId: string,
   payload: SearchFormPayload
 ): Promise<{ ok: boolean; error?: string }> {
+  const tags = payload.areaTagSlugs.slice(0, 5)
+
+  const { data: currentRow, error: curErr } = await supabase
+    .from("searches")
+    .select("area, functional_area_tags")
+    .eq("id", searchId)
+    .eq("owner_id", ownerId)
+    .maybeSingle()
+
+  if (curErr || !currentRow) {
+    return { ok: false, error: curErr?.message ?? "Búsqueda no encontrada" }
+  }
+
+  const prevTags = currentRow.functional_area_tags ?? []
+  let nextArea: Database["public"]["Enums"]["functional_area"] | null
+  if (tags.length > 0) {
+    nextArea = mapsToForOnboardingSlug(tags[0]) ?? null
+  } else if (prevTags.length > 0) {
+    nextArea = null
+  } else {
+    nextArea = currentRow.area ?? null
+  }
+
   const { error: upErr } = await supabase
     .from("searches")
     .update({
       title: payload.title.trim(),
       description: payload.description.trim(),
-      area: payload.area,
+      area: nextArea,
+      functional_area_tags: tags,
       updated_at: new Date().toISOString(),
     })
     .eq("id", searchId)
