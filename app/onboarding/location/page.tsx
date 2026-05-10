@@ -21,9 +21,8 @@ export default function LocationStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={6} total={7} />
       <OnboardingCard
-        murmurStep="location"
         title="¿Dónde estás?"
-        description="Murmur funciona mejor cuando puedes encontrarte en persona. Tu ubicación nunca se muestra exacta, solo la ciudad."
+        description="Ciudad y radio; nunca mostramos tu ubicación exacta."
         back="/onboarding/project"
         next="/onboarding/done"
       >

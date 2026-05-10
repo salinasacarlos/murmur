@@ -44,9 +44,8 @@ export default function ProfileStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={4} total={7} />
       <OnboardingCard
-        murmurStep="profile"
         title="Cuéntanos quién eres"
-        description="Esta información alimenta el matching. Solo tú decides cuándo aparecer."
+        description="Información para el matching. Tú eliges cuándo mostrarte."
         back="/onboarding/relationships"
         next="/onboarding/project"
       >

@@ -15,9 +15,8 @@ export default function ProjectStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={5} total={7} />
       <OnboardingCard
-        murmurStep="project"
-        title="Contexto"
-        description="Si tienes proyecto, cuéntanos de él. Si quieres contribuir, cuéntanos qué tipo de oportunidad buscas."
+        title="Proyecto u oportunidad"
+        description="Opcional pero ayuda a contextualizar tu perfil."
         back="/onboarding/profile"
         next="/onboarding/location"
       >
@@ -25,13 +24,13 @@ export default function ProjectStepPage() {
           selected={hasProject === "yes"}
           onSelect={() => setHasProject("yes")}
           title="Tengo proyecto"
-          description="Voy a contar de mi startup, etapa, y qué busco."
+          description="Startup, etapa y qué buscas."
         />
         <OptionCard
           selected={hasProject === "no"}
           onSelect={() => setHasProject("no")}
-          title="Quiero contribuir"
-          description="Voy a contar qué tipo de oportunidad busco."
+          title="Busco sumarme"
+          description="Tipo de rol u oportunidad."
         />
 
         {hasProject === "yes" && (

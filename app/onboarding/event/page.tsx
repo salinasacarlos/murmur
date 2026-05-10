@@ -4,7 +4,6 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-import { MurmVoice } from "@/components/murm/murm-voice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -69,14 +68,12 @@ export default function OnboardingEventPage() {
       <div className="flex flex-col gap-4">
         <Stepper current={1} total={7} />
         <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
-          <MurmVoice step="event" className="mb-5" />
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
             ¿Viene de un evento?
           </h1>
           <p className="text-[13px] text-[var(--text2)] mb-6 leading-relaxed">
-            Si tienes un código (en pantalla o en tu invitación), podemos anclar
-            tu experiencia a esa sala. Si no, lo puedes agregar después desde el
-            feed o tu perfil.
+            Si tienes un código, lo usamos para anclar tu experiencia. Si no,
+            puedes añadirlo después desde el feed.
           </p>
 
           <div className="flex flex-col gap-2.5 mb-6">
@@ -115,12 +112,11 @@ export default function OnboardingEventPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={1} total={7} />
       <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
-        <MurmVoice step="event" className="mb-5" />
         <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
           Código del evento
         </h1>
         <p className="text-[13px] text-[var(--text2)] mb-6 leading-relaxed">
-          La palabra correcta abre la sala correcta.{" "}
+          Introduce el código de tu invitación.{" "}
           <button
             type="button"
             className="font-medium text-[var(--p)] hover:underline"
@@ -129,7 +125,7 @@ export default function OnboardingEventPage() {
               setCode("")
             }}
           >
-            Cambiar: vine sin evento
+            Saltar sin evento
           </button>
         </p>
 
