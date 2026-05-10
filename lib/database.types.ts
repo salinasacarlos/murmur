@@ -208,6 +208,77 @@ export type Database = {
           },
         ]
       }
+      industries: {
+        Row: {
+          label: string
+          maps_to: Database["public"]["Enums"]["functional_area"]
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          label: string
+          maps_to: Database["public"]["Enums"]["functional_area"]
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          label?: string
+          maps_to?: Database["public"]["Enums"]["functional_area"]
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      expertise_catalog: {
+        Row: {
+          industry_slug: string
+          label: string
+          maps_to: Database["public"]["Enums"]["functional_area"]
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          industry_slug: string
+          label: string
+          maps_to: Database["public"]["Enums"]["functional_area"]
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          industry_slug?: string
+          label?: string
+          maps_to?: Database["public"]["Enums"]["functional_area"]
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expertise_catalog_industry_slug_fkey"
+            columns: ["industry_slug"]
+            isOneToOne: false
+            referencedRelation: "industries"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      talent_catalog: {
+        Row: {
+          label: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          label: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          label?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       industries_catalog: {
         Row: {
           created_at: string
@@ -430,7 +501,9 @@ export type Database = {
           created_at: string
           email: string
           experience: Database["public"]["Enums"]["experience_range"] | null
+          expertise_slugs: string[]
           functional_area_tags: string[]
+          fun_fact: string
           id: string
           initials: string
           name: string
@@ -438,11 +511,13 @@ export type Database = {
           online: boolean
           photo_url: string | null
           plan: Database["public"]["Enums"]["user_plan"]
+          primary_industry_slug: string | null
           role: string
           search_radius_km: number
           stats_connections: number
           stats_matches: number
           stats_messages: number
+          talent_slugs: string[]
           updated_at: string
           visible: boolean
         }
@@ -456,7 +531,9 @@ export type Database = {
           created_at?: string
           email: string
           experience?: Database["public"]["Enums"]["experience_range"] | null
+          expertise_slugs?: string[]
           functional_area_tags?: string[]
+          fun_fact?: string
           id: string
           initials?: string
           name?: string
@@ -464,11 +541,13 @@ export type Database = {
           online?: boolean
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["user_plan"]
+          primary_industry_slug?: string | null
           role?: string
           search_radius_km?: number
           stats_connections?: number
           stats_matches?: number
           stats_messages?: number
+          talent_slugs?: string[]
           updated_at?: string
           visible?: boolean
         }
@@ -482,7 +561,9 @@ export type Database = {
           created_at?: string
           email?: string
           experience?: Database["public"]["Enums"]["experience_range"] | null
+          expertise_slugs?: string[]
           functional_area_tags?: string[]
+          fun_fact?: string
           id?: string
           initials?: string
           name?: string
@@ -490,11 +571,13 @@ export type Database = {
           online?: boolean
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["user_plan"]
+          primary_industry_slug?: string | null
           role?: string
           search_radius_km?: number
           stats_connections?: number
           stats_matches?: number
           stats_messages?: number
+          talent_slugs?: string[]
           updated_at?: string
           visible?: boolean
         }
@@ -558,11 +641,14 @@ export type Database = {
           area: Database["public"]["Enums"]["functional_area"] | null
           created_at: string
           description: string
+          expertise_slugs: string[]
           functional_area_tags: string[]
           id: string
           matches_count: number
           owner_id: string
+          primary_industry_slug: string | null
           status: Database["public"]["Enums"]["search_status"]
+          talent_slugs: string[]
           title: string
           updated_at: string
         }
@@ -570,11 +656,14 @@ export type Database = {
           area?: Database["public"]["Enums"]["functional_area"] | null
           created_at?: string
           description?: string
+          expertise_slugs?: string[]
           functional_area_tags?: string[]
           id?: string
           matches_count?: number
           owner_id: string
+          primary_industry_slug?: string | null
           status?: Database["public"]["Enums"]["search_status"]
+          talent_slugs?: string[]
           title: string
           updated_at?: string
         }
@@ -582,11 +671,14 @@ export type Database = {
           area?: Database["public"]["Enums"]["functional_area"] | null
           created_at?: string
           description?: string
+          expertise_slugs?: string[]
           functional_area_tags?: string[]
           id?: string
           matches_count?: number
           owner_id?: string
+          primary_industry_slug?: string | null
           status?: Database["public"]["Enums"]["search_status"]
+          talent_slugs?: string[]
           title?: string
           updated_at?: string
         }
@@ -663,6 +755,7 @@ export type Database = {
           area: Database["public"]["Enums"]["functional_area"] | null
           availability: Database["public"]["Enums"]["availability"] | null
           bio: string
+          fun_fact: string
           city: string | null
           compatibility: Database["public"]["Enums"]["compatibility"] | null
           created_at: string

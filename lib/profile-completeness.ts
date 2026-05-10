@@ -32,8 +32,12 @@ export function profileFromCurrentUserForCompleteness(
     photoUrl: user.photoUrl,
     role: user.role,
     bio: user.bio,
+    funFact: user.funFact,
     area: user.area,
     functionalAreaTags: user.functionalAreaTags,
+    primaryIndustrySlug: user.primaryIndustrySlug,
+    expertiseSlugs: user.expertiseSlugs,
+    talentSlugs: user.talentSlugs,
     experience: user.experience,
     achievement: user.achievement,
     availability: user.availability,
@@ -80,6 +84,12 @@ export function computeProfileCompleteness(
       id: "bio",
       label: "Bio",
       ok: profile.bio.trim().length > 0,
+      section: "identity",
+    },
+    {
+      id: "fun_fact",
+      label: "Dato curioso",
+      ok: profile.funFact.trim().length > 0,
       section: "identity",
     },
     {
@@ -132,7 +142,9 @@ export function computeProfileCompleteness(
     },
   ]
 
-  const core = items.filter((i) => i.id !== "photo")
+  const core = items.filter(
+    (i) => i.id !== "photo" && i.id !== "fun_fact"
+  )
   const okCore = core.filter((i) => i.ok).length
   const percent = Math.round((okCore / core.length) * 100)
   const missing = items.filter((i) => !i.ok)

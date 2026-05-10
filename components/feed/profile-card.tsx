@@ -13,7 +13,13 @@ import {
   EXPERIENCE_LABELS,
   type Profile,
 } from "@/lib/types"
-import { labelForOnboardingAreaSlug } from "@/lib/onboarding-functional-areas"
+import {
+  defaultIndustryForFunctionalArea,
+  inferIndustryFromExpertiseSlugs,
+  labelIndustrySlug,
+  labelExpertiseSlug,
+  labelTalentSlug,
+} from "@/lib/profile-taxonomy"
 import { IconMapPin } from "@/components/icons"
 
 interface ProfileCardProps {
@@ -22,9 +28,19 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ profile, onClick }: ProfileCardProps) {
-  const areaSlugs = profile.functionalAreaTags?.length
-    ? profile.functionalAreaTags
-    : null
+  const heroIndustrySlug =
+    profile.primaryIndustrySlug ??
+    inferIndustryFromExpertiseSlugs(
+      profile.expertiseSlugs?.length
+        ? profile.expertiseSlugs
+        : profile.functionalAreaTags
+    ) ??
+    defaultIndustryForFunctionalArea(profile.area)
+  const heroExpertise =
+    profile.expertiseSlugs?.length
+      ? profile.expertiseSlugs
+      : (profile.functionalAreaTags ?? [])
+  const talentSlugs = profile.talentSlugs ?? []
 
   return (
     <Card
@@ -63,20 +79,29 @@ export function ProfileCard({ profile, onClick }: ProfileCardProps) {
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        {areaSlugs ? (
+        <Tag variant="amber">{labelIndustrySlug(heroIndustrySlug)}</Tag>
+        {heroExpertise.length > 0 ? (
           <>
-            {areaSlugs.slice(0, 3).map((slug) => (
+            {heroExpertise.slice(0, 2).map((slug) => (
               <Tag key={slug} variant="amber">
-                {labelForOnboardingAreaSlug(slug)}
+                {labelExpertiseSlug(slug)}
               </Tag>
             ))}
-            {areaSlugs.length > 3 ? (
-              <Tag variant="neutral">+{areaSlugs.length - 3}</Tag>
+            {heroExpertise.length > 2 ? (
+              <Tag variant="neutral">+{heroExpertise.length - 2}</Tag>
             ) : null}
           </>
         ) : (
           <Tag variant="amber">{AREA_LABELS[profile.area]}</Tag>
         )}
+        {talentSlugs.slice(0, 1).map((slug) => (
+          <Tag key={`talent-${slug}`} variant="neutral">
+            {labelTalentSlug(slug)}
+          </Tag>
+        ))}
+        {talentSlugs.length > 1 ? (
+          <Tag variant="neutral">+{talentSlugs.length - 1}</Tag>
+        ) : null}
         <Tag variant="neutral">{EXPERIENCE_LABELS[profile.experience]}</Tag>
         <Tag variant="success">{AVAILABILITY_LABELS[profile.availability]}</Tag>
       </div>
@@ -89,6 +114,17 @@ export function ProfileCard({ profile, onClick }: ProfileCardProps) {
           {profile.achievement}
         </p>
       </div>
+
+      {profile.funFact.trim() ? (
+        <div className="rounded-lg border border-[var(--border)] border-dashed bg-[var(--bg2)]/40 px-3 py-2">
+          <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)]">
+            Dato curioso
+          </p>
+          <p className="line-clamp-2 text-[12px] leading-relaxed text-[var(--text)]">
+            {profile.funFact}
+          </p>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-1.5">
         {profile.industries.slice(0, 3).map((ind) => (

@@ -11,7 +11,13 @@ import {
   RELATION_LABELS,
   type Search,
 } from "@/lib/types"
-import { labelForOnboardingAreaSlug } from "@/lib/onboarding-functional-areas"
+import {
+  defaultIndustryForFunctionalArea,
+  inferIndustryFromExpertiseSlugs,
+  labelIndustrySlug,
+  labelExpertiseSlug,
+  labelTalentSlug,
+} from "@/lib/profile-taxonomy"
 import { IconEdit, IconPause, IconPlay, IconTrash } from "@/components/icons"
 
 interface SearchCardProps {
@@ -25,9 +31,19 @@ export function SearchCard({
   onToggleStatus,
   onDelete,
 }: SearchCardProps) {
-  const areaSlugs = search.functionalAreaTags?.length
-    ? search.functionalAreaTags
-    : null
+  const heroIndustrySlug =
+    search.primaryIndustrySlug ??
+    inferIndustryFromExpertiseSlugs(
+      search.expertiseSlugs?.length
+        ? search.expertiseSlugs
+        : search.functionalAreaTags
+    ) ??
+    (search.area ? defaultIndustryForFunctionalArea(search.area) : null)
+  const heroExpertise =
+    search.expertiseSlugs?.length
+      ? search.expertiseSlugs
+      : (search.functionalAreaTags ?? [])
+  const talentSlugs = search.talentSlugs ?? []
 
   return (
     <Card padding="default" className="ds-fade-up flex flex-col gap-3">
@@ -51,15 +67,23 @@ export function SearchCard({
             {RELATION_LABELS[r]}
           </Tag>
         ))}
-        {areaSlugs ? (
-          areaSlugs.map((slug) => (
-            <Tag key={slug} variant="amber">
-              {labelForOnboardingAreaSlug(slug)}
-            </Tag>
-          ))
-        ) : search.area ? (
-          <Tag variant="amber">{AREA_LABELS[search.area]}</Tag>
+        {heroIndustrySlug ? (
+          <Tag variant="amber">{labelIndustrySlug(heroIndustrySlug)}</Tag>
         ) : null}
+        {heroExpertise.length > 0
+          ? heroExpertise.map((slug) => (
+              <Tag key={slug} variant="amber">
+                {labelExpertiseSlug(slug)}
+              </Tag>
+            ))
+          : !heroIndustrySlug && search.area ? (
+              <Tag variant="amber">{AREA_LABELS[search.area]}</Tag>
+            ) : null}
+        {talentSlugs.map((slug) => (
+          <Tag key={`talent-${slug}`} variant="neutral">
+            {labelTalentSlug(slug)}
+          </Tag>
+        ))}
         {search.industries.map((i) => (
           <Tag key={i} variant="green">
             {i}

@@ -36,10 +36,20 @@ export function deriveCurrentUser(
     email: profile?.email ?? user.email ?? "",
     role: profile?.role ?? "",
     bio: profile?.bio ?? "",
+    funFact: profile?.fun_fact ?? "",
     area: (profile?.area as FunctionalArea | null) ?? DEFAULT_AREA,
     functionalAreaTags:
       profile?.functional_area_tags && profile.functional_area_tags.length > 0
         ? profile.functional_area_tags
+        : undefined,
+    primaryIndustrySlug: profile?.primary_industry_slug ?? undefined,
+    expertiseSlugs:
+      profile?.expertise_slugs && profile.expertise_slugs.length > 0
+        ? profile.expertise_slugs
+        : undefined,
+    talentSlugs:
+      profile?.talent_slugs && profile.talent_slugs.length > 0
+        ? profile.talent_slugs
         : undefined,
     experience:
       (profile?.experience as ExperienceRange | null) ?? DEFAULT_EXPERIENCE,
@@ -72,9 +82,14 @@ export function mergeEnrichedIntoCurrentUser(
     photoUrl: enriched.photoUrl ?? base.photoUrl,
     role: enriched.role,
     bio: enriched.bio,
+    funFact: enriched.funFact,
     area: enriched.area,
     functionalAreaTags:
       enriched.functionalAreaTags ?? base.functionalAreaTags,
+    primaryIndustrySlug:
+      enriched.primaryIndustrySlug ?? base.primaryIndustrySlug,
+    expertiseSlugs: enriched.expertiseSlugs ?? base.expertiseSlugs,
+    talentSlugs: enriched.talentSlugs ?? base.talentSlugs,
     experience: enriched.experience,
     achievement: enriched.achievement,
     availability: enriched.availability,

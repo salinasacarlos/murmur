@@ -5,7 +5,9 @@ import * as React from "react"
 import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
-import { FunctionalAreasOnboardingSelect } from "@/components/ui/functional-areas-onboarding-select"
+import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
+import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { Field, Input, Textarea } from "@/components/ui/input"
 import { DEFAULT_INDUSTRY_DOMAIN_SLUG } from "@/lib/industry-tree"
@@ -32,8 +34,12 @@ export default function ProfileStepPage() {
   const [name, setName] = React.useState("")
   const [jobTitle, setJobTitle] = React.useState("")
   const [bio, setBio] = React.useState("")
+  const [funFact, setFunFact] = React.useState("")
   const [highlight, setHighlight] = React.useState("")
-  const [areaTagSlugs, setAreaTagSlugs] = React.useState<string[]>([])
+  const [primaryIndustrySlug, setPrimaryIndustrySlug] =
+    React.useState<string | null>(null)
+  const [expertiseSlugs, setExpertiseSlugs] = React.useState<string[]>([])
+  const [talentSlugs, setTalentSlugs] = React.useState<string[]>([])
   const [experience, setExperience] = React.useState<ExperienceRange | null>(
     null
   )
@@ -65,7 +71,8 @@ export default function ProfileStepPage() {
         back="/onboarding/relationships"
         next="/onboarding/location"
         nextDisabled={
-          areaTagSlugs.length === 0 ||
+          !primaryIndustrySlug ||
+          expertiseSlugs.length === 0 ||
           experience == null ||
           availability == null ||
           !name.trim() ||
@@ -80,8 +87,11 @@ export default function ProfileStepPage() {
             name,
             jobTitle,
             bio,
+            funFact,
             achievement: highlight,
-            areaTagSlugs,
+            primaryIndustrySlug: primaryIndustrySlug!,
+            expertiseSlugs,
+            talentSlugs,
             experience,
             availability,
             workStyle,
@@ -125,15 +135,53 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field
-          label="Áreas funcionales"
+          label="Dato curioso (opcional)"
+          hint={`${funFact.length}/500 · Párrafo corto que te humanice en el perfil`}
+        >
+          <PublicFieldNotice className="mb-1" />
+          <Textarea
+            placeholder="Un hobby raro, un viaje memorable, algo que sorprenda en buen sentido…"
+            value={funFact}
+            onChange={(e) => setFunFact(e.target.value.slice(0, 500))}
+            rows={4}
+          />
+        </Field>
+
+        <Field
+          label="Tu industria"
           required
-          hint="Lista amplia: elige hasta 5 que te representen. La primera define tu ámbito principal en matching."
+          hint="Solo una: el sector donde te mueves (ej. tecnología, salud, educación)."
         >
           <PublicFieldNotice className="mb-1" compact />
-          <FunctionalAreasOnboardingSelect
-            value={areaTagSlugs}
-            onChange={setAreaTagSlugs}
+          <IndustrySingleSelect
+            value={primaryIndustrySlug}
+            onChange={(slug) => {
+              setPrimaryIndustrySlug(slug)
+              setExpertiseSlugs([])
+            }}
           />
+        </Field>
+
+        <Field
+          label="Expertise en esa industria"
+          required
+          hint="Hasta 5: vertical u oficio concreto dentro de la industria elegida."
+        >
+          <PublicFieldNotice className="mb-1" compact />
+          <ExpertiseMultiSelect
+            industrySlug={primaryIndustrySlug}
+            value={expertiseSlugs}
+            onChange={setExpertiseSlugs}
+            footerNote="La primera expertise define el matiz principal para matching."
+          />
+        </Field>
+
+        <Field
+          label="Talentos"
+          hint="Hasta 5: cómo aportas o trabajas (transversal, no es industria)."
+        >
+          <PublicFieldNotice className="mb-1" compact />
+          <TalentMultiSelect value={talentSlugs} onChange={setTalentSlugs} />
         </Field>
 
         <Field label="Años de experiencia" required>

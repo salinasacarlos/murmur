@@ -17,7 +17,13 @@ import {
   WORK_STYLE_LABELS,
   type Profile,
 } from "@/lib/types"
-import { labelForOnboardingAreaSlug } from "@/lib/onboarding-functional-areas"
+import {
+  defaultIndustryForFunctionalArea,
+  inferIndustryFromExpertiseSlugs,
+  labelIndustrySlug,
+  labelExpertiseSlug,
+  labelTalentSlug,
+} from "@/lib/profile-taxonomy"
 import {
   IconMapPin,
   IconBriefcase,
@@ -49,6 +55,27 @@ export function ProfileDetailPanel({
   }
 
   if (!profile) return null
+
+  const heroIndustrySlug =
+    profile.primaryIndustrySlug ??
+    inferIndustryFromExpertiseSlugs(
+      profile.expertiseSlugs?.length
+        ? profile.expertiseSlugs
+        : profile.functionalAreaTags
+    ) ??
+    defaultIndustryForFunctionalArea(profile.area)
+  const heroExpertise =
+    profile.expertiseSlugs?.length
+      ? profile.expertiseSlugs
+      : (profile.functionalAreaTags ?? [])
+  const expertiseLine =
+    heroExpertise.length > 0
+      ? heroExpertise.map((s) => labelExpertiseSlug(s)).join(" · ")
+      : AREA_LABELS[profile.area]
+  const talentsLine =
+    profile.talentSlugs && profile.talentSlugs.length > 0
+      ? profile.talentSlugs.map((s) => labelTalentSlug(s)).join(" · ")
+      : null
 
   return (
     <>
@@ -112,6 +139,14 @@ export function ProfileDetailPanel({
               </p>
             </Section>
 
+            {profile.funFact.trim() ? (
+              <Section title="Dato curioso">
+                <p className="text-[13px] text-[var(--text)] leading-relaxed whitespace-pre-wrap">
+                  {profile.funFact}
+                </p>
+              </Section>
+            ) : null}
+
             <Section title="Éxito o descripción breve">
               <div className="flex items-start gap-2">
                 <IconSpark size={14} className="mt-0.5 text-[var(--p)]" />
@@ -124,13 +159,20 @@ export function ProfileDetailPanel({
             <Section title="Sobre su trabajo">
               <div className="flex flex-col gap-2.5">
                 <Row icon={<IconBriefcase size={14} />}>
-                  {(profile.functionalAreaTags?.length
-                    ? profile.functionalAreaTags
-                        .map((slug) => labelForOnboardingAreaSlug(slug))
-                        .join(" · ")
-                    : AREA_LABELS[profile.area])}{" "}
-                  · {EXPERIENCE_LABELS[profile.experience]}
+                  <span className="font-medium text-[var(--text)]">
+                    {labelIndustrySlug(heroIndustrySlug)}
+                  </span>
+                  <span className="text-[var(--text3)]"> · </span>
+                  <span>{expertiseLine}</span>
+                  <span className="text-[var(--text3)]"> · </span>
+                  {EXPERIENCE_LABELS[profile.experience]}
                 </Row>
+                {talentsLine ? (
+                  <Row icon={<IconSpark size={14} />}>
+                    <span className="text-[var(--text3)]">Talentos: </span>
+                    {talentsLine}
+                  </Row>
+                ) : null}
                 <Row icon={<IconClock size={14} />}>
                   {AVAILABILITY_LABELS[profile.availability]}
                 </Row>

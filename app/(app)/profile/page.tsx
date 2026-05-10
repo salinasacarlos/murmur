@@ -12,12 +12,21 @@ import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
 import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
-import { FunctionalAreasOnboardingSelect } from "@/components/ui/functional-areas-onboarding-select"
+import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
+import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { CITIES_CATALOG } from "@/lib/catalogs"
 import {
-  labelForOnboardingAreaSlug,
-  mapsToForOnboardingSlug,
-} from "@/lib/onboarding-functional-areas"
+  defaultIndustryForFunctionalArea,
+  deriveEditableTaxonomy,
+  expertiseSlugsForIndustry,
+  inferIndustryFromExpertiseSlugs,
+  labelIndustrySlug,
+  labelExpertiseSlug,
+  labelTalentSlug,
+  resolveHeroIndustrySlug,
+  resolveProfileArea,
+} from "@/lib/profile-taxonomy"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -76,12 +85,47 @@ export default function ProfilePage() {
   const profileUser = React.useMemo<CurrentUser | null>(() => {
     if (!authUser) return null
     const base = deriveCurrentUser(authUser, profile)
-    return enrichedProfile
+    const merged = enrichedProfile
       ? mergeEnrichedIntoCurrentUser(base, enrichedProfile)
       : base
+    // Session profile row is the source of truth for scalars saved on `profiles`
+    // (enriched join fetch can lag one tick after save and would show stale tags).
+    if (!profile) return merged
+    const rawTags = profile.functional_area_tags
+    const rawExpertise = profile.expertise_slugs
+    const rawTalents = profile.talent_slugs
+    const rawIndustry = profile.primary_industry_slug
+    const fromSession = {
+      ...merged,
+      area: (profile.area as CurrentUser["area"]) ?? merged.area,
+      functionalAreaTags:
+        Array.isArray(rawTags) && rawTags.length > 0 ? rawTags : merged.functionalAreaTags,
+      primaryIndustrySlug:
+        rawIndustry ??
+        merged.primaryIndustrySlug ??
+        inferIndustryFromExpertiseSlugs(
+          Array.isArray(rawExpertise) && rawExpertise.length > 0
+            ? rawExpertise
+            : rawTags
+        ),
+      expertiseSlugs:
+        Array.isArray(rawExpertise) && rawExpertise.length > 0
+          ? rawExpertise
+          : merged.expertiseSlugs,
+      talentSlugs:
+        Array.isArray(rawTalents) && rawTalents.length > 0
+          ? rawTalents
+          : merged.talentSlugs,
+      funFact:
+        typeof profile.fun_fact === "string" ? profile.fun_fact : merged.funFact,
+    }
+    return fromSession
   }, [authUser, profile, enrichedProfile])
 
   const [profileEditOpen, setProfileEditOpen] = React.useState(false)
+  const [industryEditOpen, setIndustryEditOpen] = React.useState(false)
+  const [expertiseEditOpen, setExpertiseEditOpen] = React.useState(false)
+  const [talentsEditOpen, setTalentsEditOpen] = React.useState(false)
   const [locationEditOpen, setLocationEditOpen] = React.useState(false)
   const [workPrefsEditOpen, setWorkPrefsEditOpen] = React.useState(false)
   const [achievementEditOpen, setAchievementEditOpen] = React.useState(false)
@@ -89,6 +133,9 @@ export default function ProfilePage() {
   const [relationsEditOpen, setRelationsEditOpen] = React.useState(false)
 
   const [savingProfile, setSavingProfile] = React.useState(false)
+  const [savingIndustry, setSavingIndustry] = React.useState(false)
+  const [savingExpertiseTax, setSavingExpertiseTax] = React.useState(false)
+  const [savingTalentsTax, setSavingTalentsTax] = React.useState(false)
   const [savingLocation, setSavingLocation] = React.useState(false)
   const [savingWorkPrefs, setSavingWorkPrefs] = React.useState(false)
   const [savingAchievement, setSavingAchievement] = React.useState(false)
@@ -102,13 +149,21 @@ export default function ProfilePage() {
       photoUrl: undefined as string | undefined,
       role: "",
       bio: "",
-      areaTagSlugs: [] as string[],
+      funFact: "",
       experience: "3-5" as ExperienceRange,
     }),
     []
   )
 
   const [profileDraft, setProfileDraft] = React.useState(emptyDraft)
+
+  const [industryDraft, setIndustryDraft] = React.useState<string | null>(null)
+  const [expertiseDraftSlugs, setExpertiseDraftSlugs] = React.useState<
+    string[]
+  >([])
+  const [talentsDraftSlugs, setTalentsDraftSlugs] = React.useState<string[]>(
+    []
+  )
 
   const [locationDraft, setLocationDraft] = React.useState({
     city: "",
@@ -158,10 +213,42 @@ export default function ProfilePage() {
       photoUrl: profileUser.photoUrl,
       role: profileUser.role,
       bio: profileUser.bio,
-      areaTagSlugs: [...(profileUser.functionalAreaTags ?? [])],
+      funFact: profileUser.funFact,
       experience: profileUser.experience,
     })
     setProfileEditOpen(true)
+  }
+
+  function openIndustryEdit() {
+    if (!profileUser) return
+    const { primaryIndustrySlug: inferred } = deriveEditableTaxonomy({
+      primaryIndustrySlug: profileUser.primaryIndustrySlug,
+      expertiseSlugs: profileUser.expertiseSlugs,
+      functionalAreaTags: profileUser.functionalAreaTags,
+      area: profileUser.area,
+    })
+    setIndustryDraft(
+      inferred ?? defaultIndustryForFunctionalArea(profileUser.area)
+    )
+    setIndustryEditOpen(true)
+  }
+
+  function openExpertiseEdit() {
+    if (!profileUser) return
+    const { expertiseSlugs: expertiseFiltered } = deriveEditableTaxonomy({
+      primaryIndustrySlug: profileUser.primaryIndustrySlug,
+      expertiseSlugs: profileUser.expertiseSlugs,
+      functionalAreaTags: profileUser.functionalAreaTags,
+      area: profileUser.area,
+    })
+    setExpertiseDraftSlugs(expertiseFiltered)
+    setExpertiseEditOpen(true)
+  }
+
+  function openTalentsEdit() {
+    if (!profileUser) return
+    setTalentsDraftSlugs([...(profileUser.talentSlugs ?? [])])
+    setTalentsEditOpen(true)
   }
 
   function openCompletenessItem(item: ProfileCompletenessItem) {
@@ -170,6 +257,7 @@ export default function ProfilePage() {
       case "role":
       case "bio":
       case "photo":
+      case "fun_fact":
         openProfileEdit()
         break
       case "email":
@@ -200,31 +288,174 @@ export default function ProfilePage() {
     setSavingProfile(true)
     const nextInitials =
       initialsFromName(profileDraft.name) || profileUser.initials
-    const tags = profileDraft.areaTagSlugs.slice(0, 5)
-    const area =
-      tags.length > 0
-        ? (mapsToForOnboardingSlug(tags[0]) ?? profileUser.area)
-        : profileUser.area
     const supabase = getSupabaseBrowserClient()
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        name: profileDraft.name.trim(),
-        initials: nextInitials,
-        role: profileDraft.role.trim(),
-        bio: profileDraft.bio,
-        area,
-        functional_area_tags: tags,
-        experience: profileDraft.experience,
-        photo_url: profileDraft.photoUrl ?? null,
-      })
-      .eq("id", authUser.id)
-    setSavingProfile(false)
-    if (error) {
-      console.error("Failed to save profile", error)
+    const baseUpdate = {
+      name: profileDraft.name.trim(),
+      initials: nextInitials,
+      role: profileDraft.role.trim(),
+      bio: profileDraft.bio,
+      fun_fact: profileDraft.funFact.trim().slice(0, 500),
+      experience: profileDraft.experience,
+      photo_url: profileDraft.photoUrl ?? null,
+    }
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update(baseUpdate)
+        .eq("id", authUser.id)
+      if (error) {
+        console.error("Failed to save profile", error)
+        setSavingProfile(false)
+        return
+      }
+    } catch (e) {
+      console.error("Failed to save profile", e)
+      setSavingProfile(false)
       return
     }
+
+    setSavingProfile(false)
     setProfileEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
+  async function saveIndustryEdit() {
+    if (!authUser || savingIndustry || !profileUser) return
+    setSavingIndustry(true)
+    const nextSlug =
+      industryDraft ?? defaultIndustryForFunctionalArea(profileUser.area)
+    const prevSlug =
+      profileUser.primaryIndustrySlug ??
+      inferIndustryFromExpertiseSlugs(
+        profileUser.expertiseSlugs?.length
+          ? profileUser.expertiseSlugs
+          : profileUser.functionalAreaTags
+      ) ??
+      defaultIndustryForFunctionalArea(profileUser.area)
+    const keepExpertise = prevSlug === nextSlug
+    const expertise = keepExpertise
+      ? deriveEditableTaxonomy({
+          primaryIndustrySlug: profileUser.primaryIndustrySlug,
+          expertiseSlugs: profileUser.expertiseSlugs,
+          functionalAreaTags: profileUser.functionalAreaTags,
+          area: profileUser.area,
+        }).expertiseSlugs
+      : []
+    const area = resolveProfileArea(nextSlug, expertise)
+    const supabase = getSupabaseBrowserClient()
+    const payload = {
+      primary_industry_slug: nextSlug,
+      expertise_slugs: expertise,
+      functional_area_tags: expertise,
+      area,
+    }
+    try {
+      let { error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", authUser.id)
+      if (
+        error?.code === "PGRST204" &&
+        (error.message?.includes("functional_area_tags") ||
+          error.message?.includes("primary_industry_slug") ||
+          error.message?.includes("expertise_slugs"))
+      ) {
+        const second = await supabase
+          .from("profiles")
+          .update({ area })
+          .eq("id", authUser.id)
+        error = second.error
+      }
+      if (error) {
+        console.error("Failed to save industry", error)
+        setSavingIndustry(false)
+        return
+      }
+    } catch (e) {
+      console.error("Failed to save industry", e)
+      setSavingIndustry(false)
+      return
+    }
+    setSavingIndustry(false)
+    setIndustryEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
+  async function saveExpertiseEdit() {
+    if (!authUser || savingExpertiseTax || !profileUser) return
+    setSavingExpertiseTax(true)
+    const industrySlug = resolveHeroIndustrySlug({
+      primaryIndustrySlug: profileUser.primaryIndustrySlug,
+      expertiseSlugs: profileUser.expertiseSlugs,
+      functionalAreaTags: profileUser.functionalAreaTags,
+      area: profileUser.area,
+    })
+    const allowedSet = new Set(expertiseSlugsForIndustry(industrySlug))
+    const expertise = expertiseDraftSlugs
+      .filter((s) => allowedSet.has(s))
+      .slice(0, 5)
+    const area = resolveProfileArea(industrySlug, expertise)
+    const supabase = getSupabaseBrowserClient()
+    const payload = {
+      primary_industry_slug: industrySlug,
+      expertise_slugs: expertise,
+      functional_area_tags: expertise,
+      area,
+    }
+    try {
+      let { error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", authUser.id)
+      if (
+        error?.code === "PGRST204" &&
+        (error.message?.includes("functional_area_tags") ||
+          error.message?.includes("expertise_slugs") ||
+          error.message?.includes("primary_industry_slug"))
+      ) {
+        const second = await supabase
+          .from("profiles")
+          .update({ area })
+          .eq("id", authUser.id)
+        error = second.error
+      }
+      if (error) {
+        console.error("Failed to save expertise", error)
+        setSavingExpertiseTax(false)
+        return
+      }
+    } catch (e) {
+      console.error("Failed to save expertise", e)
+      setSavingExpertiseTax(false)
+      return
+    }
+    setSavingExpertiseTax(false)
+    setExpertiseEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
+  async function saveTalentsEdit() {
+    if (!authUser || savingTalentsTax || !profileUser) return
+    setSavingTalentsTax(true)
+    const talents = talentsDraftSlugs.slice(0, 5)
+    const supabase = getSupabaseBrowserClient()
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ talent_slugs: talents })
+        .eq("id", authUser.id)
+      if (error) {
+        console.error("Failed to save talents", error)
+        setSavingTalentsTax(false)
+        return
+      }
+    } catch (e) {
+      console.error("Failed to save talents", e)
+      setSavingTalentsTax(false)
+      return
+    }
+    setSavingTalentsTax(false)
+    setTalentsEditOpen(false)
     void afterSuccessfulSave()
   }
 
@@ -429,6 +660,17 @@ export default function ProfilePage() {
       ? [user.city]
       : []
 
+  const heroIndustrySlug = resolveHeroIndustrySlug({
+    primaryIndustrySlug: user.primaryIndustrySlug,
+    expertiseSlugs: user.expertiseSlugs,
+    functionalAreaTags: user.functionalAreaTags,
+    area: user.area,
+  })
+  const heroExpertiseSlugs =
+    user.expertiseSlugs && user.expertiseSlugs.length > 0
+      ? user.expertiseSlugs
+      : (user.functionalAreaTags ?? [])
+
   return (
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full flex flex-col gap-4">
       <div className="md:hidden">
@@ -499,7 +741,7 @@ export default function ProfilePage() {
             </div>
             <Button variant="ghost" size="sm" onClick={openProfileEdit}>
               <IconEdit size={12} />
-              Editar
+              Datos básicos
             </Button>
           </div>
           <p className="text-[13px] text-[var(--text)] leading-relaxed mt-3">
@@ -507,16 +749,34 @@ export default function ProfilePage() {
               <span className="text-[var(--text3)]">Sin bio todavía.</span>
             )}
           </p>
+          {user.funFact.trim() ? (
+            <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--bg2)]/50 px-3 py-2.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text3)] mb-1">
+                Dato curioso
+              </p>
+              <p className="text-[13px] text-[var(--text)] leading-relaxed whitespace-pre-wrap">
+                {user.funFact}
+              </p>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {user.functionalAreaTags && user.functionalAreaTags.length > 0 ? (
-              user.functionalAreaTags.map((slug) => (
+            <Tag key="industry" variant="amber">
+              {labelIndustrySlug(heroIndustrySlug)}
+            </Tag>
+            {heroExpertiseSlugs.length > 0 ? (
+              heroExpertiseSlugs.map((slug) => (
                 <Tag key={slug} variant="amber">
-                  {labelForOnboardingAreaSlug(slug)}
+                  {labelExpertiseSlug(slug)}
                 </Tag>
               ))
             ) : (
               <Tag variant="amber">{AREA_LABELS[user.area]}</Tag>
             )}
+            {(user.talentSlugs ?? []).map((slug) => (
+              <Tag key={`talent-${slug}`} variant="neutral">
+                {labelTalentSlug(slug)}
+              </Tag>
+            ))}
             <Tag variant="neutral">{EXPERIENCE_LABELS[user.experience]}</Tag>
             <Tag variant="success">{AVAILABILITY_LABELS[user.availability]}</Tag>
           </div>
@@ -526,11 +786,11 @@ export default function ProfilePage() {
       <Drawer
         open={profileEditOpen}
         onOpenChange={setProfileEditOpen}
-        ariaLabel="Editar información principal"
+        ariaLabel="Editar datos básicos del perfil"
       >
         <DrawerHeader
-          title="Editar información principal"
-          description="Estos datos son los que aparecen en la card superior de tu perfil. La disponibilidad se edita en «Disponibilidad y forma de trabajar»."
+          title="Datos básicos"
+          description="Foto, nombre, cómo te presentas, bio, un dato curioso opcional y tu experiencia. Industria, expertise y talentos los editas desde la sección Profesional, cada uno por separado."
         />
 
         <div className="flex flex-col gap-3 mb-4">
@@ -580,14 +840,24 @@ export default function ProfilePage() {
             />
           </Field>
 
-          <Field label="Áreas funcionales">
-            <FunctionalAreasOnboardingSelect
-              value={profileDraft.areaTagSlugs}
-              onChange={(slugs) =>
-                setProfileDraft((prev) => ({ ...prev, areaTagSlugs: slugs }))
+          <Field
+            label="Dato curioso"
+            hint="Opcional. Algo que te humanice frente a otros (hobby, anécdota breve…)."
+          >
+            <Textarea
+              rows={5}
+              value={profileDraft.funFact}
+              onChange={(e) =>
+                setProfileDraft((prev) => ({
+                  ...prev,
+                  funFact: e.target.value.slice(0, 500),
+                }))
               }
-              footerNote={`Máximo 5. La primera define tu ámbito principal en matching.`}
+              placeholder="Ej. Colecciono vinilos de jazz coreano, o hice un Ironman antes de meterme al mundo startup…"
             />
+            <p className="text-[11px] text-[var(--text3)] mt-1">
+              {profileDraft.funFact.length}/500 caracteres
+            </p>
           </Field>
 
           <Field label="Años de experiencia">
@@ -628,6 +898,123 @@ export default function ProfilePage() {
         </div>
       </Drawer>
 
+      <Drawer
+        open={industryEditOpen}
+        onOpenChange={setIndustryEditOpen}
+        ariaLabel="Editar industria principal"
+      >
+        <DrawerHeader
+          title="Industria principal"
+          description="Define tu industria de referencia. Si la cambias, se quitan las especialidades (expertise) guardadas para ajustarlas al nuevo contexto."
+        />
+        <div className="flex flex-col gap-3 mb-4">
+          <Field label="Industria">
+            <IndustrySingleSelect
+              value={industryDraft}
+              onChange={(slug) => setIndustryDraft(slug)}
+            />
+          </Field>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setIndustryEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => void saveIndustryEdit()}
+            disabled={savingIndustry}
+          >
+            {savingIndustry ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
+      <Drawer
+        open={expertiseEditOpen}
+        onOpenChange={setExpertiseEditOpen}
+        ariaLabel="Editar expertise"
+        className="flex max-h-[90dvh] flex-col !overflow-hidden"
+      >
+        <DrawerHeader
+          className="shrink-0"
+          title="Especialidades (expertise)"
+          description={`Industria de referencia: ${labelIndustrySlug(heroIndustrySlug)}. Puedes elegir hasta 5 especialidades de esa industria.`}
+        />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="flex flex-col gap-3 pb-1">
+            <Field label="Expertise">
+              <ExpertiseMultiSelect
+                industrySlug={heroIndustrySlug}
+                value={expertiseDraftSlugs}
+                onChange={setExpertiseDraftSlugs}
+                footerNote="Máximo 5. Para cambiar de industria, edita primero «Industria principal» arriba en Profesional."
+              />
+            </Field>
+          </div>
+        </div>
+        <div className="relative z-[60] mt-2 flex shrink-0 gap-2 border-t border-[var(--border)] bg-[var(--bg)] pt-3">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setExpertiseEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => void saveExpertiseEdit()}
+            disabled={savingExpertiseTax}
+          >
+            {savingExpertiseTax ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
+      <Drawer
+        open={talentsEditOpen}
+        onOpenChange={setTalentsEditOpen}
+        ariaLabel="Editar talentos"
+      >
+        <DrawerHeader
+          title="Talentos"
+          description="Habilidades transversales (soft skills). Elige hasta 5."
+        />
+        <div className="flex flex-col gap-3 mb-4">
+          <Field label="Talentos">
+            <TalentMultiSelect
+              value={talentsDraftSlugs}
+              onChange={setTalentsDraftSlugs}
+            />
+          </Field>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setTalentsEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => void saveTalentsEdit()}
+            disabled={savingTalentsTax}
+          >
+            {savingTalentsTax ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
       <Card padding="default" className="ds-fade-up grid grid-cols-3 gap-4">
         <Stat label="Matches" value={user.stats.matches} />
         <Stat label="Conexiones" value={user.stats.connections} />
@@ -656,29 +1043,48 @@ export default function ProfilePage() {
 
       <Card padding="default" className="ds-fade-up flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="ds-label-uppercase">Profesional</h3>
+          <div>
+            <h3 className="ds-label-uppercase">Profesional</h3>
+            <p className="text-[12px] text-[var(--text2)] mt-1">
+              Industria, especialidades y talentos: edita cada bloque con su enlace.
+            </p>
+          </div>
           <button
             type="button"
             onClick={openAchievementEdit}
-            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
+            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1 shrink-0"
             aria-label="Editar logro destacado"
           >
             <IconEdit size={14} />
           </button>
         </div>
         <ProfileValueRow
-          label="Áreas funcionales"
+          label="Industria"
+          value={labelIndustrySlug(heroIndustrySlug)}
+          onEdit={openIndustryEdit}
+        />
+        <ProfileValueRow
+          label="Expertise"
           value={
-            user.functionalAreaTags && user.functionalAreaTags.length > 0
-              ? user.functionalAreaTags
-                  .map((slug) => labelForOnboardingAreaSlug(slug))
-                  .join(" · ")
+            heroExpertiseSlugs.length > 0
+              ? heroExpertiseSlugs.map((s) => labelExpertiseSlug(s)).join(" · ")
               : AREA_LABELS[user.area]
           }
+          onEdit={openExpertiseEdit}
+        />
+        <ProfileValueRow
+          label="Talentos"
+          value={
+            user.talentSlugs && user.talentSlugs.length > 0
+              ? user.talentSlugs.map((s) => labelTalentSlug(s)).join(" · ")
+              : "—"
+          }
+          onEdit={openTalentsEdit}
         />
         <ProfileValueRow
           label="Experiencia"
           value={EXPERIENCE_LABELS[user.experience]}
+          onEdit={openProfileEdit}
         />
         <ProfileValueRow
           label="Logro destacado"

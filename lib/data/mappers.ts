@@ -77,9 +77,14 @@ export function mapProfileJoinRow(row: ProfileJoinRow): Profile {
     photoUrl: row.photo_url ?? undefined,
     role: row.role,
     bio: row.bio,
+    funFact: row.fun_fact ?? "",
     area: (row.area ?? "negocio") as FunctionalArea,
     functionalAreaTags:
       row.functional_area_tags?.length ? row.functional_area_tags : undefined,
+    primaryIndustrySlug: row.primary_industry_slug ?? undefined,
+    expertiseSlugs:
+      row.expertise_slugs?.length ? row.expertise_slugs : undefined,
+    talentSlugs: row.talent_slugs?.length ? row.talent_slugs : undefined,
     experience: (row.experience ?? "3-5") as ExperienceRange,
     achievement: row.achievement,
     availability: (row.availability ?? "full-time") as Availability,
@@ -127,6 +132,10 @@ export function mapSearchJoinRow(row: SearchJoinRow): Search {
     area: (row.area ?? undefined) as FunctionalArea | undefined,
     functionalAreaTags:
       row.functional_area_tags?.length ? row.functional_area_tags : undefined,
+    primaryIndustrySlug: row.primary_industry_slug ?? undefined,
+    expertiseSlugs:
+      row.expertise_slugs?.length ? row.expertise_slugs : undefined,
+    talentSlugs: row.talent_slugs?.length ? row.talent_slugs : undefined,
     industries,
     status: row.status as SearchStatus,
     matchesCount: row.matches_count,

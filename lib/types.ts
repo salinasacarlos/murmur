@@ -34,9 +34,13 @@ export interface Profile {
   photoUrl?: string
   role: string
   bio: string
+  funFact: string
   area: FunctionalArea
-  /** Slugs from onboarding catalog (max 5) when present */
+  /** @deprecated prefer primaryIndustrySlug + expertiseSlugs */
   functionalAreaTags?: string[]
+  primaryIndustrySlug?: string | null
+  expertiseSlugs?: string[]
+  talentSlugs?: string[]
   experience: ExperienceRange
   achievement: string
   availability: Availability
@@ -64,8 +68,11 @@ export interface Search {
   description: string
   relations: RelationType[]
   area?: FunctionalArea
-  /** Slugs from shared catalog (max 5); first drives coarse `area` for matching. */
+  /** @deprecated */
   functionalAreaTags?: string[]
+  primaryIndustrySlug?: string | null
+  expertiseSlugs?: string[]
+  talentSlugs?: string[]
   industries: string[]
   status: SearchStatus
   matchesCount: number
@@ -124,8 +131,12 @@ export interface CurrentUser {
   email: string
   role: string
   bio: string
+  funFact: string
   area: FunctionalArea
   functionalAreaTags?: string[]
+  primaryIndustrySlug?: string | null
+  expertiseSlugs?: string[]
+  talentSlugs?: string[]
   experience: ExperienceRange
   achievement: string
   availability: Availability

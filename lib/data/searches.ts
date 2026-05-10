@@ -3,7 +3,10 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import { industryLabelToSlug } from "@/lib/catalogs"
 import type { Database } from "@/lib/database.types"
 import { mapSearchJoinRow } from "@/lib/data/mappers"
-import { mapsToForOnboardingSlug } from "@/lib/onboarding-functional-areas"
+import {
+  inferIndustryFromExpertiseSlugs,
+  resolveProfileArea,
+} from "@/lib/profile-taxonomy"
 import type { Search } from "@/lib/types"
 
 type Client = SupabaseClient<Database>
@@ -91,21 +94,39 @@ export interface SearchFormPayload {
   title: string
   description: string
   relations: Database["public"]["Enums"]["relation_type"][]
-  /** Up to 5 slugs; coarse `area` is derived from the first for DB matching. */
-  areaTagSlugs: string[]
+  primaryIndustrySlug: string | null
+  expertiseSlugs: string[]
+  talentSlugs: string[]
   industryLabels: string[]
 }
 
-function areaAndTagsForCreate(payload: SearchFormPayload): {
-  area: Database["public"]["Enums"]["functional_area"] | null
-  tags: string[]
-} {
-  const tags = payload.areaTagSlugs.slice(0, 5)
-  const area =
-    tags.length > 0
-      ? (mapsToForOnboardingSlug(tags[0]) ?? null)
-      : null
-  return { area, tags }
+function taxonomyRowForPayload(
+  payload: SearchFormPayload
+): Pick<
+  Database["public"]["Tables"]["searches"]["Insert"],
+  | "area"
+  | "primary_industry_slug"
+  | "expertise_slugs"
+  | "talent_slugs"
+  | "functional_area_tags"
+> {
+  const expertise = payload.expertiseSlugs.slice(0, 5)
+  const talents = payload.talentSlugs.slice(0, 5)
+  const hasCore = expertise.length > 0 || !!payload.primaryIndustrySlug
+  const industry =
+    payload.primaryIndustrySlug ??
+    inferIndustryFromExpertiseSlugs(expertise) ??
+    null
+  const area = hasCore
+    ? (resolveProfileArea(industry, expertise) as Database["public"]["Enums"]["functional_area"])
+    : null
+  return {
+    area,
+    primary_industry_slug: hasCore ? industry : null,
+    expertise_slugs: expertise,
+    talent_slugs: talents,
+    functional_area_tags: expertise,
+  }
 }
 
 export async function createSearch(
@@ -113,13 +134,12 @@ export async function createSearch(
   ownerId: string,
   payload: SearchFormPayload
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
-  const { area, tags } = areaAndTagsForCreate(payload)
+  const tax = taxonomyRowForPayload(payload)
   const insert: Database["public"]["Tables"]["searches"]["Insert"] = {
     owner_id: ownerId,
     title: payload.title.trim(),
     description: payload.description.trim(),
-    area,
-    functional_area_tags: tags,
+    ...tax,
     status: "active",
   }
 
@@ -161,11 +181,13 @@ export async function updateSearch(
   ownerId: string,
   payload: SearchFormPayload
 ): Promise<{ ok: boolean; error?: string }> {
-  const tags = payload.areaTagSlugs.slice(0, 5)
+  const tax = taxonomyRowForPayload(payload)
 
   const { data: currentRow, error: curErr } = await supabase
     .from("searches")
-    .select("area, functional_area_tags")
+    .select(
+      "area, functional_area_tags, primary_industry_slug, expertise_slugs, talent_slugs"
+    )
     .eq("id", searchId)
     .eq("owner_id", ownerId)
     .maybeSingle()
@@ -174,11 +196,17 @@ export async function updateSearch(
     return { ok: false, error: curErr?.message ?? "Búsqueda no encontrada" }
   }
 
-  const prevTags = currentRow.functional_area_tags ?? []
+  const expertise = tax.expertise_slugs ?? []
+  const hasCore = expertise.length > 0 || !!tax.primary_industry_slug
+  const prevHadCore =
+    (currentRow.expertise_slugs?.length ?? 0) > 0 ||
+    !!currentRow.primary_industry_slug ||
+    (currentRow.functional_area_tags?.length ?? 0) > 0
+
   let nextArea: Database["public"]["Enums"]["functional_area"] | null
-  if (tags.length > 0) {
-    nextArea = mapsToForOnboardingSlug(tags[0]) ?? null
-  } else if (prevTags.length > 0) {
+  if (hasCore) {
+    nextArea = tax.area ?? null
+  } else if (prevHadCore) {
     nextArea = null
   } else {
     nextArea = currentRow.area ?? null
@@ -190,7 +218,10 @@ export async function updateSearch(
       title: payload.title.trim(),
       description: payload.description.trim(),
       area: nextArea,
-      functional_area_tags: tags,
+      primary_industry_slug: hasCore ? tax.primary_industry_slug : null,
+      expertise_slugs: tax.expertise_slugs,
+      talent_slugs: tax.talent_slugs,
+      functional_area_tags: tax.functional_area_tags,
       updated_at: new Date().toISOString(),
     })
     .eq("id", searchId)

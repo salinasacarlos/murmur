@@ -2,28 +2,24 @@
 
 import * as React from "react"
 
-import {
-  labelForOnboardingAreaSlug,
-  ONBOARDING_FUNCTIONAL_AREA_OPTIONS,
-} from "@/lib/onboarding-functional-areas"
+import { TALENTS, labelTalentSlug } from "@/lib/profile-taxonomy"
 import { cn } from "@/lib/utils"
 
 const MAX = 5
 
-interface FunctionalAreasOnboardingSelectProps {
+interface TalentMultiSelectProps {
   value: string[]
   onChange: (slugs: string[]) => void
   className?: string
-  /** Override default helper text under the control */
   footerNote?: string
 }
 
-export function FunctionalAreasOnboardingSelect({
+export function TalentMultiSelect({
   value,
   onChange,
   className,
-  footerNote = `Máximo ${MAX} opciones. Puedes refinarlas después en tu perfil.`,
-}: FunctionalAreasOnboardingSelectProps) {
+  footerNote = `Máximo ${MAX} talentos · cómo aportas o trabajas (transversal a la industria).`,
+}: TalentMultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
   const rootRef = React.useRef<HTMLDivElement>(null)
@@ -36,8 +32,12 @@ export function FunctionalAreasOnboardingSelect({
     return () => document.removeEventListener("click", onDocClick)
   }, [])
 
-  const q = query.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-  const options = ONBOARDING_FUNCTIONAL_AREA_OPTIONS.filter((o) => {
+  const q = query
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+  const filtered = TALENTS.filter((o) => {
     if (!q) return true
     const t = o.label
       .toLowerCase()
@@ -70,11 +70,11 @@ export function FunctionalAreasOnboardingSelect({
               onClick={() => remove(slug)}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors",
-                "border-[var(--primary-solid)] bg-[var(--primary-solid)] text-[var(--primary-solid-foreground)] hover:opacity-85"
+                "border-[var(--amber)] bg-[var(--amber)]/15 text-[var(--text)] hover:opacity-90"
               )}
-              aria-label={`Quitar ${labelForOnboardingAreaSlug(slug)}`}
+              aria-label={`Quitar ${labelTalentSlug(slug)}`}
             >
-              {labelForOnboardingAreaSlug(slug)}
+              {labelTalentSlug(slug)}
               <span className="text-[13px] leading-none" aria-hidden>
                 ×
               </span>
@@ -96,7 +96,7 @@ export function FunctionalAreasOnboardingSelect({
         >
           <span>
             {value.length === 0
-              ? "Elige hasta 5 ámbitos…"
+              ? `Elige hasta ${MAX} talentos…`
               : `${value.length} de ${MAX} seleccionados`}
           </span>
           <span className="text-[var(--text3)]" aria-hidden>
@@ -114,13 +114,13 @@ export function FunctionalAreasOnboardingSelect({
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar…"
+                placeholder="Buscar talento…"
                 className="ds-input py-1.5 text-[13px]"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
             <ul className="overflow-y-auto p-1.5 flex flex-col gap-0.5">
-              {options.map((o) => {
+              {filtered.map((o) => {
                 const selected = value.includes(o.slug)
                 const disabled = !selected && value.length >= MAX
                 return (

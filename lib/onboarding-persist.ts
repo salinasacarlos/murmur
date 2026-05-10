@@ -9,13 +9,13 @@ import {
   replaceProfileWorkStyles,
 } from "@/lib/data/profile-mutations"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
+import { resolveProfileArea } from "@/lib/profile-taxonomy"
 import type {
   Availability,
   ExperienceRange,
   RelationType,
   WorkStyle,
 } from "@/lib/types"
-import { mapsToForOnboardingSlug } from "@/lib/onboarding-functional-areas"
 
 type Client = SupabaseClient<Database>
 
@@ -41,8 +41,11 @@ export async function persistOnboardingProfileStep(
     name: string
     jobTitle: string
     bio: string
+    funFact: string
     achievement: string
-    areaTagSlugs: string[]
+    primaryIndustrySlug: string
+    expertiseSlugs: string[]
+    talentSlugs: string[]
     experience: ExperienceRange
     availability: Availability
     workStyle: WorkStyle[]
@@ -51,9 +54,9 @@ export async function persistOnboardingProfileStep(
 ): Promise<{ ok: boolean; error?: string }> {
   const name = input.name.trim()
   const role = input.jobTitle.trim()
-  const tags = input.areaTagSlugs.slice(0, 5)
-  const firstMaps = tags[0] ? mapsToForOnboardingSlug(tags[0]) : undefined
-  const area = firstMaps ?? "negocio"
+  const expertise = input.expertiseSlugs.slice(0, 5)
+  const talents = input.talentSlugs.slice(0, 5)
+  const area = resolveProfileArea(input.primaryIndustrySlug, expertise)
 
   const { error } = await supabase
     .from("profiles")
@@ -62,9 +65,13 @@ export async function persistOnboardingProfileStep(
       initials: initialsFromName(name) || "U",
       role,
       bio: input.bio.trim(),
+      fun_fact: input.funFact.trim().slice(0, 500),
       achievement: input.achievement.trim(),
+      primary_industry_slug: input.primaryIndustrySlug,
+      expertise_slugs: expertise,
+      talent_slugs: talents,
+      functional_area_tags: expertise,
       area,
-      functional_area_tags: tags,
       experience: input.experience,
       availability: input.availability,
     })
