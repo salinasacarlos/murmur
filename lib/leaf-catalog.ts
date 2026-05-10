@@ -1,6 +1,7 @@
 /**
  * Hojas del catálogo discover → industria de perfil. Sin deps (evita ciclos con profile-taxonomy).
- * Una sola tabla (VERTICAL_ROWS) alinea mapa y lista; ampliar verticales aquí y en la migración SQL homónima.
+ * Una sola tabla (VERTICAL_ROWS) alinea mapa y lista; ampliar aquí y en migraciones
+ * `20260530120000_expand_industry_verticals.sql` + `20260602120000_expand_verticals_specialization.sql`.
  */
 
 export interface IndustryLeaf {
@@ -41,6 +42,31 @@ const VERTICAL_ROWS = [
   {
     slug: "mercados-derivados-prime",
     label: "Mercados, research y prime brokerage",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "neobanca-embed-banking",
+    label: "Neobanca y banking as a service",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "tesoreria-liquidez-corporativa",
+    label: "Tesorería y liquidez corporativa",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "cobranza-recuperacion-cartera",
+    label: "Cobranza y recuperación de cartera",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "finanzas-sostenibles-esg",
+    label: "Finanzas sostenibles y reporting ESG",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "ratings-analisis-credito",
+    label: "Ratings y análisis de crédito",
     industry: "finanzas-fintech",
   },
 
@@ -93,6 +119,31 @@ const VERTICAL_ROWS = [
     label: "Medicina veterinaria y One Health",
     industry: "salud-biotech",
   },
+  {
+    slug: "dispositivos-medicos-hardware",
+    label: "Dispositivos médicos y hardware clínico",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "diagnostico-imagen-laboratorio",
+    label: "Diagnóstico por imagen y laboratorio clínico",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "aseguradoras-planes-salud",
+    label: "Aseguradoras y planes de salud",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "medicina-estetica-dermatologia",
+    label: "Medicina estética y dermatología clínica",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "salud-ocupacional-seguridad-laboral",
+    label: "Salud ocupacional y seguridad laboral",
+    industry: "salud-biotech",
+  },
 
   // —— Educación
   { slug: "edtech", label: "Edtech", industry: "educacion" },
@@ -141,6 +192,26 @@ const VERTICAL_ROWS = [
     label: "Investigación y ciencia aplicada en academia",
     industry: "educacion",
   },
+  {
+    slug: "educacion-especial-inclusion",
+    label: "Educación especial e inclusión",
+    industry: "educacion",
+  },
+  {
+    slug: "evaluacion-certificaciones-internacionales",
+    label: "Evaluación y certificaciones internacionales",
+    industry: "educacion",
+  },
+  {
+    slug: "marketplace-cursos-digitales",
+    label: "Marketplace de cursos y microcredenciales",
+    industry: "educacion",
+  },
+  {
+    slug: "experiencia-campus-hibrido",
+    label: "Campus y experiencia educativa híbrida",
+    industry: "educacion",
+  },
 
   // —— Tecnología e IA
   { slug: "saas", label: "SaaS", industry: "tecnologia-ia" },
@@ -177,6 +248,26 @@ const VERTICAL_ROWS = [
   {
     slug: "quantum-computing",
     label: "Computación cuántica y laboratorios avanzados",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "martech-adtech-plataformas",
+    label: "MarTech, AdTech y medición de campañas",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "plataforma-datos-gobernanza",
+    label: "Data platform y gobernanza de datos",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "gemelos-digitales-industrial",
+    label: "Gemelos digitales e ingeniería de simulación",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "vertical-saas-por-industria",
+    label: "SaaS vertical especializado por industria",
     industry: "tecnologia-ia",
   },
 
@@ -218,6 +309,21 @@ const VERTICAL_ROWS = [
     label: "ONG, filantropía y cooperación al desarrollo",
     industry: "gobierno-sector-publico",
   },
+  {
+    slug: "compras-publicas-digitales",
+    label: "Compras y licitaciones públicas digitales",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "justicia-digital-judicial",
+    label: "Justicia digital y servicios judiciales en línea",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "smart-cities-movilidad-urbana",
+    label: "Smart cities y movilidad urbana pública",
+    industry: "gobierno-sector-publico",
+  },
 
   // —— Retail y comercio
   { slug: "marketplace", label: "Marketplace", industry: "retail-comercio" },
@@ -255,6 +361,26 @@ const VERTICAL_ROWS = [
   {
     slug: "trade-marketing-retail-media",
     label: "Trade marketing y retail media",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "quick-commerce-dark-store",
+    label: "Quick commerce y dark stores",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "cpg-fmcg-gran-consumo",
+    label: "CPG / FMCG y gran consumo",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "travel-retail-duty-free",
+    label: "Travel retail y duty free",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "retail-financiero-corresponsalia",
+    label: "Retail financiero y corresponsalía",
     industry: "retail-comercio",
   },
 
@@ -316,6 +442,26 @@ const VERTICAL_ROWS = [
     label: "Esports y competición profesional",
     industry: "entretenimiento-medios",
   },
+  {
+    slug: "agencia-creativa-produccion",
+    label: "Agencia creativa y producción integral",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "parques-tematicos-atracciones",
+    label: "Parques temáticos y atracciones",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "editorial-suscriptores-memberships",
+    label: "Editorial, suscriptores y memberships",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "locacion-espacios-audiovisuales",
+    label: "Locación, renta de estudios y espacios",
+    industry: "entretenimiento-medios",
+  },
 
   // —— Artes, diseño y creativo
   { slug: "arquitectura", label: "Arquitectura", industry: "artes-diseno-creativo" },
@@ -350,6 +496,26 @@ const VERTICAL_ROWS = [
     label: "Contenido de comunidad (UGC) y co-creación",
     industry: "artes-diseno-creativo",
   },
+  {
+    slug: "estudio-brand-identidad",
+    label: "Estudio de marca e identidad visual",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "diseno-industrial-producto-fisico",
+    label: "Diseño industrial y producto físico",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "arte-videojuegos-indie",
+    label: "Arte y visdev para videojuegos",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "gestion-patrimonio-cultural",
+    label: "Gestión de patrimonio y proyectos culturales",
+    industry: "artes-diseno-creativo",
+  },
 
   // —— Construcción e inmobiliario
   {
@@ -381,6 +547,21 @@ const VERTICAL_ROWS = [
   {
     slug: "obra-civil-ingenieria",
     label: "Obra civil e ingeniería de proyectos",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "inversion-inmobiliaria-reits",
+    label: "Inversión inmobiliaria, REITs y patrimonio",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "edificios-inteligentes-operacion",
+    label: "Edificios inteligentes y operación tecnológica",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "due-diligence-tecnica-transacciones",
+    label: "Due diligence técnica y transacciones",
     industry: "construccion-inmobiliario",
   },
 
@@ -427,6 +608,26 @@ const VERTICAL_ROWS = [
   {
     slug: "automatizacion-industria-4",
     label: "Automatización, robótica industrial e Industria 4.0",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "industria-farmaceutica-manufactura",
+    label: "Manufactura farmacéutica y bio",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "alimentos-procesados-industria",
+    label: "Alimentos procesados y planta industrial",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "cogeneracion-utilities-planta",
+    label: "Cogeneración y utilities de planta",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "maquila-export-manufactura",
+    label: "Maquila, export manufacturing y nearshoring",
     industry: "manufactura-industria",
   },
 
@@ -478,6 +679,21 @@ const VERTICAL_ROWS = [
     label: "Economía circular y reuse industrial",
     industry: "energia-sustentabilidad",
   },
+  {
+    slug: "hidrogeno-almacenamiento-energetico",
+    label: "Hidrógeno, almacenamiento y flexibilidad",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "consultoria-impacto-ambiental",
+    label: "Consultoría de impacto y estudios ambientales",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "biodiversidad-naturaleza-soluciones",
+    label: "Biodiversidad y soluciones basadas en naturaleza",
+    industry: "energia-sustentabilidad",
+  },
 
   // —— Agro y alimentación
   { slug: "agtech", label: "Agtech", industry: "agro-alimentacion" },
@@ -520,6 +736,21 @@ const VERTICAL_ROWS = [
   {
     slug: "nutricion-ingredientes-alimentarios",
     label: "Ingredientes, nutrición y formulación",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "export-agro-commodities",
+    label: "Exportación agro y trading de commodities",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "organico-certificaciones-export",
+    label: "Orgánico, certificaciones y exportación",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "cooperativas-asociaciones-rurales",
+    label: "Cooperativas y asociaciones rurales",
     industry: "agro-alimentacion",
   },
 
@@ -584,6 +815,21 @@ const VERTICAL_ROWS = [
     label: "Spa, termal y wellness turístico",
     industry: "turismo-hospitalidad",
   },
+  {
+    slug: "turismo-negocios-bleisure",
+    label: "Turismo de negocios y bleisure",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "alquiler-vacacional-stays",
+    label: "Alquiler vacacional y stays de corta estadía",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "turismo-deportivo-eventos-mayores",
+    label: "Turismo deportivo y megaeventos",
+    industry: "turismo-hospitalidad",
+  },
 
   // —— Legal y consultoría
   { slug: "legaltech", label: "Legaltech", industry: "legal-consultoria" },
@@ -619,6 +865,21 @@ const VERTICAL_ROWS = [
     label: "Consultoría de marca, comunicación y growth",
     industry: "legal-consultoria",
   },
+  {
+    slug: "despacho-boutique-legal",
+    label: "Despacho boutique y práctica de nicho",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "legal-operations-outsourcing",
+    label: "Legal operations y outsourcing jurídico",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "ma-transacciones-corporativas",
+    label: "M&A y transacciones corporativas (advisory)",
+    industry: "legal-consultoria",
+  },
 
   // —— Deporte y bienestar
   { slug: "wellness", label: "Wellness", industry: "deporte-bienestar" },
@@ -651,6 +912,21 @@ const VERTICAL_ROWS = [
   {
     slug: "mindfulness-coaching-bienestar",
     label: "Mindfulness, coaching y bienestar integral",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "federaciones-organizadores-eventos",
+    label: "Federaciones y organización de eventos deportivos",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "tecnologia-wearables-health-fitness",
+    label: "Wearables y tecnología aplicada al rendimiento",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "centros-rehabilitacion-deportiva",
+    label: "Centros de rehabilitación y readaptación",
     industry: "deporte-bienestar",
   },
 ] as const
