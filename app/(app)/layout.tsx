@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { Topbar } from "@/components/layout/topbar"
 import { CurrentUserProvider } from "@/components/providers/current-user-provider"
+import { VisibilityDbSync } from "@/components/providers/visibility-db-sync"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
 // Session + Supabase live in cookies; avoid static prerender (build fails without env).
@@ -33,6 +34,7 @@ export default async function AppLayout({
 
   return (
     <CurrentUserProvider initialUser={user} initialProfile={profile}>
+      <VisibilityDbSync />
       <div className="min-h-svh bg-[var(--bg)]">
         <Sidebar />
         <div className="md:pl-[224px] flex flex-col min-h-svh">

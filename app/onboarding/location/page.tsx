@@ -11,6 +11,11 @@ import { Field, Input } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { IconMapPin } from "@/components/icons"
 import { CITIES_CATALOG } from "@/lib/catalogs"
+import {
+  persistOnboardingLocationFinish,
+  requireUserId,
+} from "@/lib/onboarding-persist"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export default function LocationStepPage() {
   const [city, setCity] = React.useState("")
@@ -25,6 +30,21 @@ export default function LocationStepPage() {
         description="Ciudad y radio; nunca mostramos tu ubicación exacta."
         back="/onboarding/profile"
         next="/onboarding/done"
+        nextDisabled={!city.trim()}
+        onBeforeNext={async () => {
+          const supabase = getSupabaseBrowserClient()
+          const uid = await requireUserId(supabase)
+          if (!uid) return false
+          const r = await persistOnboardingLocationFinish(supabase, uid, {
+            primaryCity: city,
+            activeCities: extraCities,
+            searchRadiusKm: radius,
+          })
+          if (!r.ok) {
+            console.error(r.error)
+            return false
+          }
+        }}
       >
         <Button variant="brand" size="lg" className="justify-center">
           <IconMapPin size={14} />
@@ -70,7 +90,7 @@ export default function LocationStepPage() {
           <input
             type="range"
             min="5"
-            max="200"
+            max="300"
             step="5"
             value={radius}
             onChange={(e) => setRadius(Number(e.target.value))}

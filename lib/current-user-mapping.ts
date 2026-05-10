@@ -6,6 +6,7 @@ import type {
   CurrentUser,
   ExperienceRange,
   FunctionalArea,
+  Profile,
 } from "@/lib/types"
 
 const DEFAULT_AREA: FunctionalArea = "negocio"
@@ -53,6 +54,35 @@ export function deriveCurrentUser(
       connections: profile?.stats_connections ?? 0,
       messages: profile?.stats_messages ?? 0,
     },
+  }
+}
+
+export function mergeEnrichedIntoCurrentUser(
+  base: CurrentUser,
+  enriched: Profile
+): CurrentUser {
+  return {
+    ...base,
+    name: enriched.name,
+    initials: enriched.initials,
+    photoUrl: enriched.photoUrl ?? base.photoUrl,
+    role: enriched.role,
+    bio: enriched.bio,
+    area: enriched.area,
+    experience: enriched.experience,
+    achievement: enriched.achievement,
+    availability: enriched.availability,
+    industries: enriched.industries,
+    workStyle: enriched.workStyle,
+    city: enriched.city,
+    cities:
+      enriched.cities && enriched.cities.length > 0
+        ? enriched.cities
+        : enriched.city
+          ? [enriched.city]
+          : base.cities,
+    relationsLooking: enriched.relationsLooking,
+    eventCodes: enriched.eventCodes,
   }
 }
 

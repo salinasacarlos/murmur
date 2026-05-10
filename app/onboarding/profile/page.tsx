@@ -7,6 +7,11 @@ import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { IndustrySelector } from "@/components/ui/industry-selector"
 import { Field, Input, Textarea } from "@/components/ui/input"
+import {
+  persistOnboardingProfileStep,
+  requireUserId,
+} from "@/lib/onboarding-persist"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import {
   AREA_LABELS,
@@ -20,6 +25,8 @@ import {
 } from "@/lib/types"
 
 export default function ProfileStepPage() {
+  const [name, setName] = React.useState("")
+  const [jobTitle, setJobTitle] = React.useState("")
   const [bio, setBio] = React.useState("")
   const [highlight, setHighlight] = React.useState("")
   const [areas, setAreas] = React.useState<FunctionalArea[]>([])
@@ -48,16 +55,51 @@ export default function ProfileStepPage() {
         description="Información para el matching. Tú eliges cuándo mostrarte. Los detalles de tu proyecto u oportunidad los puedes refinar después en una búsqueda."
         back="/onboarding/relationships"
         next="/onboarding/location"
-        nextDisabled={areas.length === 0}
+        nextDisabled={
+          areas.length === 0 ||
+          experience == null ||
+          availability == null ||
+          !name.trim() ||
+          !jobTitle.trim()
+        }
+        onBeforeNext={async () => {
+          if (experience == null || availability == null) return false
+          const supabase = getSupabaseBrowserClient()
+          const uid = await requireUserId(supabase)
+          if (!uid) return false
+          const r = await persistOnboardingProfileStep(supabase, uid, {
+            name,
+            jobTitle,
+            bio,
+            achievement: highlight,
+            areas,
+            experience,
+            availability,
+            workStyle,
+            industries,
+          })
+          if (!r.ok) {
+            console.error(r.error)
+            return false
+          }
+        }}
       >
         <Field label="Nombre" required>
           <PublicFieldNotice className="mb-1" compact />
-          <Input placeholder="Tu nombre completo" />
+          <Input
+            placeholder="Tu nombre completo"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </Field>
 
         <Field label="Título o rol actual" required>
           <PublicFieldNotice className="mb-1" compact />
-          <Input placeholder="ej. Senior Product Engineer" />
+          <Input
+            placeholder="ej. Senior Product Engineer"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+          />
         </Field>
 
         <Field

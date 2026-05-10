@@ -1,6 +1,8 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -14,6 +16,8 @@ interface OnboardingCardProps {
   next: string
   nextLabel?: string
   nextDisabled?: boolean
+  /** When set, runs before navigation (e.g. persist to Supabase). Return false to stay on the step. */
+  onBeforeNext?: () => void | Promise<boolean | void>
 }
 
 export function OnboardingCard({
@@ -24,7 +28,29 @@ export function OnboardingCard({
   next,
   nextLabel = "Siguiente",
   nextDisabled,
+  onBeforeNext,
 }: OnboardingCardProps) {
+  const router = useRouter()
+  const [pending, setPending] = React.useState(false)
+
+  async function handleNext() {
+    if (nextDisabled || pending) return
+    if (!onBeforeNext) {
+      router.push(next)
+      return
+    }
+    setPending(true)
+    try {
+      const ok = await onBeforeNext()
+      if (ok === false) return
+      router.push(next)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
     <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
       <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
@@ -50,15 +76,25 @@ export function OnboardingCard({
           <span />
         )}
 
-        <Link
-          href={next}
-          aria-disabled={nextDisabled}
-          className={nextDisabled ? "pointer-events-none opacity-50" : ""}
-        >
-          <Button size="lg" disabled={nextDisabled}>
-            {nextLabel}
+        {onBeforeNext ? (
+          <Button
+            size="lg"
+            disabled={Boolean(nextDisabled) || pending}
+            onClick={() => void handleNext()}
+          >
+            {pending ? "Guardando…" : nextLabel}
           </Button>
-        </Link>
+        ) : (
+          <Link
+            href={next}
+            aria-disabled={nextDisabled}
+            className={nextDisabled ? "pointer-events-none opacity-50" : ""}
+          >
+            <Button size="lg" disabled={nextDisabled}>
+              {nextLabel}
+            </Button>
+          </Link>
+        )}
       </div>
     </Card>
   )

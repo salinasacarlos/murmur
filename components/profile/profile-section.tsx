@@ -13,6 +13,8 @@ interface ProfileSectionProps {
   editTitle: string
   editDescription?: string
   editContent?: React.ReactNode
+  onSave?: () => void | Promise<void>
+  saving?: boolean
 }
 
 export function ProfileSection({
@@ -21,8 +23,17 @@ export function ProfileSection({
   editTitle,
   editDescription,
   editContent,
+  onSave,
+  saving,
 }: ProfileSectionProps) {
   const [open, setOpen] = React.useState(false)
+
+  async function handleSave() {
+    if (onSave) {
+      await onSave()
+    }
+    setOpen(false)
+  }
 
   return (
     <Card padding="default" className="ds-fade-up">
@@ -60,9 +71,10 @@ export function ProfileSection({
           <Button
             size="lg"
             className="flex-1 justify-center"
-            onClick={() => setOpen(false)}
+            disabled={saving}
+            onClick={() => void handleSave()}
           >
-            Guardar
+            {saving ? "Guardando..." : onSave ? "Guardar" : "Cerrar"}
           </Button>
         </div>
       </Drawer>

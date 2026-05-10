@@ -5,6 +5,11 @@ import * as React from "react"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { MultiOption } from "@/components/ui/option-card"
+import {
+  persistOnboardingRelationships,
+  requireUserId,
+} from "@/lib/onboarding-persist"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { RELATION_LABELS, type RelationType } from "@/lib/types"
 
 const RELATIONS: { id: RelationType; description: string }[] = [
@@ -38,6 +43,20 @@ export default function RelationshipsStepPage() {
         back="/onboarding/role"
         next="/onboarding/profile"
         nextDisabled={selected.length === 0}
+        onBeforeNext={async () => {
+          const supabase = getSupabaseBrowserClient()
+          const uid = await requireUserId(supabase)
+          if (!uid) return false
+          const r = await persistOnboardingRelationships(
+            supabase,
+            uid,
+            selected
+          )
+          if (!r.ok) {
+            console.error(r.error)
+            return false
+          }
+        }}
       >
         {RELATIONS.map((rel) => (
           <MultiOption

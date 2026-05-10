@@ -145,6 +145,9 @@ export const CITIES_CATALOG = [
   "Recife",
 ] as const
 
+/** Slug for `cities_catalog.slug` / `profile_cities.city_slug` (same normalization as industries). */
+export const cityLabelToSlug = industryLabelToSlug
+
 /** Stable slug for `industries_catalog.slug` / `search_industries.industry_slug`. */
 export function industryLabelToSlug(label: string): string {
   return label

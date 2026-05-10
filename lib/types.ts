@@ -130,6 +130,8 @@ export interface CurrentUser {
   cities?: string[]
   searchRadiusKm?: number
   relationsLooking: RelationType[]
+  /** Eventos vinculados (solo lectura en perfil) */
+  eventCodes?: string[]
   plan: "free" | "premium"
   stats: {
     matches: number

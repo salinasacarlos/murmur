@@ -11,8 +11,7 @@ import { Field, Input, Textarea } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
-import { ProfileSection } from "@/components/profile/profile-section"
-import { CITIES_CATALOG } from "@/lib/catalogs"
+import { CITIES_CATALOG, INDUSTRIES_CATALOG } from "@/lib/catalogs"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -23,91 +22,179 @@ import {
   type CurrentUser,
   type ExperienceRange,
   type FunctionalArea,
+  type Profile,
+  type RelationType,
   type WorkStyle,
 } from "@/lib/types"
+import type { ProfileCompletenessItem } from "@/lib/profile-completeness"
+import {
+  computeProfileCompleteness,
+  profileFromCurrentUserForCompleteness,
+} from "@/lib/profile-completeness"
 import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
-import { deriveCurrentUser, initialsFromName } from "@/lib/current-user-mapping"
+import {
+  deriveCurrentUser,
+  initialsFromName,
+  mergeEnrichedIntoCurrentUser,
+} from "@/lib/current-user-mapping"
+import { fetchProfileById } from "@/lib/data/profiles"
+import {
+  replaceProfileCities,
+  replaceProfileIndustries,
+  replaceProfileRelationsLooking,
+  replaceProfileWorkStyles,
+} from "@/lib/data/profile-mutations"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { IconEdit, IconMapPin } from "@/components/icons"
+import { IconEdit } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 export default function ProfilePage() {
   const { user: authUser, profile, refresh } = useCurrentUser()
+  const { visible, setVisible } = useVisibility()
 
-  const initialUser = React.useMemo<CurrentUser>(
-    () =>
-      authUser
-        ? deriveCurrentUser(authUser, profile)
-        : ({} as CurrentUser),
-    [authUser, profile]
+  const [enrichedProfile, setEnrichedProfile] = React.useState<Profile | null>(
+    null
   )
 
-  const [user, setUser] = React.useState<CurrentUser>(initialUser)
-  const lastSyncedAtRef = React.useRef<string | null>(null)
+  const reloadEnriched = React.useCallback(async () => {
+    if (!authUser?.id) return
+    const supabase = getSupabaseBrowserClient()
+    const next = await fetchProfileById(supabase, authUser.id)
+    setEnrichedProfile(next)
+  }, [authUser?.id])
 
   React.useEffect(() => {
-    if (!authUser) return
-    const stamp = profile?.updated_at ?? authUser.id
-    if (lastSyncedAtRef.current === stamp) return
-    lastSyncedAtRef.current = stamp
-    setUser(deriveCurrentUser(authUser, profile))
-  }, [authUser, profile])
+    void reloadEnriched()
+  }, [reloadEnriched, profile?.updated_at])
+
+  const profileUser = React.useMemo<CurrentUser | null>(() => {
+    if (!authUser) return null
+    const base = deriveCurrentUser(authUser, profile)
+    return enrichedProfile
+      ? mergeEnrichedIntoCurrentUser(base, enrichedProfile)
+      : base
+  }, [authUser, profile, enrichedProfile])
 
   const [profileEditOpen, setProfileEditOpen] = React.useState(false)
   const [locationEditOpen, setLocationEditOpen] = React.useState(false)
   const [workPrefsEditOpen, setWorkPrefsEditOpen] = React.useState(false)
+  const [achievementEditOpen, setAchievementEditOpen] = React.useState(false)
+  const [industriesEditOpen, setIndustriesEditOpen] = React.useState(false)
+  const [relationsEditOpen, setRelationsEditOpen] = React.useState(false)
+
   const [savingProfile, setSavingProfile] = React.useState(false)
   const [savingLocation, setSavingLocation] = React.useState(false)
   const [savingWorkPrefs, setSavingWorkPrefs] = React.useState(false)
-  const [profileDraft, setProfileDraft] = React.useState({
-    name: initialUser.name ?? "",
-    photoUrl: initialUser.photoUrl,
-    role: initialUser.role ?? "",
-    bio: initialUser.bio ?? "",
-    area: initialUser.area,
-    experience: initialUser.experience,
-    availability: initialUser.availability,
-  })
+  const [savingAchievement, setSavingAchievement] = React.useState(false)
+  const [savingIndustries, setSavingIndustries] = React.useState(false)
+  const [savingRelations, setSavingRelations] = React.useState(false)
+  const [savingVisibility, setSavingVisibility] = React.useState(false)
+
+  const emptyDraft = React.useMemo(
+    () => ({
+      name: "",
+      photoUrl: undefined as string | undefined,
+      role: "",
+      bio: "",
+      area: "negocio" as FunctionalArea,
+      experience: "3-5" as ExperienceRange,
+    }),
+    []
+  )
+
+  const [profileDraft, setProfileDraft] = React.useState(emptyDraft)
+
   const [locationDraft, setLocationDraft] = React.useState({
-    city: initialUser.city ?? "",
-    cities: initialUser.cities ?? [],
-    searchRadiusKm: initialUser.searchRadiusKm ?? 50,
+    city: "",
+    cities: [] as string[],
+    searchRadiusKm: 50,
   })
+
   const [workPrefsDraft, setWorkPrefsDraft] = React.useState<{
     availability: Availability
     workStyle: WorkStyle[]
   }>({
-    availability: initialUser.availability,
-    workStyle: initialUser.workStyle ?? [],
+    availability: "full-time",
+    workStyle: [],
   })
-  const { visible, toggle } = useVisibility()
 
-  if (!authUser) {
-    return (
-      <div className="px-4 md:px-6 py-10 text-[13px] text-[var(--text2)]">
-        Cargando tu perfil...
-      </div>
+  const [achievementDraft, setAchievementDraft] = React.useState("")
+  const [industriesDraft, setIndustriesDraft] = React.useState<string[]>([])
+  const [relationsDraft, setRelationsDraft] = React.useState<RelationType[]>(
+    []
+  )
+
+  const completeness = React.useMemo(() => {
+    if (!profileUser) {
+      return computeProfileCompleteness(null, {
+        email: "",
+        searchRadiusKm: 0,
+      })
+    }
+    return computeProfileCompleteness(
+      profileFromCurrentUserForCompleteness(profileUser),
+      {
+        email: profileUser.email,
+        searchRadiusKm: profileUser.searchRadiusKm,
+      }
     )
+  }, [profileUser])
+
+  async function afterSuccessfulSave() {
+    await refresh()
+    await reloadEnriched()
   }
 
   function openProfileEdit() {
+    if (!profileUser) return
     setProfileDraft({
-      name: user.name,
-      photoUrl: user.photoUrl,
-      role: user.role,
-      bio: user.bio,
-      area: user.area,
-      experience: user.experience,
-      availability: user.availability,
+      name: profileUser.name,
+      photoUrl: profileUser.photoUrl,
+      role: profileUser.role,
+      bio: profileUser.bio,
+      area: profileUser.area,
+      experience: profileUser.experience,
     })
     setProfileEditOpen(true)
   }
 
+  function openCompletenessItem(item: ProfileCompletenessItem) {
+    switch (item.id) {
+      case "name":
+      case "role":
+      case "bio":
+      case "photo":
+        openProfileEdit()
+        break
+      case "email":
+        break
+      case "achievement":
+        setAchievementEditOpen(true)
+        break
+      case "work_styles":
+        setWorkPrefsEditOpen(true)
+        break
+      case "industries":
+        setIndustriesEditOpen(true)
+        break
+      case "relations":
+        setRelationsEditOpen(true)
+        break
+      case "city":
+      case "radius":
+        setLocationEditOpen(true)
+        break
+      default:
+        break
+    }
+  }
+
   async function saveProfileEdit() {
-    if (!authUser || savingProfile) return
+    if (!authUser || savingProfile || !profileUser) return
     setSavingProfile(true)
-    const nextInitials = initialsFromName(profileDraft.name) || user.initials
+    const nextInitials =
+      initialsFromName(profileDraft.name) || profileUser.initials
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
       .from("profiles")
@@ -118,7 +205,6 @@ export default function ProfilePage() {
         bio: profileDraft.bio,
         area: profileDraft.area,
         experience: profileDraft.experience,
-        availability: profileDraft.availability,
         photo_url: profileDraft.photoUrl ?? null,
       })
       .eq("id", authUser.id)
@@ -127,20 +213,16 @@ export default function ProfilePage() {
       console.error("Failed to save profile", error)
       return
     }
-    setUser((prev) => ({
-      ...prev,
-      ...profileDraft,
-      initials: nextInitials,
-    }))
     setProfileEditOpen(false)
-    void refresh()
+    void afterSuccessfulSave()
   }
 
   function openLocationEdit() {
+    if (!profileUser) return
     setLocationDraft({
-      city: user.city,
-      cities: user.cities ?? [user.city],
-      searchRadiusKm: user.searchRadiusKm ?? 50,
+      city: profileUser.city,
+      cities: profileUser.cities ?? [profileUser.city],
+      searchRadiusKm: profileUser.searchRadiusKm ?? 50,
     })
     setLocationEditOpen(true)
   }
@@ -156,27 +238,31 @@ export default function ProfilePage() {
         search_radius_km: locationDraft.searchRadiusKm,
       })
       .eq("id", authUser.id)
-    setSavingLocation(false)
     if (error) {
+      setSavingLocation(false)
       console.error("Failed to save location", error)
       return
     }
-    setUser((prev) => ({
-      ...prev,
-      city: locationDraft.city,
-      cities: locationDraft.cities.includes(locationDraft.city)
-        ? locationDraft.cities
-        : [locationDraft.city, ...locationDraft.cities],
-      searchRadiusKm: locationDraft.searchRadiusKm,
-    }))
+    const citiesRes = await replaceProfileCities(
+      supabase,
+      authUser.id,
+      locationDraft.city.trim(),
+      locationDraft.cities
+    )
+    setSavingLocation(false)
+    if (!citiesRes.ok) {
+      console.error("Failed to save profile cities", citiesRes.error)
+      return
+    }
     setLocationEditOpen(false)
-    void refresh()
+    void afterSuccessfulSave()
   }
 
   function openWorkPrefsEdit() {
+    if (!profileUser) return
     setWorkPrefsDraft({
-      availability: user.availability,
-      workStyle: user.workStyle,
+      availability: profileUser.availability,
+      workStyle: profileUser.workStyle,
     })
     setWorkPrefsEditOpen(true)
   }
@@ -200,19 +286,145 @@ export default function ProfilePage() {
         availability: workPrefsDraft.availability,
       })
       .eq("id", authUser.id)
-    setSavingWorkPrefs(false)
     if (error) {
+      setSavingWorkPrefs(false)
       console.error("Failed to save work preferences", error)
       return
     }
-    setUser((prev) => ({
-      ...prev,
-      availability: workPrefsDraft.availability,
-      workStyle: workPrefsDraft.workStyle,
-    }))
+    const j = await replaceProfileWorkStyles(
+      supabase,
+      authUser.id,
+      workPrefsDraft.workStyle
+    )
+    setSavingWorkPrefs(false)
+    if (!j.ok) {
+      console.error("Failed to save work styles", j.error)
+      return
+    }
     setWorkPrefsEditOpen(false)
-    void refresh()
+    void afterSuccessfulSave()
   }
+
+  function openAchievementEdit() {
+    if (!profileUser) return
+    setAchievementDraft(profileUser.achievement)
+    setAchievementEditOpen(true)
+  }
+
+  async function saveAchievementEdit() {
+    if (!authUser || savingAchievement) return
+    setSavingAchievement(true)
+    const supabase = getSupabaseBrowserClient()
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        achievement: achievementDraft.trim(),
+      })
+      .eq("id", authUser.id)
+    setSavingAchievement(false)
+    if (error) {
+      console.error("Failed to save achievement", error)
+      return
+    }
+    setAchievementEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
+  function openIndustriesEdit() {
+    if (!profileUser) return
+    setIndustriesDraft([...profileUser.industries])
+    setIndustriesEditOpen(true)
+  }
+
+  function toggleIndustryLabel(label: string) {
+    setIndustriesDraft((prev) =>
+      prev.includes(label)
+        ? prev.filter((x) => x !== label)
+        : [...prev, label]
+    )
+  }
+
+  async function saveIndustriesEdit() {
+    if (!authUser || savingIndustries) return
+    setSavingIndustries(true)
+    const supabase = getSupabaseBrowserClient()
+    const j = await replaceProfileIndustries(
+      supabase,
+      authUser.id,
+      industriesDraft
+    )
+    setSavingIndustries(false)
+    if (!j.ok) {
+      console.error("Failed to save industries", j.error)
+      return
+    }
+    setIndustriesEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
+  function openRelationsEdit() {
+    if (!profileUser) return
+    setRelationsDraft([...profileUser.relationsLooking])
+    setRelationsEditOpen(true)
+  }
+
+  function toggleRelation(value: RelationType) {
+    setRelationsDraft((prev) =>
+      prev.includes(value)
+        ? prev.filter((x) => x !== value)
+        : [...prev, value]
+    )
+  }
+
+  async function saveRelationsEdit() {
+    if (!authUser || savingRelations) return
+    setSavingRelations(true)
+    const supabase = getSupabaseBrowserClient()
+    const j = await replaceProfileRelationsLooking(
+      supabase,
+      authUser.id,
+      relationsDraft
+    )
+    setSavingRelations(false)
+    if (!j.ok) {
+      console.error("Failed to save relations", j.error)
+      return
+    }
+    setRelationsEditOpen(false)
+    void afterSuccessfulSave()
+  }
+
+  async function persistVisibility(next: boolean) {
+    if (!authUser || savingVisibility) return
+    setSavingVisibility(true)
+    const supabase = getSupabaseBrowserClient()
+    const { error } = await supabase
+      .from("profiles")
+      .update({ visible: next })
+      .eq("id", authUser.id)
+    setSavingVisibility(false)
+    if (error) {
+      console.error("Failed to save visibility", error)
+      return
+    }
+    setVisible(next)
+    void afterSuccessfulSave()
+  }
+
+  if (!authUser || !profileUser) {
+    return (
+      <div className="px-4 md:px-6 py-10 text-[13px] text-[var(--text2)]">
+        Cargando tu perfil...
+      </div>
+    )
+  }
+
+  const user = profileUser
+  const cityTags = user.cities?.length
+    ? user.cities
+    : user.city
+      ? [user.city]
+      : []
 
   return (
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full flex flex-col gap-4">
@@ -221,6 +433,47 @@ export default function ProfilePage() {
           Mi perfil
         </h2>
       </div>
+
+      <Card padding="default" className="ds-fade-up flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-[var(--text3)]">
+              ONBOARDING
+            </p>
+            <p className="text-[20px] font-extrabold tracking-[-0.4px] mt-1">
+              Perfil al {completeness.percent}%
+            </p>
+          </div>
+        </div>
+        {completeness.missing.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-[12px] text-[var(--text2)]">Falta completar:</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {completeness.missing.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    disabled={item.id === "email"}
+                    onClick={() => openCompletenessItem(item)}
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors",
+                      item.id === "email"
+                        ? "border-[var(--border)] text-[var(--text3)] cursor-not-allowed"
+                        : "border-[var(--amber)] text-[var(--text)] hover:bg-[var(--amber)]/10"
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-[12px] text-[var(--g)] font-medium">
+            Tu perfil está completo en los campos clave.
+          </p>
+        )}
+      </Card>
 
       <Card padding="default" className="ds-fade-up flex flex-col md:flex-row md:items-start gap-4">
         <Avatar
@@ -236,7 +489,9 @@ export default function ProfilePage() {
                 {user.name}
               </h2>
               <p className="text-[13px] text-[var(--text2)] mt-0.5">
-                {user.role}
+                {user.role || (
+                  <span className="text-[var(--text3)]">Sin definir</span>
+                )}
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={openProfileEdit}>
@@ -245,7 +500,9 @@ export default function ProfilePage() {
             </Button>
           </div>
           <p className="text-[13px] text-[var(--text)] leading-relaxed mt-3">
-            {user.bio}
+            {user.bio || (
+              <span className="text-[var(--text3)]">Sin bio todavía.</span>
+            )}
           </p>
           <div className="flex flex-wrap gap-1.5 mt-3">
             <Tag variant="amber">{AREA_LABELS[user.area]}</Tag>
@@ -262,7 +519,7 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Editar información principal"
-          description="Estos datos son los que aparecen en la card superior de tu perfil."
+          description="Estos datos son los que aparecen en la card superior de tu perfil. La disponibilidad se edita en «Disponibilidad y forma de trabajar»."
         />
 
         <div className="flex flex-col gap-3 mb-4">
@@ -329,31 +586,18 @@ export default function ProfilePage() {
 
           <Field label="Años de experiencia">
             <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(EXPERIENCE_LABELS) as ExperienceRange[]).map((id) => (
-                <ProfileEditChip
-                  key={id}
-                  label={EXPERIENCE_LABELS[id]}
-                  selected={profileDraft.experience === id}
-                  onClick={() =>
-                    setProfileDraft((prev) => ({ ...prev, experience: id }))
-                  }
-                />
-              ))}
-            </div>
-          </Field>
-
-          <Field label="Disponibilidad">
-            <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(AVAILABILITY_LABELS) as Availability[]).map((id) => (
-                <ProfileEditChip
-                  key={id}
-                  label={AVAILABILITY_LABELS[id]}
-                  selected={profileDraft.availability === id}
-                  onClick={() =>
-                    setProfileDraft((prev) => ({ ...prev, availability: id }))
-                  }
-                />
-              ))}
+              {(Object.keys(EXPERIENCE_LABELS) as ExperienceRange[]).map(
+                (id) => (
+                  <ProfileEditChip
+                    key={id}
+                    label={EXPERIENCE_LABELS[id]}
+                    selected={profileDraft.experience === id}
+                    onClick={() =>
+                      setProfileDraft((prev) => ({ ...prev, experience: id }))
+                    }
+                  />
+                )
+              )}
             </div>
           </Field>
         </div>
@@ -384,7 +628,7 @@ export default function ProfilePage() {
         <Stat label="Mensajes" value={user.stats.messages} />
       </Card>
 
-      <Card padding="default" className="ds-fade-up flex items-center justify-between">
+      <Card padding="default" className="ds-fade-up flex items-center justify-between gap-3">
         <div>
           <h3 className="text-[14px] font-bold tracking-[-0.2px]">Visibilidad</h3>
           <p className="text-[12px] text-[var(--text2)] mt-0.5">
@@ -392,9 +636,79 @@ export default function ProfilePage() {
               ? "Apareces en búsquedas de otros builders."
               : "Estás oculto. Nadie te ve en búsquedas."}
           </p>
+          <p className="text-[11px] text-[var(--text3)] mt-1">
+            Sincronizado con tu cuenta (no solo este dispositivo).
+          </p>
         </div>
-        <Toggle checked={visible} onCheckedChange={() => toggle()} label="Visibilidad" />
+        <Toggle
+          checked={visible}
+          onCheckedChange={(next) => void persistVisibility(next)}
+          label="Visibilidad"
+          disabled={savingVisibility}
+        />
       </Card>
+
+      <Card padding="default" className="ds-fade-up flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="ds-label-uppercase">Profesional</h3>
+          <button
+            type="button"
+            onClick={openAchievementEdit}
+            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
+            aria-label="Editar logro destacado"
+          >
+            <IconEdit size={14} />
+          </button>
+        </div>
+        <ProfileValueRow label="Área" value={AREA_LABELS[user.area]} />
+        <ProfileValueRow
+          label="Experiencia"
+          value={EXPERIENCE_LABELS[user.experience]}
+        />
+        <ProfileValueRow
+          label="Logro destacado"
+          value={user.achievement}
+          onEdit={openAchievementEdit}
+        />
+      </Card>
+
+      <Drawer
+        open={achievementEditOpen}
+        onOpenChange={setAchievementEditOpen}
+        ariaLabel="Editar logro destacado"
+      >
+        <DrawerHeader
+          title="Logro destacado"
+          description="Una línea sobre tu logro más relevante."
+        />
+        <div className="flex flex-col gap-3 mb-4">
+          <Field label="Logro">
+            <Input
+              value={achievementDraft}
+              onChange={(e) => setAchievementDraft(e.target.value)}
+              placeholder="Ej. Llevé el producto de 0 a 100k usuarios..."
+            />
+          </Field>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setAchievementEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={saveAchievementEdit}
+            disabled={savingAchievement}
+          >
+            {savingAchievement ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
 
       <Card padding="default" className="ds-fade-up">
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -408,20 +722,36 @@ export default function ProfilePage() {
             <IconEdit size={14} />
           </button>
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-[13px] text-[var(--text)]">
-            <IconMapPin size={14} className="text-[var(--text3)]" />
-            <span>{user.city}</span>
-            <span className="text-[var(--text3)]">
-              · radio de {user.searchRadiusKm ?? 50} km
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {(user.cities ?? [user.city]).map((city) => (
-              <Tag key={city} variant="neutral">
-                {city}
-              </Tag>
-            ))}
+        <div className="flex flex-col gap-3">
+          <ProfileValueRow
+            label="Ciudad principal"
+            value={user.city}
+            onEdit={openLocationEdit}
+          />
+          <ProfileValueRow
+            label="Radio de búsqueda"
+            value={
+              user.searchRadiusKm != null
+                ? `${user.searchRadiusKm} km`
+                : undefined
+            }
+            onEdit={openLocationEdit}
+          />
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-[var(--text3)] mb-1.5">
+              Ciudades activas
+            </p>
+            {cityTags.length ? (
+              <div className="flex flex-wrap gap-1.5">
+                {cityTags.map((city) => (
+                  <Tag key={city} variant="neutral">
+                    {city}
+                  </Tag>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
+            )}
           </div>
         </div>
       </Card>
@@ -513,21 +843,6 @@ export default function ProfilePage() {
         </div>
       </Drawer>
 
-      <ProfileSection
-        title="Logro destacado"
-        editTitle="Logro destacado"
-        editDescription="Una línea sobre tu logro más relevante."
-        editContent={
-          <Field label="Logro">
-            <Input defaultValue={user.achievement} />
-          </Field>
-        }
-      >
-        <p className="text-[13px] text-[var(--text)] leading-relaxed">
-          {user.achievement}
-        </p>
-      </ProfileSection>
-
       <Card padding="default" className="ds-fade-up">
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="ds-label-uppercase">Disponibilidad y forma de trabajar</h3>
@@ -541,13 +856,25 @@ export default function ProfilePage() {
           </button>
         </div>
         <div className="flex flex-col gap-2">
-          <Tag variant="success">{AVAILABILITY_LABELS[user.availability]}</Tag>
-          <div className="flex flex-wrap gap-1.5">
-            {user.workStyle.map((w) => (
-              <Tag key={w} variant="neutral">
-                {WORK_STYLE_LABELS[w]}
-              </Tag>
-            ))}
+          <ProfileValueRow
+            label="Disponibilidad"
+            value={AVAILABILITY_LABELS[user.availability]}
+          />
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-[var(--text3)] mb-1.5">
+              Forma de trabajar
+            </p>
+            {user.workStyle.length ? (
+              <div className="flex flex-wrap gap-1.5">
+                {user.workStyle.map((w) => (
+                  <Tag key={w} variant="neutral">
+                    {WORK_STYLE_LABELS[w]}
+                  </Tag>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
+            )}
           </div>
         </div>
       </Card>
@@ -615,41 +942,154 @@ export default function ProfilePage() {
         </div>
       </Drawer>
 
-      <ProfileSection
-        title="Industrias de afinidad"
-        editTitle="Industrias de afinidad"
-        editContent={
-          <Field label="Industrias">
-            <Input defaultValue={user.industries.join(", ")} />
-          </Field>
-        }
-      >
-        <div className="flex flex-wrap gap-1.5">
-          {user.industries.map((i) => (
-            <Tag key={i} variant="green">
-              {i}
-            </Tag>
-          ))}
+      <Card padding="default" className="ds-fade-up">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h3 className="ds-label-uppercase">Industrias de afinidad</h3>
+          <button
+            type="button"
+            onClick={openIndustriesEdit}
+            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
+            aria-label="Editar industrias"
+          >
+            <IconEdit size={14} />
+          </button>
         </div>
-      </ProfileSection>
+        {user.industries.length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {user.industries.map((i) => (
+              <Tag key={i} variant="green">
+                {i}
+              </Tag>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
+        )}
+      </Card>
 
-      <ProfileSection
-        title="Tipos de relación que busco"
-        editTitle="Tipos de relación que busco"
-        editContent={
-          <p className="text-[12px] text-[var(--text2)]">
-            Edita aquí los tipos de relación que estás buscando.
-          </p>
-        }
+      <Drawer
+        open={industriesEditOpen}
+        onOpenChange={setIndustriesEditOpen}
+        ariaLabel="Editar industrias"
       >
-        <div className="flex flex-wrap gap-1.5">
-          {user.relationsLooking.map((r) => (
-            <Tag key={r} variant="brand">
-              {RELATION_LABELS[r]}
-            </Tag>
+        <DrawerHeader
+          title="Industrias de afinidad"
+          description="Selecciona las industrias con las que más te identificas."
+        />
+        <div className="max-h-[50vh] overflow-y-auto flex flex-wrap gap-1.5 mb-4 pr-1">
+          {INDUSTRIES_CATALOG.map((label) => (
+            <ProfileEditChip
+              key={label}
+              label={label}
+              selected={industriesDraft.includes(label)}
+              onClick={() => toggleIndustryLabel(label)}
+            />
           ))}
         </div>
-      </ProfileSection>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setIndustriesEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={saveIndustriesEdit}
+            disabled={savingIndustries}
+          >
+            {savingIndustries ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
+      <Card padding="default" className="ds-fade-up">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h3 className="ds-label-uppercase">Tipos de relación que busco</h3>
+          <button
+            type="button"
+            onClick={openRelationsEdit}
+            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
+            aria-label="Editar tipos de relación"
+          >
+            <IconEdit size={14} />
+          </button>
+        </div>
+        {user.relationsLooking.length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {user.relationsLooking.map((r) => (
+              <Tag key={r} variant="brand">
+                {RELATION_LABELS[r]}
+              </Tag>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
+        )}
+      </Card>
+
+      <Drawer
+        open={relationsEditOpen}
+        onOpenChange={setRelationsEditOpen}
+        ariaLabel="Editar tipos de relación"
+      >
+        <DrawerHeader
+          title="Tipos de relación que busco"
+          description="Elige los tipos de match que te interesan."
+        />
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {(Object.keys(RELATION_LABELS) as RelationType[]).map((id) => (
+            <ProfileEditChip
+              key={id}
+              label={RELATION_LABELS[id]}
+              selected={relationsDraft.includes(id)}
+              onClick={() => toggleRelation(id)}
+            />
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setRelationsEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={saveRelationsEdit}
+            disabled={savingRelations}
+          >
+            {savingRelations ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
+      {user.eventCodes && user.eventCodes.length > 0 ? (
+        <Card padding="default" className="ds-fade-up">
+          <h3 className="ds-label-uppercase mb-3">Eventos vinculados</h3>
+          <div className="flex flex-wrap gap-1.5">
+            {user.eventCodes.map((code) => (
+              <Tag key={code} variant="neutral">
+                {code}
+              </Tag>
+            ))}
+          </div>
+        </Card>
+      ) : null}
+
+      <Card padding="default" className="ds-fade-up flex flex-col gap-1">
+        <p className="text-[11px] uppercase tracking-wide text-[var(--text3)]">
+          Cuenta
+        </p>
+        <p className="text-[13px] text-[var(--text)]">{user.email}</p>
+        <p className="text-[12px] text-[var(--text3)]">Plan {user.plan}</p>
+      </Card>
     </div>
   )
 }
@@ -663,6 +1103,47 @@ function Stat({ label, value }: { label: string; value: number }) {
       <div className="text-[10px] uppercase tracking-[0.07em] font-semibold text-[var(--text3)] mt-1">
         {label}
       </div>
+    </div>
+  )
+}
+
+function ProfileValueRow({
+  label,
+  value,
+  emptyLabel = "Sin definir",
+  onEdit,
+}: {
+  label: string
+  value: string | null | undefined
+  emptyLabel?: string
+  onEdit?: () => void
+}) {
+  const trimmed = value?.trim() ?? ""
+  const isEmpty = trimmed.length === 0
+  return (
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[11px] uppercase tracking-wide text-[var(--text3)]">
+          {label}
+        </span>
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-[11px] font-medium text-[var(--p)] hover:underline"
+          >
+            Editar
+          </button>
+        ) : null}
+      </div>
+      <p
+        className={cn(
+          "text-[13px] leading-relaxed",
+          isEmpty ? "text-[var(--text3)]" : "text-[var(--text)]"
+        )}
+      >
+        {isEmpty ? emptyLabel : trimmed}
+      </p>
     </div>
   )
 }
@@ -691,4 +1172,3 @@ function ProfileEditChip({
     </button>
   )
 }
-
