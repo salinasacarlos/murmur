@@ -57,6 +57,9 @@ export function readFeedFilters(userId: string): DiscoverFeedFilters {
       expertiseSlugs: Array.isArray(p.expertiseSlugs)
         ? (p.expertiseSlugs as string[])
         : base.expertiseSlugs,
+      affinityLabels: Array.isArray(p.affinityLabels)
+        ? (p.affinityLabels as string[])
+        : base.affinityLabels,
       talentSlugs: Array.isArray(p.talentSlugs)
         ? (p.talentSlugs as string[])
         : base.talentSlugs,

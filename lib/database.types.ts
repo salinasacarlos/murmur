@@ -862,6 +862,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_event_with_code: {
+        Args: {
+          p_code: string
+          p_name: string
+          p_description?: string | null
+        }
+        Returns: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          name: string
+          primary_industry_slug: string | null
+          starts_at: string | null
+          updated_at: string
+          venue_city: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       leave_event: { Args: { p_code: string }; Returns: undefined }
       mark_chat_read: { Args: { p_chat_id: string }; Returns: undefined }
       ensure_digest_notifications: {

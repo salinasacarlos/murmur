@@ -13,16 +13,32 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { RELATION_LABELS, type RelationType } from "@/lib/types"
 
 const RELATIONS: { id: RelationType; description: string }[] = [
-  { id: "co-founder", description: "Socio para construir desde cero" },
+  {
+    id: "co-founder",
+    description:
+      "Te interesa repartir visión y riesgo con alguien que componga contigo desde el inicio.",
+  },
   {
     id: "empleo",
-    description:
-      "Buscas contratar: incorporar a alguien a tu equipo (empleo, contrato o roles early-stage).",
+    description: "Buscas incorporar a alguien a tu equipo.",
   },
-  { id: "colaboracion", description: "Colaboración puntual o por proyecto" },
-  { id: "mentoria", description: "Mentor o advisor con experiencia" },
-  { id: "inversion", description: "Inversión ángel o de capital" },
-  { id: "abierto", description: "Sin tipo definido, abierto a explorar" },
+  {
+    id: "colaboracion",
+    description:
+      "Te va bien un encargo definido, un sprint compartido o apoyo sin vínculo fijo de largo plazo.",
+  },
+  {
+    id: "mentoria",
+    description: "Quieres retro de alguien que ya haya recorrido el camino.",
+  },
+  {
+    id: "inversion",
+    description: "Buscas capital o puedes aportarlo; el foco está en el acuerdo y el upside.",
+  },
+  {
+    id: "abierto",
+    description: "Prefieres no cerrarte de antemano y ver qué encaja conversando.",
+  },
 ]
 
 export default function RelationshipsStepPage() {

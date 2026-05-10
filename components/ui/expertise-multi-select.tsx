@@ -24,7 +24,7 @@ export function ExpertiseMultiSelect({
   value,
   onChange,
   className,
-  footerNote = `Máximo ${MAX} áreas de expertise dentro de tu industria.`,
+  footerNote = `Máximo ${MAX} verticales dentro de tu industria.`,
 }: ExpertiseMultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
@@ -82,7 +82,7 @@ export function ExpertiseMultiSelect({
   if (options.length === 0) {
     return (
       <p className="text-[13px] text-[var(--text3)] py-2">
-        No hay expertise definidas para esta industria.
+        No hay verticales definidas para esta industria.
       </p>
     )
   }
@@ -124,7 +124,7 @@ export function ExpertiseMultiSelect({
         >
           <span>
             {value.length === 0
-              ? `Elige hasta ${MAX} expertise en esta industria…`
+              ? `Elige hasta ${MAX} verticales en esta industria…`
               : `${value.length} de ${MAX} seleccionadas`}
           </span>
           <span className="text-[var(--text3)]" aria-hidden>

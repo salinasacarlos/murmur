@@ -53,6 +53,37 @@ export async function countProfilesInEvent(
   return count ?? 0
 }
 
+/** Crea un evento con código nuevo y deja al usuario unido (Murmur en vivo). */
+export async function createEventWithCode(
+  supabase: Client,
+  input: {
+    code: string
+    name: string
+    description?: string | null
+  }
+): Promise<{ ok: true; event: EventEntry } | { ok: false; message: string }> {
+  const normalized = normalizeEventCode(input.code)
+  const { data, error } = await supabase.rpc("create_event_with_code", {
+    p_code: normalized,
+    p_name: input.name.trim(),
+    p_description: input.description?.trim() || null,
+  })
+
+  if (error) {
+    return { ok: false, message: error.message }
+  }
+
+  const row = Array.isArray(data) ? data[0] : data
+  if (!row || typeof row !== "object" || !("code" in row)) {
+    return { ok: false, message: "No pudimos crear el evento." }
+  }
+
+  return {
+    ok: true,
+    event: mapEventRowToEntry(row as Parameters<typeof mapEventRowToEntry>[0]),
+  }
+}
+
 export async function joinEventByCode(
   supabase: Client,
   code: string

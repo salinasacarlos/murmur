@@ -99,3 +99,17 @@ export async function markAllNotificationsRead(
 
   return !error
 }
+
+export async function deleteNotification(
+  supabase: Client,
+  notificationId: string,
+  userId: string
+): Promise<boolean> {
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .eq("user_id", userId)
+
+  return !error
+}

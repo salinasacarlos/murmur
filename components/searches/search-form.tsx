@@ -14,6 +14,10 @@ import { Field, Input, Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { createSearch, updateSearch } from "@/lib/data/searches"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import {
+  PROFILE_FIELD_COPY,
+  PROFILE_FIELD_HINTS,
+} from "@/lib/profile-field-copy"
 import { deriveEditableTaxonomy } from "@/lib/profile-taxonomy"
 import { cn } from "@/lib/utils"
 import { RELATION_LABELS, type FunctionalArea, type RelationType, type Search } from "@/lib/types"
@@ -193,8 +197,8 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
         </Field>
 
         <Field
-          label="Industria buscada"
-          hint="Opcional: un solo sector. Si lo quitas y no eliges expertise, no filtramos por industria."
+          label={PROFILE_FIELD_COPY.industryPrincipal}
+          hint={PROFILE_FIELD_HINTS.industryOptionalShort}
         >
           <IndustrySingleSelect
             value={primaryIndustrySlug}
@@ -210,33 +214,37 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
               onClick={() => {
                 setPrimaryIndustrySlug(null)
                 setExpertiseSlugs([])
+                setIndustries([])
               }}
             >
-              Quitar industria y expertise
+              Quitar industria, verticales y afinidad
             </button>
           ) : null}
         </Field>
 
         <Field
-          label="Expertise deseada"
-          hint="Hasta 5, dentro de la industria. Opcional si no quieres filtrar por expertise."
+          label={PROFILE_FIELD_COPY.verticales}
+          hint={PROFILE_FIELD_HINTS.verticalesOptional}
         >
           <ExpertiseMultiSelect
             industrySlug={primaryIndustrySlug}
             value={expertiseSlugs}
             onChange={setExpertiseSlugs}
-            footerNote="Opcional. Coincide con el catálogo de tu perfil."
+            footerNote="Opcional. Mismo catálogo que tus Verticales en el perfil."
           />
         </Field>
 
         <Field
-          label="Talentos"
-          hint="Hasta 5; opcional (transversal)."
+          label={PROFILE_FIELD_COPY.talentos}
+          hint={PROFILE_FIELD_HINTS.talentosOptional}
         >
           <TalentMultiSelect value={talentSlugs} onChange={setTalentSlugs} />
         </Field>
 
-        <Field label="Industrias">
+        <Field
+          label={PROFILE_FIELD_COPY.verticalesAfinidad}
+          hint={PROFILE_FIELD_HINTS.verticalesAfinidadOptional}
+        >
           <HierarchicalIndustrySelector
             value={industries}
             onChange={setIndustries}

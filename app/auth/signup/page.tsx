@@ -32,11 +32,17 @@ export default function SignupPage() {
         return
       }
 
+      const trimmedEmail = email.trim()
       const supabase = getSupabaseBrowserClient()
+      const emailRedirectTo =
+        process.env.NEXT_PUBLIC_AUTH_CONFIRM_REDIRECT?.trim() ||
+        `${window.location.origin}/auth/login`
+
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: trimmedEmail,
         password,
         options: {
+          emailRedirectTo,
           data: {
             name: name.trim(),
           },
@@ -49,8 +55,30 @@ export default function SignupPage() {
       }
 
       if (!data.session) {
+        // Supabase no reenvía el correo de confirmación si el email ya existe
+        // (logs: user_repeated_signup). identities vacío = cuenta ya registrada.
+        const identities = data.user?.identities
+        const isRepeatedSignup =
+          Boolean(data.user) &&
+          Array.isArray(identities) &&
+          identities.length === 0
+
+        if (isRepeatedSignup) {
+          const { error: resendError } = await supabase.auth.resend({
+            type: "signup",
+            email: trimmedEmail,
+            options: { emailRedirectTo },
+          })
+          if (resendError) {
+            setError(
+              `${resendError.message} Si ya confirmaste tu cuenta, inicia sesión.`
+            )
+            return
+          }
+        }
+
         setInfo(
-          "Te enviamos un correo para confirmar tu cuenta. Confirma desde el enlace y vuelve a iniciar sesión."
+          "Te enviamos un correo para confirmar tu cuenta. Confirma desde el enlace y vuelve a iniciar sesión. Revisa spam o la carpeta Promociones."
         )
         return
       }

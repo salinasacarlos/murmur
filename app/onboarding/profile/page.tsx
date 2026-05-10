@@ -2,20 +2,18 @@
 
 import * as React from "react"
 
-import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
-import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { Field, Input, Textarea } from "@/components/ui/input"
-import { DEFAULT_INDUSTRY_DOMAIN_SLUG } from "@/lib/industry-tree"
 import {
   persistOnboardingProfileStep,
   requireUserId,
 } from "@/lib/onboarding-persist"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import { cn } from "@/lib/utils"
 import {
   AVAILABILITY_LABELS,
@@ -47,10 +45,6 @@ export default function ProfileStepPage() {
     null
   )
   const [workStyle, setWorkStyle] = React.useState<WorkStyle[]>([])
-  const [industries, setIndustries] = React.useState<string[]>([])
-  const [, setIndustryBrowseDomain] = React.useState(
-    DEFAULT_INDUSTRY_DOMAIN_SLUG
-  )
 
   function toggleArr<T extends string>(
     list: T[],
@@ -67,7 +61,7 @@ export default function ProfileStepPage() {
       <Stepper current={4} total={6} />
       <OnboardingCard
         title="Cuéntanos quién eres"
-        description="Información para el matching. Tú eliges cuándo mostrarte. Los detalles de tu proyecto u oportunidad los puedes refinar después en una búsqueda."
+        description={`Datos básicos y señales para conectar. Las ${PROFILE_FIELD_COPY.verticalesAfinidad.toLowerCase()} extra las añades luego en tu perfil.`}
         back="/onboarding/relationships"
         next="/onboarding/location"
         nextDisabled={
@@ -95,7 +89,7 @@ export default function ProfileStepPage() {
             experience,
             availability,
             workStyle,
-            industries,
+            industries: [],
           })
           if (!r.ok) {
             console.error(r.error)
@@ -104,7 +98,6 @@ export default function ProfileStepPage() {
         }}
       >
         <Field label="Nombre" required>
-          <PublicFieldNotice className="mb-1" compact />
           <Input
             placeholder="Tu nombre completo"
             value={name}
@@ -113,7 +106,6 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Título o rol actual" required>
-          <PublicFieldNotice className="mb-1" compact />
           <Input
             placeholder="ej. Senior Product Engineer"
             value={jobTitle}
@@ -121,11 +113,7 @@ export default function ProfileStepPage() {
           />
         </Field>
 
-        <Field
-          label="Bio corta"
-          hint={`${bio.length}/200 caracteres`}
-        >
-          <PublicFieldNotice className="mb-1" />
+        <Field label="Bio corta" hint={`${bio.length}/200`}>
           <Textarea
             placeholder="Una o dos líneas sobre ti..."
             value={bio}
@@ -136,9 +124,8 @@ export default function ProfileStepPage() {
 
         <Field
           label="Dato curioso (opcional)"
-          hint={`${funFact.length}/500 · Párrafo corto que te humanice en el perfil`}
+          hint={`${funFact.length}/500`}
         >
-          <PublicFieldNotice className="mb-1" />
           <Textarea
             placeholder="Un hobby raro, un viaje memorable, algo que sorprenda en buen sentido…"
             value={funFact}
@@ -147,12 +134,7 @@ export default function ProfileStepPage() {
           />
         </Field>
 
-        <Field
-          label="Tu industria"
-          required
-          hint="Solo una: el sector donde te mueves (ej. tecnología, salud, educación)."
-        >
-          <PublicFieldNotice className="mb-1" compact />
+        <Field label={PROFILE_FIELD_COPY.industryPrincipal} required>
           <IndustrySingleSelect
             value={primaryIndustrySlug}
             onChange={(slug) => {
@@ -162,30 +144,20 @@ export default function ProfileStepPage() {
           />
         </Field>
 
-        <Field
-          label="Expertise en esa industria"
-          required
-          hint="Hasta 5: vertical u oficio concreto dentro de la industria elegida."
-        >
-          <PublicFieldNotice className="mb-1" compact />
+        <Field label={PROFILE_FIELD_COPY.verticales} required>
           <ExpertiseMultiSelect
             industrySlug={primaryIndustrySlug}
             value={expertiseSlugs}
             onChange={setExpertiseSlugs}
-            footerNote="La primera expertise define el matiz principal para matching."
+            footerNote="La primera vertical define el matiz principal para matching."
           />
         </Field>
 
-        <Field
-          label="Talentos"
-          hint="Hasta 5: cómo aportas o trabajas (transversal, no es industria)."
-        >
-          <PublicFieldNotice className="mb-1" compact />
+        <Field label={PROFILE_FIELD_COPY.talentos}>
           <TalentMultiSelect value={talentSlugs} onChange={setTalentSlugs} />
         </Field>
 
         <Field label="Años de experiencia" required>
-          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(EXPERIENCE_LABELS) as ExperienceRange[]).map((id) => (
               <ChipChoice
@@ -200,9 +172,8 @@ export default function ProfileStepPage() {
 
         <Field
           label="Éxito o descripción breve para tu card"
-          hint={`${highlight.length}/120 caracteres · Esto aparecerá en el feed`}
+          hint={`${highlight.length}/120`}
         >
-          <PublicFieldNotice className="mb-1" />
           <Input
             placeholder="ej. Llevé una app de 0 a 100k usuarios"
             value={highlight}
@@ -211,7 +182,6 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Disponibilidad" required>
-          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(AVAILABILITY_LABELS) as Availability[]).map((id) => (
               <ChipChoice
@@ -225,7 +195,6 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Forma de trabajar (multi)">
-          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {WORK_STYLES_ONBOARDING.map((id) => (
               <ChipChoice
@@ -236,15 +205,6 @@ export default function ProfileStepPage() {
               />
             ))}
           </div>
-        </Field>
-
-        <Field label="Industrias de afinidad (multi)">
-          <PublicFieldNotice className="mb-1" compact />
-          <HierarchicalIndustrySelector
-            value={industries}
-            onChange={setIndustries}
-            onActiveDomainChange={setIndustryBrowseDomain}
-          />
         </Field>
       </OnboardingCard>
     </div>

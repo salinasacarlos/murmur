@@ -21,7 +21,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/connections": "Conexiones",
   "/messages": "Mensajes",
   "/profile": "Mi perfil",
-  "/notifications": "Avisos",
+  "/notifications": "Notificaciones",
 }
 
 function getTitle(pathname: string) {
@@ -54,7 +54,11 @@ export function Topbar() {
           <Link
             href="/notifications"
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg2)] text-[var(--text2)] hover:text-[var(--text)] hover:border-[var(--border2)] transition-colors"
-            aria-label={hasUnread ? "Avisos, hay mensajes sin leer" : "Avisos"}
+            aria-label={
+              hasUnread
+                ? "Notificaciones sin leer"
+                : "Notificaciones"
+            }
           >
             <span className="relative inline-flex">
               <IconBell size={16} />

@@ -5,6 +5,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { Field, Input } from "@/components/ui/input"
@@ -12,6 +13,10 @@ import {
   emptyDiscoverFeedFilters,
   type DiscoverFeedFilters,
 } from "@/lib/feed-filters"
+import {
+  PROFILE_FIELD_COPY,
+  PROFILE_FIELD_HINTS,
+} from "@/lib/profile-field-copy"
 import { cn } from "@/lib/utils"
 import {
   AVAILABILITY_LABELS,
@@ -34,10 +39,12 @@ export function FiltersDrawer({
   onFiltersChange,
 }: FiltersDrawerProps) {
   function setIndustry(slug: string | null) {
+    const industryChanged = slug !== filters.primaryIndustrySlug
     onFiltersChange({
       ...filters,
       primaryIndustrySlug: slug,
-      expertiseSlugs: slug !== filters.primaryIndustrySlug ? [] : filters.expertiseSlugs,
+      expertiseSlugs: industryChanged ? [] : filters.expertiseSlugs,
+      affinityLabels: industryChanged ? [] : filters.affinityLabels,
     })
   }
 
@@ -49,7 +56,7 @@ export function FiltersDrawer({
     <Drawer open={open} onOpenChange={onOpenChange} ariaLabel="Filtros">
       <DrawerHeader
         title="Filtros"
-        description="Misma taxonomía que el perfil: industria de referencia, expertise y talentos."
+        description={PROFILE_FIELD_HINTS.feedDrawerIntro}
       />
 
       <div className="flex flex-col gap-4 mb-4">
@@ -100,8 +107,8 @@ export function FiltersDrawer({
         </Field>
 
         <Field
-          label="Industria de referencia"
-          hint="Como «Industria principal» en el perfil. «Cualquiera» no filtra por sector."
+          label={PROFILE_FIELD_COPY.industryPrincipal}
+          hint={PROFILE_FIELD_HINTS.industryFilterFeed}
         >
           <IndustrySingleSelect
             allowClear
@@ -111,8 +118,8 @@ export function FiltersDrawer({
         </Field>
 
         <Field
-          label="Expertise"
-          hint="Opcional: al menos una coincidencia con las especialidades del perfil."
+          label={PROFILE_FIELD_COPY.verticales}
+          hint={PROFILE_FIELD_HINTS.verticalesFilterFeed}
         >
           <ExpertiseMultiSelect
             industrySlug={filters.primaryIndustrySlug}
@@ -120,13 +127,27 @@ export function FiltersDrawer({
             onChange={(slugs) =>
               onFiltersChange({ ...filters, expertiseSlugs: slugs })
             }
-            footerNote="Elige primero una industria arriba para ver opciones del mismo catálogo que en tu perfil."
+            footerNote="Elige primero una industria arriba; mismo catálogo que tus Verticales en el perfil."
           />
         </Field>
 
         <Field
-          label="Talentos"
-          hint="Opcional: al menos un talento en común con el perfil."
+          label={PROFILE_FIELD_COPY.verticalesAfinidad}
+          hint={PROFILE_FIELD_HINTS.verticalesAfinidadFilterFeed}
+        >
+          <div className="max-h-[min(52vh,400px)] overflow-y-auto pr-1">
+            <HierarchicalIndustrySelector
+              value={filters.affinityLabels}
+              onChange={(labels) =>
+                onFiltersChange({ ...filters, affinityLabels: labels })
+              }
+            />
+          </div>
+        </Field>
+
+        <Field
+          label={PROFILE_FIELD_COPY.talentos}
+          hint={PROFILE_FIELD_HINTS.talentosFilterFeed}
         >
           <TalentMultiSelect
             value={filters.talentSlugs}

@@ -92,7 +92,7 @@ export default function OnboardingEventPage() {
         <Stepper current={1} total={6} />
         <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
-            ¿Viene de un evento?
+            ¿Te encuentras en un evento?
           </h1>
           <p className="text-[13px] text-[var(--text2)] mb-6 leading-relaxed">
             Si tienes un código, lo usamos para anclar tu experiencia. Si no,

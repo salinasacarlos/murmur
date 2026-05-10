@@ -133,7 +133,7 @@ export function BottomNav() {
                   ringClassName="ring-[var(--bg)]"
                 />
               </span>
-              <span className="text-[13px] font-medium">Avisos</span>
+              <span className="text-[13px] font-medium">Notificaciones</span>
             </div>
             <IconChevronRight size={14} />
           </Link>

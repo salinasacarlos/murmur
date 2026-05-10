@@ -52,7 +52,7 @@ export default function OnboardingIntroPage() {
           </div>
         </div>
         <h1 className="text-[22px] md:text-[24px] font-extrabold tracking-[-0.45px] text-[var(--text)] mb-2">
-          Conoce a tu próxima tribu
+          Encuentra a los tuyos
         </h1>
         <p className="text-[13px] text-[var(--text2)] leading-relaxed max-w-[340px] mx-auto">
           murmur conecta founders, talento y builders con intención clara.

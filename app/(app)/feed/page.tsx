@@ -17,6 +17,7 @@ import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/co
 import { profileMatchesDiscoverFilters } from "@/lib/feed-filters"
 import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { cn } from "@/lib/utils"
 import type { Profile, Search } from "@/lib/types"
 
 /** Alinea tarjeta de búsqueda activa con criterios del perfil. */
@@ -39,6 +40,10 @@ function profileMatchesSearchChip(p: Profile, s: Search): boolean {
   if (s.talentSlugs?.length) {
     const pt = new Set(p.talentSlugs ?? [])
     if (!s.talentSlugs.some((x) => pt.has(x))) return false
+  }
+  if (s.industries?.length) {
+    const pi = new Set(p.industries ?? [])
+    if (!s.industries.some((x) => pi.has(x))) return false
   }
   if (s.relations?.length) {
     if (!s.relations.some((r) => p.relationsLooking.includes(r))) return false
@@ -113,57 +118,69 @@ function FeedPageContent() {
 
   return (
     <div className="flex flex-col">
-      <SearchChipBar
-        searches={searches}
-        activeId={activeSearch}
-        onSelect={setActiveSearch}
-        onOpenFilters={() => setFiltersOpen(true)}
-        onOpenEvent={() => setEventOpen(true)}
-        eventActive={activeEvent !== null}
-      />
+      {/*
+        Un solo bloque sticky: chips + franja de evento. Así la franja no queda
+        tapada por los chips al hacer scroll (antes solo los chips eran sticky).
+      */}
+      <div
+        className={cn(
+          "sticky z-20 bg-[var(--bg)] shadow-[0_1px_0_var(--border)]",
+          "top-[calc(3.5rem+var(--sat))] md:top-[calc(var(--topbar-h)+var(--sat))]"
+        )}
+      >
+        <SearchChipBar
+          searches={searches}
+          activeId={activeSearch}
+          onSelect={setActiveSearch}
+          onOpenFilters={() => setFiltersOpen(true)}
+          onOpenEvent={() => setEventOpen(true)}
+          eventActive={activeEvent !== null}
+        />
 
-      {activeEvent && (
-        <div
-          className="flex items-center gap-3 px-4 md:px-6 py-2.5 border-b-[0.5px] border-[var(--border)]"
-          style={{
-            backgroundColor: "var(--pl)",
-          }}
-        >
+        {activeEvent ? (
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-full"
-            style={{ backgroundColor: "var(--pm)", color: "var(--p)" }}
-            aria-hidden
+            className="flex items-start gap-3 px-4 md:px-6 py-3 border-t-[0.5px] border-b-[0.5px] border-[var(--border)]"
+            style={{
+              backgroundColor: "var(--pl)",
+            }}
           >
-            <IconSpark size={14} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2 text-[12px] text-[var(--text)]">
-              <span
-                className="font-mono uppercase tracking-[0.18em] text-[var(--p)]"
-                style={{ fontFamily: "var(--font-mono)" }}
-              >
-                {activeEvent.code}
-              </span>
-              <span className="font-semibold truncate">{activeEvent.name}</span>
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: "var(--pm)", color: "var(--p)" }}
+              aria-hidden
+            >
+              <IconSpark size={15} />
             </div>
-            <p className="text-[11px] text-[var(--text2)]">
-              {visibleProfiles.length}{" "}
-              {visibleProfiles.length === 1
-                ? "persona conectada"
-                : "personas conectadas"}{" "}
-              en este evento
-            </p>
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[13px] text-[var(--text)]">
+                <span
+                  className="font-mono text-[12px] font-bold uppercase tracking-[0.15em] text-[var(--p)] sm:text-[13px]"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  {activeEvent.code}
+                </span>
+                <span className="font-semibold leading-snug">{activeEvent.name}</span>
+              </div>
+              <p className="text-[12px] leading-snug text-[var(--text2)]">
+                {visibleProfiles.length}{" "}
+                {visibleProfiles.length === 1
+                  ? "persona conectada"
+                  : "personas conectadas"}{" "}
+                en este evento
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveEvent(null)}
+              className="inline-flex shrink-0 items-center gap-1 self-center rounded-full border border-[var(--border)] bg-[var(--bg)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text2)] transition-colors hover:border-[var(--border2)] hover:text-[var(--text)]"
+            >
+              <IconX size={12} aria-hidden />
+              <span className="hidden min-[420px]:inline">Salir del evento</span>
+              <span className="min-[420px]:hidden">Salir</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setActiveEvent(null)}
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--bg)] px-2.5 py-1 text-[11px] text-[var(--text2)] transition-colors hover:border-[var(--border2)] hover:text-[var(--text)]"
-          >
-            <IconX size={12} />
-            Salir del evento
-          </button>
-        </div>
-      )}
+        ) : null}
+      </div>
 
       <div className="px-4 md:px-6 py-5">
         {feedLoading && visibleProfiles.length === 0 ? (

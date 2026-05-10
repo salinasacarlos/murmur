@@ -13,10 +13,12 @@ import {
   fetchNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  deleteNotification,
   runDigestNotifications,
   type AppNotification,
   type NotificationKind,
 } from "@/lib/data/notifications"
+import { IconTrash } from "@/components/icons"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 
@@ -77,6 +79,16 @@ export default function NotificationsPage() {
     }
   }
 
+  async function handleDelete(n: AppNotification) {
+    if (!user?.id) return
+    const supabase = getSupabaseBrowserClient()
+    const ok = await deleteNotification(supabase, n.id, user.id)
+    if (ok) {
+      setItems((prev) => prev.filter((x) => x.id !== n.id))
+      await refreshUnreadBadge()
+    }
+  }
+
   const unread = items.filter((n) => !n.read_at).length
 
   return (
@@ -84,7 +96,7 @@ export default function NotificationsPage() {
       <div className="flex items-start justify-between gap-3 mb-5">
         <div>
           <h2 className="md:hidden text-[18px] font-extrabold tracking-[-0.4px] mb-0.5">
-            Avisos
+            Notificaciones
           </h2>
           <p className="text-[12px] text-[var(--text2)]">
             Breves y humanos, como el viento en el radar.
@@ -123,6 +135,7 @@ export default function NotificationsPage() {
               key={n.id}
               n={n}
               onPrimary={() => void handlePrimary(n)}
+              onDelete={() => void handleDelete(n)}
             />
           ))}
         </ul>
@@ -134,9 +147,11 @@ export default function NotificationsPage() {
 function NotificationRow({
   n,
   onPrimary,
+  onDelete,
 }: {
   n: AppNotification
   onPrimary: () => void
+  onDelete: () => void
 }) {
   const unread = !n.read_at
   const meta = n.metadata as Record<string, unknown> | null
@@ -179,9 +194,23 @@ function NotificationRow({
             />
           ) : null}
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-[var(--text)] leading-snug">
-              {n.title}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-[13px] font-semibold text-[var(--text)] leading-snug flex-1 min-w-0">
+                {n.title}
+              </p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onDelete()
+                }}
+                className="shrink-0 rounded-md p-1.5 text-[var(--text3)] hover:bg-[var(--bg2)] hover:text-[var(--text)]"
+                aria-label="Eliminar notificación"
+              >
+                <IconTrash size={16} />
+              </button>
+            </div>
             <p className="text-[12px] text-[var(--text2)] mt-1 leading-relaxed">
               {n.body}
             </p>

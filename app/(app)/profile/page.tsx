@@ -61,8 +61,9 @@ import {
   replaceProfileWorkStyles,
 } from "@/lib/data/profile-mutations"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { IconEdit } from "@/components/icons"
+import { IconEdit, IconX } from "@/components/icons"
 import { cn } from "@/lib/utils"
+import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 
 export default function ProfilePage() {
   const { user: authUser, profile, refresh } = useCurrentUser()
@@ -226,6 +227,38 @@ export default function ProfilePage() {
       }
     )
   }, [profileUser])
+
+  const ONBOARDING_DISMISS_KEY = "murmur:profile-onboarding-dismissed"
+  const [onboardingDismissed, setOnboardingDismissed] =
+    React.useState(false)
+
+  React.useEffect(() => {
+    try {
+      if (sessionStorage.getItem(ONBOARDING_DISMISS_KEY) === "1") {
+        setOnboardingDismissed(true)
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  const prevMissingCountRef = React.useRef<number | null>(null)
+  React.useEffect(() => {
+    const n = completeness.missing.length
+    const prev = prevMissingCountRef.current
+    prevMissingCountRef.current = n
+    if (prev === 0 && n > 0) {
+      try {
+        sessionStorage.removeItem(ONBOARDING_DISMISS_KEY)
+      } catch {
+        /* ignore */
+      }
+      setOnboardingDismissed(false)
+    }
+  }, [completeness.missing.length])
+
+  const showOnboardingCard =
+    !onboardingDismissed && completeness.missing.length > 0
 
   async function afterSuccessfulSave() {
     await refresh()
@@ -730,18 +763,33 @@ export default function ProfilePage() {
         </h2>
       </div>
 
-      <Card padding="default" className="ds-fade-up flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-[var(--text3)]">
-              ONBOARDING
-            </p>
-            <p className="text-[20px] font-extrabold tracking-[-0.4px] mt-1">
-              Perfil al {completeness.percent}%
-            </p>
+      {showOnboardingCard ? (
+        <Card padding="default" className="ds-fade-up relative flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                sessionStorage.setItem(ONBOARDING_DISMISS_KEY, "1")
+              } catch {
+                /* ignore */
+              }
+              setOnboardingDismissed(true)
+            }}
+            className="absolute right-3 top-3 rounded-md p-1.5 text-[var(--text3)] hover:bg-[var(--bg2)] hover:text-[var(--text)]"
+            aria-label="Ocultar aviso de perfil hasta recargar la página"
+          >
+            <IconX size={16} />
+          </button>
+          <div className="flex items-start justify-between gap-3 pr-8">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-[var(--text3)]">
+                ONBOARDING
+              </p>
+              <p className="text-[20px] font-extrabold tracking-[-0.4px] mt-1">
+                Perfil al {completeness.percent}%
+              </p>
+            </div>
           </div>
-        </div>
-        {completeness.missing.length > 0 ? (
           <div className="flex flex-col gap-2">
             <p className="text-[12px] text-[var(--text2)]">Falta completar:</p>
             <ul className="flex flex-wrap gap-1.5">
@@ -764,12 +812,8 @@ export default function ProfilePage() {
               ))}
             </ul>
           </div>
-        ) : (
-          <p className="text-[12px] text-[var(--g)] font-medium">
-            Tu perfil está completo en los campos clave.
-          </p>
-        )}
-      </Card>
+        </Card>
+      ) : null}
 
       <Card padding="default" className="ds-fade-up flex flex-col md:flex-row md:items-start gap-4">
         <Avatar
@@ -841,7 +885,7 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Datos básicos"
-          description="Foto, nombre, cómo te presentas, bio y un dato curioso opcional. Industria, expertise, años de experiencia y talentos los editas desde la sección Profesional."
+          description={`Foto, nombre, cómo te presentas, bio y un dato curioso opcional. ${PROFILE_FIELD_COPY.industryPrincipal}, ${PROFILE_FIELD_COPY.verticales.toLowerCase()}, años de experiencia y ${PROFILE_FIELD_COPY.talentos.toLowerCase()} los editas desde la sección Profesional.`}
         />
 
         <div className="flex flex-col gap-3 mb-4">
@@ -938,11 +982,11 @@ export default function ProfilePage() {
         ariaLabel="Editar industria principal"
       >
         <DrawerHeader
-          title="Industria principal"
-          description="Define tu industria de referencia. Si la cambias, se quitan las especialidades (expertise) guardadas para ajustarlas al nuevo contexto."
+          title={PROFILE_FIELD_COPY.industryPrincipal}
+          description="Define tu industria principal. Si la cambias, se quitan las verticales guardadas para ajustarlas al nuevo contexto."
         />
         <div className="flex flex-col gap-3 mb-4">
-          <Field label="Industria">
+          <Field label={PROFILE_FIELD_COPY.industryPrincipal}>
             <IndustrySingleSelect
               value={industryDraft}
               onChange={(slug) => setIndustryDraft(slug)}
@@ -972,17 +1016,17 @@ export default function ProfilePage() {
       <Drawer
         open={expertiseEditOpen}
         onOpenChange={setExpertiseEditOpen}
-        ariaLabel="Editar expertise"
+        ariaLabel="Editar verticales"
         className="flex max-h-[90dvh] flex-col !overflow-hidden"
       >
         <DrawerHeader
           className="shrink-0"
-          title="Especialidades (expertise)"
-          description={`Industria de referencia: ${labelIndustrySlug(heroIndustrySlug)}. Puedes elegir hasta 5 especialidades de esa industria.`}
+          title={PROFILE_FIELD_COPY.verticales}
+          description={`${PROFILE_FIELD_COPY.industryPrincipal}: ${labelIndustrySlug(heroIndustrySlug)}. Hasta 5 verticales de ese sector.`}
         />
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex flex-col gap-3 pb-1">
-            <Field label="Expertise">
+            <Field label={PROFILE_FIELD_COPY.verticales}>
               <ExpertiseMultiSelect
                 industrySlug={heroIndustrySlug}
                 value={expertiseDraftSlugs}
@@ -1018,11 +1062,11 @@ export default function ProfilePage() {
         ariaLabel="Editar talentos"
       >
         <DrawerHeader
-          title="Talentos"
+          title={PROFILE_FIELD_COPY.talentos}
           description="Habilidades transversales (soft skills). Elige hasta 5."
         />
         <div className="flex flex-col gap-3 mb-4">
-          <Field label="Talentos">
+          <Field label={PROFILE_FIELD_COPY.talentos}>
             <TalentMultiSelect
               value={talentsDraftSlugs}
               onChange={setTalentsDraftSlugs}
@@ -1125,8 +1169,8 @@ export default function ProfilePage() {
           <div>
             <h3 className="ds-label-uppercase">Profesional</h3>
             <p className="text-[12px] text-[var(--text2)] mt-1">
-              Industria, especialidades, años de experiencia y talentos: edita
-              cada bloque con su enlace.
+              {PROFILE_FIELD_COPY.industryPrincipal}, {PROFILE_FIELD_COPY.verticales.toLowerCase()}, años de experiencia y{" "}
+              {PROFILE_FIELD_COPY.talentos.toLowerCase()}: edita cada bloque con su enlace.
             </p>
           </div>
           <button
@@ -1139,12 +1183,12 @@ export default function ProfilePage() {
           </button>
         </div>
         <ProfileValueRow
-          label="Industria"
+          label={PROFILE_FIELD_COPY.industryPrincipal}
           value={labelIndustrySlug(heroIndustrySlug)}
           onEdit={openIndustryEdit}
         />
         <ProfileValueRow
-          label="Expertise"
+          label={PROFILE_FIELD_COPY.verticales}
           value={
             heroExpertiseSlugs.length > 0
               ? heroExpertiseSlugs.map((s) => labelExpertiseSlug(s)).join(" · ")
@@ -1153,7 +1197,7 @@ export default function ProfilePage() {
           onEdit={openExpertiseEdit}
         />
         <ProfileValueRow
-          label="Talentos"
+          label={PROFILE_FIELD_COPY.talentos}
           value={
             user.talentSlugs && user.talentSlugs.length > 0
               ? user.talentSlugs.map((s) => labelTalentSlug(s)).join(" · ")
@@ -1445,12 +1489,12 @@ export default function ProfilePage() {
 
       <Card padding="default" className="ds-fade-up">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="ds-label-uppercase">Industrias de afinidad</h3>
+          <h3 className="ds-label-uppercase">{PROFILE_FIELD_COPY.verticalesAfinidad}</h3>
           <button
             type="button"
             onClick={openIndustriesEdit}
             className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
-            aria-label="Editar industrias"
+            aria-label={`Editar ${PROFILE_FIELD_COPY.verticalesAfinidad}`}
           >
             <IconEdit size={14} />
           </button>
@@ -1471,11 +1515,11 @@ export default function ProfilePage() {
       <Drawer
         open={industriesEditOpen}
         onOpenChange={setIndustriesEditOpen}
-        ariaLabel="Editar industrias"
+        ariaLabel={`Editar ${PROFILE_FIELD_COPY.verticalesAfinidad}`}
       >
         <DrawerHeader
-          title="Industrias de afinidad"
-          description="Elige un ámbito y luego las subindustrias. Puedes sumar etiquetas de varios ámbitos."
+          title={PROFILE_FIELD_COPY.verticalesAfinidad}
+          description="Elige una industria y marca verticales del catálogo. Puedes sumar etiquetas de varias industrias."
         />
         <div className="max-h-[min(70vh,520px)] overflow-y-auto mb-4 pr-1">
           <HierarchicalIndustrySelector

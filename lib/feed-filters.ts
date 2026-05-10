@@ -8,8 +8,10 @@ export interface DiscoverFeedFilters {
   relation: RelationType | null
   /** Industria principal (catálogo profile-taxonomy); null = sin filtrar. */
   primaryIndustrySlug: string | null
-  /** Expertise dentro de la industria elegida; vacío = sin filtrar. */
+  /** Verticales (expertise) bajo la industria elegida; vacío = sin filtrar. */
   expertiseSlugs: string[]
+  /** Verticales de afinidad (industries_catalog hojas); vacío = sin filtrar. */
+  affinityLabels: string[]
   /** Talentos; vacío = sin filtrar. */
   talentSlugs: string[]
 }
@@ -21,6 +23,7 @@ export function emptyDiscoverFeedFilters(): DiscoverFeedFilters {
     relation: null,
     primaryIndustrySlug: null,
     expertiseSlugs: [],
+    affinityLabels: [],
     talentSlugs: [],
   }
 }
@@ -62,6 +65,12 @@ export function profileMatchesDiscoverFilters(
   if (f.expertiseSlugs.length > 0) {
     const pe = new Set(profileExpertiseSlugs(p))
     const hit = f.expertiseSlugs.some((s) => pe.has(s))
+    if (!hit) return false
+  }
+
+  if (f.affinityLabels.length > 0) {
+    const pi = new Set(p.industries ?? [])
+    const hit = f.affinityLabels.some((s) => pi.has(s))
     if (!hit) return false
   }
 

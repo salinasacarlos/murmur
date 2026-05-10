@@ -82,8 +82,14 @@ export async function persistOnboardingProfileStep(
   const ws = await replaceProfileWorkStyles(supabase, userId, input.workStyle)
   if (!ws.ok) return ws
 
-  const ind = await replaceProfileIndustries(supabase, userId, input.industries)
-  if (!ind.ok) return ind
+  if (input.industries.length > 0) {
+    const ind = await replaceProfileIndustries(
+      supabase,
+      userId,
+      input.industries
+    )
+    if (!ind.ok) return ind
+  }
 
   return { ok: true }
 }

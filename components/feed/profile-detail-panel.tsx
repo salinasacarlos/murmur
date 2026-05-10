@@ -13,6 +13,7 @@ import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { sendConnectionRequest, type PeerConnectionHint } from "@/lib/data/connections"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
+import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -171,7 +172,10 @@ export function ProfileDetailPanel({
               </Section>
             ) : null}
 
-            <Section title="Éxito o descripción breve">
+            <Section
+              title="Éxito o descripción breve"
+              hint="Algo que te llene de orgullo y sume razones para conectar; sin exagerar."
+            >
               <div className="flex items-start gap-2">
                 <IconSpark size={14} className="mt-0.5 text-[var(--p)]" />
                 <p className="text-[13px] text-[var(--text)]">
@@ -222,7 +226,7 @@ export function ProfileDetailPanel({
               </div>
             </Section>
 
-            <Section title="Industrias de afinidad">
+            <Section title={PROFILE_FIELD_COPY.verticalesAfinidad}>
               <div className="flex flex-wrap gap-1.5">
                 {profile.industries.map((i) => (
                   <Tag key={i} variant="green">
@@ -416,14 +420,21 @@ export function ProfileDetailPanel({
 
 function Section({
   title,
+  hint,
   children,
 }: {
   title: string
+  hint?: string
   children: React.ReactNode
 }) {
   return (
     <div>
       <h4 className="ds-label-uppercase mb-2">{title}</h4>
+      {hint ? (
+        <p className="text-[11px] text-[var(--text3)] mb-2 leading-snug">
+          {hint}
+        </p>
+      ) : null}
       {children}
     </div>
   )

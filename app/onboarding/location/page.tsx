@@ -2,7 +2,6 @@
 
 import * as React from "react"
 
-import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { Button } from "@/components/ui/button"
@@ -17,6 +16,11 @@ import {
 } from "@/lib/onboarding-persist"
 import { reverseGeocodeClient } from "@/lib/reverse-geocode"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+
+/** Códigos estándar `GeolocationPositionError` (más fiable que propiedades del `err`). */
+const GEO_PERMISSION_DENIED = 1
+const GEO_POSITION_UNAVAILABLE = 2
+const GEO_TIMEOUT = 3
 
 export default function LocationStepPage() {
   const [city, setCity] = React.useState("")
@@ -62,13 +66,13 @@ export default function LocationStepPage() {
       },
       (err) => {
         setGeoBusy(false)
-        if (err.code === err.PERMISSION_DENIED) {
+        if (err.code === GEO_PERMISSION_DENIED) {
           setGeoHint(
             "Permiso de ubicación denegado. Actívalo en el navegador o escribe tu ciudad."
           )
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
+        } else if (err.code === GEO_POSITION_UNAVAILABLE) {
           setGeoHint("No hay señal de ubicación disponible. Elige manualmente.")
-        } else if (err.code === err.TIMEOUT) {
+        } else if (err.code === GEO_TIMEOUT) {
           setGeoHint("Tiempo agotado al obtener ubicación. Intenta de nuevo.")
         } else {
           setGeoHint("No pudimos leer tu ubicación.")
@@ -141,7 +145,6 @@ export default function LocationStepPage() {
           required
           hint="Escribe o elige del listado. También puedes usar «Todo el mundo» si no aplica una ciudad fija."
         >
-          <PublicFieldNotice className="mb-1" compact />
           <Input
             placeholder="ej. Ciudad de México"
             list="cities-list"
@@ -159,7 +162,6 @@ export default function LocationStepPage() {
           label="Ciudades donde mi búsqueda estará activa"
           hint="Opcional. Incluye «Todo el mundo» si no quieres limitar por ciudad. También puedes elegir ciudades en México, Colombia, EE.UU. y LatAm."
         >
-          <PublicFieldNotice className="mb-1" compact />
           <CitySelector value={extraCities} onChange={setExtraCities} />
         </Field>
 

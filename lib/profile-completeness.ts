@@ -1,4 +1,5 @@
 import type { Compatibility, CurrentUser, Profile } from "@/lib/types"
+import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 
 export type ProfileCompletenessSection =
   | "identity"
@@ -112,7 +113,7 @@ export function computeProfileCompleteness(
     },
     {
       id: "industries",
-      label: "Industrias",
+      label: PROFILE_FIELD_COPY.verticalesAfinidad,
       ok: profile.industries.length > 0,
       section: "interests",
     },
@@ -143,11 +144,19 @@ export function computeProfileCompleteness(
   ]
 
   const core = items.filter(
-    (i) => i.id !== "photo" && i.id !== "fun_fact"
+    (i) =>
+      i.id !== "photo" &&
+      i.id !== "fun_fact" &&
+      i.id !== "industries"
   )
   const okCore = core.filter((i) => i.ok).length
   const percent = Math.round((okCore / core.length) * 100)
-  const missing = items.filter((i) => !i.ok)
+  /** Detalle que el usuario puede completar después en perfil; no bloquea % ni la tarjeta. */
+  const OPTIONAL_GAP_IDS = new Set<string>(["fun_fact", "industries"])
+
+  const missing = items.filter(
+    (i) => !i.ok && !OPTIONAL_GAP_IDS.has(i.id)
+  )
 
   return { percent, items, missing }
 }

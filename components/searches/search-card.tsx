@@ -18,6 +18,7 @@ import {
   labelExpertiseSlug,
   labelTalentSlug,
 } from "@/lib/profile-taxonomy"
+import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import { IconEdit, IconPause, IconPlay, IconTrash } from "@/components/icons"
 
 interface SearchCardProps {
@@ -84,12 +85,22 @@ export function SearchCard({
             {labelTalentSlug(slug)}
           </Tag>
         ))}
-        {search.industries.map((i) => (
-          <Tag key={i} variant="green">
-            {i}
-          </Tag>
-        ))}
       </div>
+
+      {search.industries.length > 0 ? (
+        <div className="flex flex-col gap-1.5">
+          <span className="ds-label-uppercase text-[var(--text3)]">
+            {PROFILE_FIELD_COPY.verticalesAfinidad}
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {search.industries.map((i) => (
+              <Tag key={i} variant="green">
+                {i}
+              </Tag>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-between pt-2 border-t-[0.5px] border-[var(--border)]">
         <span className="text-[11px] text-[var(--text3)] uppercase tracking-[0.05em] font-semibold">

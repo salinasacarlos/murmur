@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { href: "/searches", label: "Mis búsquedas", icon: IconSearch },
   { href: "/connections", label: "Conexiones", icon: IconUsers },
   { href: "/messages", label: "Mensajes", icon: IconMessage },
-  { href: "/notifications", label: "Avisos", icon: IconBell },
+  { href: "/notifications", label: "Notificaciones", icon: IconBell },
   { href: "/profile", label: "Mi perfil", icon: IconUser },
 ] as const
 

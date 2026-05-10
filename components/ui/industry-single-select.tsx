@@ -56,8 +56,7 @@ export function IndustrySingleSelect({
         })}
       </div>
       <p className="text-[11px] text-[var(--text3)]">
-        Elige <strong>una</strong> industria; después podrás marcar hasta 5 áreas de expertise
-        dentro de ella.
+        Elige <strong>una</strong> industria; después marca hasta 5 verticales dentro de ella.
       </p>
     </div>
   )

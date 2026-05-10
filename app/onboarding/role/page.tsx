@@ -39,7 +39,7 @@ export default function RoleStepPage() {
       <Stepper current={2} total={6} />
       <OnboardingCard
         title="¿Qué te trae a murmur?"
-        description="Una sola elección para orientar el matching. Si tienes startup o buscas unirte a un equipo, ya queda cubierto aquí; podrás detallar en tu perfil y en tus búsquedas."
+        description="Si tienes un proyecto o buscas unirte a uno selecciona la opción que más te empata."
         back="/onboarding/event"
         next="/onboarding/relationships"
         nextDisabled={!selected}

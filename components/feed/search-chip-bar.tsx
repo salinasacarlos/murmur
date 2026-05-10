@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 
-import { IconPlus, IconFilter, IconSpark } from "@/components/icons"
+import { IconPlus, IconFilter, IconMapPin } from "@/components/icons"
 import { cn } from "@/lib/utils"
 import type { Search } from "@/lib/types"
 
@@ -25,7 +25,7 @@ export function SearchChipBar({
   eventActive,
 }: SearchChipBarProps) {
   return (
-    <div className="flex items-center gap-2 px-4 md:px-6 py-3 border-b-[0.5px] border-[var(--border)] bg-[var(--bg)] sticky top-[calc(var(--topbar-h)+var(--sat))] z-20 md:top-[calc(var(--topbar-h)+var(--sat))]">
+    <div className="flex items-center gap-2 px-4 md:px-6 py-3 border-b-[0.5px] border-[var(--border)] bg-[var(--bg)]">
       <div className="flex items-center gap-1.5 overflow-x-auto flex-1 [&::-webkit-scrollbar]:hidden">
         <Chip
           label="Todas"
@@ -57,6 +57,9 @@ export function SearchChipBar({
           type="button"
           onClick={onOpenEvent}
           aria-pressed={eventActive ? "true" : "false"}
+          aria-label={
+            eventActive ? "Evento activo. Abrir opciones de evento" : "Unirme o crear evento en vivo"
+          }
           className={cn(
             "ml-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] transition-colors border",
             eventActive
@@ -64,9 +67,9 @@ export function SearchChipBar({
               : "border-[var(--border)] text-[var(--text2)] hover:border-[var(--border2)] hover:text-[var(--text)]"
           )}
         >
-          <IconSpark size={12} />
+          <IconMapPin size={12} aria-hidden />
           <span className="hidden sm:inline">
-            {eventActive ? "Evento" : "Estoy en un evento"}
+            {eventActive ? "En evento" : "Evento"}
           </span>
         </button>
       )}
