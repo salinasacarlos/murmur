@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import {
-  EXPERTISE_BY_INDUSTRY,
+  expertiseListForIndustryVerticals,
   labelExpertiseSlug,
 } from "@/lib/profile-taxonomy"
 import { cn } from "@/lib/utils"
@@ -13,6 +13,8 @@ const MAX = 5
 interface ExpertiseMultiSelectProps {
   /** Industria elegida; sin industria no hay opciones filtradas. */
   industrySlug: string | null
+  /** Verticales (nivel 2); la unión define el catálogo de expertise. */
+  verticalSlugs: string[]
   value: string[]
   onChange: (slugs: string[]) => void
   className?: string
@@ -21,10 +23,11 @@ interface ExpertiseMultiSelectProps {
 
 export function ExpertiseMultiSelect({
   industrySlug,
+  verticalSlugs,
   value,
   onChange,
   className,
-  footerNote = `Máximo ${MAX} verticales dentro de tu industria.`,
+  footerNote = `Máximo ${MAX} expertise bajo las verticales elegidas.`,
 }: ExpertiseMultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
@@ -32,9 +35,30 @@ export function ExpertiseMultiSelect({
 
   const options = React.useMemo(
     () =>
-      industrySlug ? [...(EXPERTISE_BY_INDUSTRY[industrySlug] ?? [])] : [],
-    [industrySlug]
+      industrySlug && verticalSlugs.length > 0
+        ? [...expertiseListForIndustryVerticals(industrySlug, verticalSlugs)]
+        : [],
+    [industrySlug, verticalSlugs]
   )
+
+  const onChangeRef = React.useRef(onChange)
+  onChangeRef.current = onChange
+
+  React.useEffect(() => {
+    if (!industrySlug || verticalSlugs.length === 0) {
+      if (value.length > 0) onChangeRef.current([])
+      return
+    }
+    const allowed = new Set(
+      expertiseListForIndustryVerticals(industrySlug, verticalSlugs).map(
+        (o) => o.slug
+      )
+    )
+    const kept = value.filter((s) => allowed.has(s))
+    if (kept.length !== value.length) {
+      onChangeRef.current(kept)
+    }
+  }, [industrySlug, verticalSlugs, value])
 
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -79,10 +103,18 @@ export function ExpertiseMultiSelect({
     )
   }
 
+  if (verticalSlugs.length === 0) {
+    return (
+      <p className="text-[13px] text-[var(--text3)] py-2">
+        Elige verticales primero.
+      </p>
+    )
+  }
+
   if (options.length === 0) {
     return (
       <p className="text-[13px] text-[var(--text3)] py-2">
-        No hay verticales definidas para esta industria.
+        No hay expertise definido para esta combinación de verticales.
       </p>
     )
   }
@@ -124,8 +156,8 @@ export function ExpertiseMultiSelect({
         >
           <span>
             {value.length === 0
-              ? `Elige hasta ${MAX} verticales en esta industria…`
-              : `${value.length} de ${MAX} seleccionadas`}
+              ? `Elige hasta ${MAX} expertise…`
+              : `${value.length} de ${MAX} seleccionados`}
           </span>
           <span className="text-[var(--text3)]" aria-hidden>
             {open ? "▴" : "▾"}
@@ -134,7 +166,7 @@ export function ExpertiseMultiSelect({
 
         {open ? (
           <div
-            className="absolute z-50 mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] shadow-lg max-h-[min(280px,50vh)] flex flex-col"
+            className="absolute z-50 mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] shadow-lg max-h-[min(280px,50dvh)] md:max-h-[min(520px,65dvh)] flex flex-col"
             role="listbox"
           >
             <div className="p-2 border-b border-[var(--border)]">

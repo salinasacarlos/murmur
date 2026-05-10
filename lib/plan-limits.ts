@@ -34,14 +34,13 @@ export function freeAllowsCitySlugs(slugCount: number): boolean {
   return slugCount <= FREE_MAX_PROFILE_CITY_SLUGS
 }
 
-/** Quita filtros solo disponibles en Premium (afinidad, talentos). */
+/** En plan Free, oculta el filtro por soft skills en Descubrir (Premium lo mantiene). */
 export function sanitizeDiscoverFiltersForPlan(
   f: DiscoverFeedFilters,
   plan: UserPlan | null | undefined
 ): DiscoverFeedFilters {
   if (isPremiumPlan(plan)) return f
   const next = { ...f }
-  if (next.affinityLabels?.length) next.affinityLabels = [...[]]
-  if (next.talentSlugs?.length) next.talentSlugs = [...[]]
+  if (next.talentSlugs?.length) next.talentSlugs = []
   return next
 }

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
-import { cityLabelToSlug, industryLabelToSlug } from "@/lib/catalogs"
+import { cityLabelToSlug } from "@/lib/catalogs"
 import type { Database } from "@/lib/database.types"
 import type { RelationType, WorkStyle } from "@/lib/types"
 import {
@@ -24,29 +24,6 @@ export async function replaceProfileWorkStyles(
   if (styles.length === 0) return { ok: true }
   const { error } = await supabase.from("profile_work_styles").insert(
     styles.map((work_style) => ({ profile_id: profileId, work_style }))
-  )
-  if (error) return { ok: false, error: error.message }
-  return { ok: true }
-}
-
-export async function replaceProfileIndustries(
-  supabase: Client,
-  profileId: string,
-  industryLabels: string[]
-): Promise<{ ok: boolean; error?: string }> {
-  const slugs = [
-    ...new Set(
-      industryLabels.map((label) => industryLabelToSlug(label)).filter(Boolean)
-    ),
-  ]
-  const { error: delErr } = await supabase
-    .from("profile_industries")
-    .delete()
-    .eq("profile_id", profileId)
-  if (delErr) return { ok: false, error: delErr.message }
-  if (slugs.length === 0) return { ok: true }
-  const { error } = await supabase.from("profile_industries").insert(
-    slugs.map((industry_slug) => ({ profile_id: profileId, industry_slug }))
   )
   if (error) return { ok: false, error: error.message }
   return { ok: true }

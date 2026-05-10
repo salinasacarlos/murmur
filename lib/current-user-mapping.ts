@@ -43,6 +43,10 @@ export function deriveCurrentUser(
         ? profile.functional_area_tags
         : undefined,
     primaryIndustrySlug: profile?.primary_industry_slug ?? undefined,
+    verticalSlugs:
+      profile?.vertical_slugs && profile.vertical_slugs.length > 0
+        ? profile.vertical_slugs
+        : undefined,
     expertiseSlugs:
       profile?.expertise_slugs && profile.expertise_slugs.length > 0
         ? profile.expertise_slugs
@@ -56,7 +60,6 @@ export function deriveCurrentUser(
     achievement: profile?.achievement ?? "",
     availability:
       (profile?.availability as Availability | null) ?? DEFAULT_AVAILABILITY,
-    industries: [],
     workStyle: [],
     city: profile?.city ?? "",
     cities: profile?.city ? [profile.city] : [],
@@ -88,12 +91,12 @@ export function mergeEnrichedIntoCurrentUser(
       enriched.functionalAreaTags ?? base.functionalAreaTags,
     primaryIndustrySlug:
       enriched.primaryIndustrySlug ?? base.primaryIndustrySlug,
+    verticalSlugs: enriched.verticalSlugs ?? base.verticalSlugs,
     expertiseSlugs: enriched.expertiseSlugs ?? base.expertiseSlugs,
     talentSlugs: enriched.talentSlugs ?? base.talentSlugs,
     experience: enriched.experience,
     achievement: enriched.achievement,
     availability: enriched.availability,
-    industries: enriched.industries,
     workStyle: enriched.workStyle,
     city: enriched.city,
     cities:

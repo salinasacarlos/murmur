@@ -89,7 +89,7 @@ export const CITIES_CATALOG = [
 /** Slug for `cities_catalog.slug` / `profile_cities.city_slug` (same normalization as industries). */
 export const cityLabelToSlug = industryLabelToSlug
 
-/** Stable slug for `industries_catalog.slug` / `search_industries.industry_slug`. */
+/** Stable slug for `industries_catalog.slug` (when persisting catalog leaf rows). */
 export function industryLabelToSlug(label: string): string {
   return label
     .normalize("NFD")

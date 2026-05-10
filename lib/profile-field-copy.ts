@@ -4,29 +4,30 @@
 
 export const PROFILE_FIELD_COPY = {
   industryPrincipal: "Industria principal",
-  /** Catálogo expertise bajo la industria (primary + expertise_slugs). */
+  /** Verticales de foco (nivel 2) bajo la industria; hasta 3. */
   verticales: "Verticales",
-  /** Hojas de industries_catalog (mismas etiquetas que en el perfil). */
-  verticalesAfinidad: "Verticales de afinidad",
-  talentos: "Talentos",
+  /** Expertise fino (nivel 3) bajo las verticales; hasta 5. */
+  expertise: "Expertise",
+  softSkills: "Soft skills",
 } as const
 
 /** Textos de ayuda reutilizables (formularios y filtros). */
 export const PROFILE_FIELD_HINTS = {
   industryOptionalShort:
-    "Opcional: un solo sector. Sin industria ni verticales de foco, no filtramos por ese eje.",
+    "Opcional: un solo sector. Sin industria ni verticales/expertise, no filtramos por ese eje.",
   industryFilterFeed:
     "Como en tu perfil. «Cualquiera» no filtra por sector.",
   verticalesOptional:
-    "Hasta 5 dentro de la industria; mismo catálogo que en tu perfil.",
+    "Hasta 3 verticales dentro de la industria.",
   verticalesFilterFeed:
-    "Opcional. Al menos una vertical del perfil mostrado debe coincidir.",
-  verticalesAfinidadOptional:
-    "Opcional; mismas etiquetas que «Verticales de afinidad» en el perfil.",
-  verticalesAfinidadFilterFeed:
-    "Opcional. Al menos una etiqueta de afinidad del perfil mostrado.",
-  talentosOptional: "Hasta 5; opcional (transversal).",
-  talentosFilterFeed: "Opcional. Al menos un talento en común.",
+    "Opcional. Coincidencia por verticales del perfil.",
+  expertiseOptional:
+    "Hasta 5; depende de las verticales elegidas.",
+  expertiseFilterFeed:
+    "Opcional. Coincidencia por expertise del perfil.",
+  softSkillsOptional:
+    "Hasta 5; opcional. No se rellenan desde tu perfil: solo si los quieres para esta búsqueda.",
+  softSkillsFilterFeed: "Opcional. Al menos una soft skill en común.",
   feedDrawerIntro:
-    "Misma taxonomía que tu perfil: industria principal, verticales, verticales de afinidad y talentos.",
+    "Misma taxonomía que tu perfil: industria, verticales, expertise y soft skills.",
 } as const

@@ -15,6 +15,7 @@ import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
 import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/connections"
 import { profileMatchesDiscoverFilters } from "@/lib/feed-filters"
+import { isPremiumPlan } from "@/lib/plan-limits"
 import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
@@ -40,10 +41,6 @@ function profileMatchesSearchChip(p: Profile, s: Search): boolean {
   if (s.talentSlugs?.length) {
     const pt = new Set(p.talentSlugs ?? [])
     if (!s.talentSlugs.some((x) => pt.has(x))) return false
-  }
-  if (s.industries?.length) {
-    const pi = new Set(p.industries ?? [])
-    if (!s.industries.some((x) => pi.has(x))) return false
   }
   if (s.relations?.length) {
     if (!s.relations.some((r) => p.relationsLooking.includes(r))) return false
@@ -88,6 +85,9 @@ function FeedPageContent() {
     feedLoading,
   } = useDiscoverFeed()
 
+  const activeSearchSlots = searches.filter((s) => s.status === "active").length
+  const canAddSearch =
+    isPremiumPlan(profile?.plan) || activeSearchSlots === 0
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [eventOpen, setEventOpen] = React.useState(false)
 
@@ -135,6 +135,7 @@ function FeedPageContent() {
           onOpenFilters={() => setFiltersOpen(true)}
           onOpenEvent={() => setEventOpen(true)}
           eventActive={activeEvent !== null}
+          canAddSearch={canAddSearch}
         />
 
         {activeEvent ? (

@@ -11,15 +11,15 @@ import { Field, Input, Textarea } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
-import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { VerticalMultiSelect } from "@/components/ui/vertical-multi-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { CITIES_CATALOG } from "@/lib/catalogs"
 import {
   defaultIndustryForFunctionalArea,
   deriveEditableTaxonomy,
-  expertiseSlugsForIndustry,
+  expertiseListForIndustryVerticals,
   inferIndustryFromExpertiseSlugs,
   labelIndustrySlug,
   labelExpertiseSlug,
@@ -28,7 +28,10 @@ import {
   resolveProfileArea,
 } from "@/lib/profile-taxonomy"
 import {
-  AREA_LABELS,
+  labelProfileVerticalSlug,
+  filterProfileVerticalSlugsForIndustry,
+} from "@/lib/industry-tree"
+import {
   AVAILABILITY_LABELS,
   EXPERIENCE_LABELS,
   RELATION_LABELS,
@@ -57,12 +60,11 @@ import { fetchProfileById } from "@/lib/data/profiles"
 import { fetchLiveProfileStats, type LiveProfileStats } from "@/lib/data/profile-stats"
 import {
   replaceProfileCities,
-  replaceProfileIndustries,
   replaceProfileRelationsLooking,
   replaceProfileWorkStyles,
 } from "@/lib/data/profile-mutations"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { IconEdit, IconX } from "@/components/icons"
+import { IconX } from "@/components/icons"
 import { cn } from "@/lib/utils"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 
@@ -119,6 +121,7 @@ export default function ProfilePage() {
     const rawExpertise = profile.expertise_slugs
     const rawTalents = profile.talent_slugs
     const rawIndustry = profile.primary_industry_slug
+    const rawVerticals = profile.vertical_slugs
     const fromSession = {
       ...merged,
       area: (profile.area as CurrentUser["area"]) ?? merged.area,
@@ -132,6 +135,10 @@ export default function ProfilePage() {
             ? rawExpertise
             : rawTags
         ),
+      verticalSlugs:
+        Array.isArray(rawVerticals) && rawVerticals.length > 0
+          ? rawVerticals
+          : merged.verticalSlugs,
       expertiseSlugs:
         Array.isArray(rawExpertise) && rawExpertise.length > 0
           ? rawExpertise
@@ -154,7 +161,6 @@ export default function ProfilePage() {
   const [workPrefsEditOpen, setWorkPrefsEditOpen] = React.useState(false)
   const [achievementEditOpen, setAchievementEditOpen] = React.useState(false)
   const [experienceEditOpen, setExperienceEditOpen] = React.useState(false)
-  const [industriesEditOpen, setIndustriesEditOpen] = React.useState(false)
   const [relationsEditOpen, setRelationsEditOpen] = React.useState(false)
 
   const [savingProfile, setSavingProfile] = React.useState(false)
@@ -165,7 +171,6 @@ export default function ProfilePage() {
   const [savingWorkPrefs, setSavingWorkPrefs] = React.useState(false)
   const [savingAchievement, setSavingAchievement] = React.useState(false)
   const [savingExperience, setSavingExperience] = React.useState(false)
-  const [savingIndustries, setSavingIndustries] = React.useState(false)
   const [savingRelations, setSavingRelations] = React.useState(false)
   const [savingVisibility, setSavingVisibility] = React.useState(false)
 
@@ -186,6 +191,9 @@ export default function ProfilePage() {
   const [expertiseDraftSlugs, setExpertiseDraftSlugs] = React.useState<
     string[]
   >([])
+  const [verticalDraftSlugs, setVerticalDraftSlugs] = React.useState<string[]>(
+    []
+  )
   const [talentsDraftSlugs, setTalentsDraftSlugs] = React.useState<string[]>(
     []
   )
@@ -208,7 +216,6 @@ export default function ProfilePage() {
   const [experienceDraft, setExperienceDraft] = React.useState<ExperienceRange>(
     "3-5"
   )
-  const [industriesDraft, setIndustriesDraft] = React.useState<string[]>([])
   const [relationsDraft, setRelationsDraft] = React.useState<RelationType[]>(
     []
   )
@@ -283,6 +290,7 @@ export default function ProfilePage() {
     if (!profileUser) return
     const { primaryIndustrySlug: inferred } = deriveEditableTaxonomy({
       primaryIndustrySlug: profileUser.primaryIndustrySlug,
+      verticalSlugs: profileUser.verticalSlugs,
       expertiseSlugs: profileUser.expertiseSlugs,
       functionalAreaTags: profileUser.functionalAreaTags,
       area: profileUser.area,
@@ -295,13 +303,15 @@ export default function ProfilePage() {
 
   function openExpertiseEdit() {
     if (!profileUser) return
-    const { expertiseSlugs: expertiseFiltered } = deriveEditableTaxonomy({
+    const t = deriveEditableTaxonomy({
       primaryIndustrySlug: profileUser.primaryIndustrySlug,
+      verticalSlugs: profileUser.verticalSlugs,
       expertiseSlugs: profileUser.expertiseSlugs,
       functionalAreaTags: profileUser.functionalAreaTags,
       area: profileUser.area,
     })
-    setExpertiseDraftSlugs(expertiseFiltered)
+    setVerticalDraftSlugs(t.verticalSlugs)
+    setExpertiseDraftSlugs(t.expertiseSlugs)
     setExpertiseEditOpen(true)
   }
 
@@ -322,14 +332,18 @@ export default function ProfilePage() {
         break
       case "email":
         break
+      case "primary_industry":
+        openIndustryEdit()
+        break
+      case "verticals":
+      case "expertise":
+        openExpertiseEdit()
+        break
       case "achievement":
         setAchievementEditOpen(true)
         break
       case "work_styles":
         setWorkPrefsEditOpen(true)
-        break
-      case "industries":
-        setIndustriesEditOpen(true)
         break
       case "relations":
         setRelationsEditOpen(true)
@@ -392,20 +406,28 @@ export default function ProfilePage() {
       ) ??
       defaultIndustryForFunctionalArea(profileUser.area)
     const keepExpertise = prevSlug === nextSlug
-    const expertise = keepExpertise
+    const taxonomy = keepExpertise
       ? deriveEditableTaxonomy({
           primaryIndustrySlug: profileUser.primaryIndustrySlug,
+          verticalSlugs: profileUser.verticalSlugs,
           expertiseSlugs: profileUser.expertiseSlugs,
           functionalAreaTags: profileUser.functionalAreaTags,
           area: profileUser.area,
-        }).expertiseSlugs
-      : []
+        })
+      : { verticalSlugs: [] as string[], expertiseSlugs: [] as string[] }
+    const expertise = taxonomy.expertiseSlugs
+    const verticals = filterProfileVerticalSlugsForIndustry(
+      nextSlug,
+      taxonomy.verticalSlugs,
+      3
+    )
     const area = resolveProfileArea(nextSlug, expertise)
     const supabase = getSupabaseBrowserClient()
     const payload = {
       primary_industry_slug: nextSlug,
+      vertical_slugs: verticals,
       expertise_slugs: expertise,
-      functional_area_tags: expertise,
+      functional_area_tags: [] as string[],
       area,
     }
     try {
@@ -417,7 +439,8 @@ export default function ProfilePage() {
         error?.code === "PGRST204" &&
         (error.message?.includes("functional_area_tags") ||
           error.message?.includes("primary_industry_slug") ||
-          error.message?.includes("expertise_slugs"))
+          error.message?.includes("expertise_slugs") ||
+          error.message?.includes("vertical_slugs"))
       ) {
         const second = await supabase
           .from("profiles")
@@ -449,7 +472,16 @@ export default function ProfilePage() {
       functionalAreaTags: profileUser.functionalAreaTags,
       area: profileUser.area,
     })
-    const allowedSet = new Set(expertiseSlugsForIndustry(industrySlug))
+    const verticals = filterProfileVerticalSlugsForIndustry(
+      industrySlug,
+      verticalDraftSlugs,
+      3
+    )
+    const allowedSet = new Set(
+      expertiseListForIndustryVerticals(industrySlug, verticals).map(
+        (e) => e.slug
+      )
+    )
     const expertise = expertiseDraftSlugs
       .filter((s) => allowedSet.has(s))
       .slice(0, 5)
@@ -457,8 +489,9 @@ export default function ProfilePage() {
     const supabase = getSupabaseBrowserClient()
     const payload = {
       primary_industry_slug: industrySlug,
+      vertical_slugs: verticals,
       expertise_slugs: expertise,
-      functional_area_tags: expertise,
+      functional_area_tags: [] as string[],
       area,
     }
     try {
@@ -470,7 +503,8 @@ export default function ProfilePage() {
         error?.code === "PGRST204" &&
         (error.message?.includes("functional_area_tags") ||
           error.message?.includes("expertise_slugs") ||
-          error.message?.includes("primary_industry_slug"))
+          error.message?.includes("primary_industry_slug") ||
+          error.message?.includes("vertical_slugs"))
       ) {
         const second = await supabase
           .from("profiles")
@@ -667,30 +701,6 @@ export default function ProfilePage() {
     void afterSuccessfulSave()
   }
 
-  function openIndustriesEdit() {
-    if (!profileUser) return
-    setIndustriesDraft([...profileUser.industries])
-    setIndustriesEditOpen(true)
-  }
-
-  async function saveIndustriesEdit() {
-    if (!authUser || savingIndustries) return
-    setSavingIndustries(true)
-    const supabase = getSupabaseBrowserClient()
-    const j = await replaceProfileIndustries(
-      supabase,
-      authUser.id,
-      industriesDraft
-    )
-    setSavingIndustries(false)
-    if (!j.ok) {
-      console.error("Failed to save industries", j.error)
-      return
-    }
-    setIndustriesEditOpen(false)
-    void afterSuccessfulSave()
-  }
-
   function openRelationsEdit() {
     if (!profileUser) return
     setRelationsDraft([...profileUser.relationsLooking])
@@ -762,10 +772,8 @@ export default function ProfilePage() {
     functionalAreaTags: user.functionalAreaTags,
     area: user.area,
   })
-  const heroExpertiseSlugs =
-    user.expertiseSlugs && user.expertiseSlugs.length > 0
-      ? user.expertiseSlugs
-      : (user.functionalAreaTags ?? [])
+  const heroVerticalSlugs = user.verticalSlugs ?? []
+  const heroExpertiseSlugs = user.expertiseSlugs ?? []
 
   return (
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full flex flex-col gap-4">
@@ -846,10 +854,13 @@ export default function ProfilePage() {
                 )}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={openProfileEdit}>
-              <IconEdit size={12} />
-              Datos básicos
-            </Button>
+            <button
+              type="button"
+              onClick={openProfileEdit}
+              className="text-[11px] font-medium text-[var(--p)] hover:underline shrink-0"
+            >
+              Editar
+            </button>
           </div>
           <p className="text-[13px] text-[var(--text)] leading-relaxed mt-3">
             {user.bio || (
@@ -870,6 +881,11 @@ export default function ProfilePage() {
             <Tag key="industry" variant="amber">
               {labelIndustrySlug(heroIndustrySlug)}
             </Tag>
+            {heroVerticalSlugs.map((slug) => (
+              <Tag key={`v-${slug}`} variant="amber">
+                {labelProfileVerticalSlug(slug)}
+              </Tag>
+            ))}
             {heroExpertiseSlugs.length > 0 ? (
               heroExpertiseSlugs.map((slug) => (
                 <Tag key={slug} variant="amber">
@@ -877,7 +893,7 @@ export default function ProfilePage() {
                 </Tag>
               ))
             ) : (
-              <Tag variant="amber">{AREA_LABELS[user.area]}</Tag>
+              <Tag variant="amber">Sin definir</Tag>
             )}
             {(user.talentSlugs ?? []).map((slug) => (
               <Tag key={`talent-${slug}`} variant="neutral">
@@ -897,7 +913,7 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Datos básicos"
-          description={`Foto, nombre, cómo te presentas, bio y un dato curioso opcional. ${PROFILE_FIELD_COPY.industryPrincipal}, ${PROFILE_FIELD_COPY.verticales.toLowerCase()}, años de experiencia y ${PROFILE_FIELD_COPY.talentos.toLowerCase()} los editas desde la sección Profesional.`}
+          description={`Foto, nombre, cómo te presentas, bio y un dato curioso opcional. ${PROFILE_FIELD_COPY.industryPrincipal}, ${PROFILE_FIELD_COPY.verticales.toLowerCase()}, ${PROFILE_FIELD_COPY.expertise.toLowerCase()}, años de experiencia y ${PROFILE_FIELD_COPY.softSkills.toLowerCase()} los editas desde la sección Profesional.`}
         />
 
         <div className="flex flex-col gap-3 mb-4">
@@ -1001,7 +1017,15 @@ export default function ProfilePage() {
           <Field label={PROFILE_FIELD_COPY.industryPrincipal}>
             <IndustrySingleSelect
               value={industryDraft}
-              onChange={(slug) => setIndustryDraft(slug)}
+              onChange={(slug) => {
+                setIndustryDraft((prev) => {
+                  if (prev !== slug) {
+                    setExpertiseDraftSlugs([])
+                    setVerticalDraftSlugs([])
+                  }
+                  return slug
+                })
+              }}
             />
           </Field>
         </div>
@@ -1028,22 +1052,31 @@ export default function ProfilePage() {
       <Drawer
         open={expertiseEditOpen}
         onOpenChange={setExpertiseEditOpen}
-        ariaLabel="Editar verticales"
-        className="flex max-h-[90dvh] flex-col !overflow-hidden"
+        ariaLabel="Editar verticales y expertise"
+        className="flex min-h-0 flex-col !overflow-hidden"
       >
         <DrawerHeader
           className="shrink-0"
-          title={PROFILE_FIELD_COPY.verticales}
-          description={`${PROFILE_FIELD_COPY.industryPrincipal}: ${labelIndustrySlug(heroIndustrySlug)}. Hasta 5 verticales de ese sector.`}
+          title="Verticales y expertise"
+          description={`${PROFILE_FIELD_COPY.industryPrincipal}: ${labelIndustrySlug(heroIndustrySlug)}. Hasta 3 verticales y 5 expertise bajo ellas.`}
         />
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex flex-col gap-3 pb-1">
             <Field label={PROFILE_FIELD_COPY.verticales}>
+              <VerticalMultiSelect
+                industrySlug={heroIndustrySlug}
+                value={verticalDraftSlugs}
+                onChange={setVerticalDraftSlugs}
+                footerNote="Elige primero las verticales; definen el catálogo de expertise."
+              />
+            </Field>
+            <Field label={PROFILE_FIELD_COPY.expertise}>
               <ExpertiseMultiSelect
                 industrySlug={heroIndustrySlug}
+                verticalSlugs={verticalDraftSlugs}
                 value={expertiseDraftSlugs}
                 onChange={setExpertiseDraftSlugs}
-                footerNote="Máximo 5. Para cambiar de industria, edita primero «Industria principal» arriba en Profesional."
+                footerNote="Para cambiar de industria, edita «Industria principal» en Profesional."
               />
             </Field>
           </div>
@@ -1071,21 +1104,25 @@ export default function ProfilePage() {
       <Drawer
         open={talentsEditOpen}
         onOpenChange={setTalentsEditOpen}
-        ariaLabel="Editar talentos"
+        ariaLabel="Editar soft skills"
+        className="flex min-h-0 flex-col !overflow-hidden"
       >
         <DrawerHeader
-          title={PROFILE_FIELD_COPY.talentos}
-          description="Habilidades transversales (soft skills). Elige hasta 5."
+          className="shrink-0"
+          title={PROFILE_FIELD_COPY.softSkills}
+          description="Habilidades transversales. Elige hasta 5."
         />
-        <div className="flex flex-col gap-3 mb-4">
-          <Field label={PROFILE_FIELD_COPY.talentos}>
-            <TalentMultiSelect
-              value={talentsDraftSlugs}
-              onChange={setTalentsDraftSlugs}
-            />
-          </Field>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex flex-col gap-3 pb-1 md:gap-4 md:pb-2">
+            <Field label={PROFILE_FIELD_COPY.softSkills}>
+              <TalentMultiSelect
+                value={talentsDraftSlugs}
+                onChange={setTalentsDraftSlugs}
+              />
+            </Field>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="relative z-[60] mt-2 flex shrink-0 gap-2 border-t border-[var(--border)] bg-[var(--bg)] pt-3 pb-[2px]">
           <Button
             variant="secondary"
             size="lg"
@@ -1177,22 +1214,12 @@ export default function ProfilePage() {
       </Card>
 
       <Card padding="default" className="ds-fade-up flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="ds-label-uppercase">Profesional</h3>
-            <p className="text-[12px] text-[var(--text2)] mt-1">
-              {PROFILE_FIELD_COPY.industryPrincipal}, {PROFILE_FIELD_COPY.verticales.toLowerCase()}, años de experiencia y{" "}
-              {PROFILE_FIELD_COPY.talentos.toLowerCase()}: edita cada bloque con su enlace.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={openAchievementEdit}
-            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1 shrink-0"
-            aria-label="Editar logro destacado"
-          >
-            <IconEdit size={14} />
-          </button>
+        <div>
+          <h3 className="ds-label-uppercase">Profesional</h3>
+          <p className="text-[12px] text-[var(--text2)] mt-1">
+            {PROFILE_FIELD_COPY.industryPrincipal}, {PROFILE_FIELD_COPY.verticales.toLowerCase()}, {PROFILE_FIELD_COPY.expertise.toLowerCase()}, años de experiencia y{" "}
+            {PROFILE_FIELD_COPY.softSkills.toLowerCase()}: edita cada bloque con su enlace.
+          </p>
         </div>
         <ProfileValueRow
           label={PROFILE_FIELD_COPY.industryPrincipal}
@@ -1202,14 +1229,25 @@ export default function ProfilePage() {
         <ProfileValueRow
           label={PROFILE_FIELD_COPY.verticales}
           value={
-            heroExpertiseSlugs.length > 0
-              ? heroExpertiseSlugs.map((s) => labelExpertiseSlug(s)).join(" · ")
-              : AREA_LABELS[user.area]
+            heroVerticalSlugs.length > 0
+              ? heroVerticalSlugs
+                  .map((s) => labelProfileVerticalSlug(s))
+                  .join(" · ")
+              : "Sin definir"
           }
           onEdit={openExpertiseEdit}
         />
         <ProfileValueRow
-          label={PROFILE_FIELD_COPY.talentos}
+          label={PROFILE_FIELD_COPY.expertise}
+          value={
+            heroExpertiseSlugs.length > 0
+              ? heroExpertiseSlugs.map((s) => labelExpertiseSlug(s)).join(" · ")
+              : "Sin definir"
+          }
+          onEdit={openExpertiseEdit}
+        />
+        <ProfileValueRow
+          label={PROFILE_FIELD_COPY.softSkills}
           value={
             user.talentSlugs && user.talentSlugs.length > 0
               ? user.talentSlugs.map((s) => labelTalentSlug(s)).join(" · ")
@@ -1268,17 +1306,7 @@ export default function ProfilePage() {
       </Drawer>
 
       <Card padding="default" className="ds-fade-up">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="ds-label-uppercase">Ubicación y radio</h3>
-          <button
-            type="button"
-            onClick={openLocationEdit}
-            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
-            aria-label="Editar ubicación y radio"
-          >
-            <IconEdit size={14} />
-          </button>
-        </div>
+        <h3 className="ds-label-uppercase mb-3">Ubicación y radio</h3>
         <div className="flex flex-col gap-3">
           <ProfileValueRow
             label="Ciudad principal"
@@ -1412,38 +1440,22 @@ export default function ProfilePage() {
       </Drawer>
 
       <Card padding="default" className="ds-fade-up">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="ds-label-uppercase">Disponibilidad y forma de trabajar</h3>
-          <button
-            type="button"
-            onClick={openWorkPrefsEdit}
-            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
-            aria-label="Editar disponibilidad y forma de trabajar"
-          >
-            <IconEdit size={14} />
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
+        <h3 className="ds-label-uppercase mb-3">Disponibilidad y forma de trabajar</h3>
+        <div className="flex flex-col gap-3">
           <ProfileValueRow
             label="Disponibilidad"
             value={AVAILABILITY_LABELS[user.availability]}
+            onEdit={openWorkPrefsEdit}
           />
-          <div>
-            <p className="text-[11px] uppercase tracking-wide text-[var(--text3)] mb-1.5">
-              Forma de trabajar
-            </p>
-            {user.workStyle.length ? (
-              <div className="flex flex-wrap gap-1.5">
-                {user.workStyle.map((w) => (
-                  <Tag key={w} variant="neutral">
-                    {WORK_STYLE_LABELS[w]}
-                  </Tag>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
-            )}
-          </div>
+          <ProfileValueRow
+            label="Forma de trabajar"
+            value={
+              user.workStyle.length > 0
+                ? user.workStyle.map((w) => WORK_STYLE_LABELS[w]).join(" · ")
+                : undefined
+            }
+            onEdit={openWorkPrefsEdit}
+          />
         </div>
       </Card>
 
@@ -1511,88 +1523,15 @@ export default function ProfilePage() {
       </Drawer>
 
       <Card padding="default" className="ds-fade-up">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="ds-label-uppercase">{PROFILE_FIELD_COPY.verticalesAfinidad}</h3>
-          <button
-            type="button"
-            onClick={openIndustriesEdit}
-            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
-            aria-label={`Editar ${PROFILE_FIELD_COPY.verticalesAfinidad}`}
-          >
-            <IconEdit size={14} />
-          </button>
-        </div>
-        {user.industries.length ? (
-          <div className="flex flex-wrap gap-1.5">
-            {user.industries.map((i) => (
-              <Tag key={i} variant="green">
-                {i}
-              </Tag>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
-        )}
-      </Card>
-
-      <Drawer
-        open={industriesEditOpen}
-        onOpenChange={setIndustriesEditOpen}
-        ariaLabel={`Editar ${PROFILE_FIELD_COPY.verticalesAfinidad}`}
-      >
-        <DrawerHeader
-          title={PROFILE_FIELD_COPY.verticalesAfinidad}
-          description="Elige una industria y marca verticales del catálogo. Puedes sumar etiquetas de varias industrias."
+        <ProfileValueRow
+          label="Tipos de relación que busco"
+          value={
+            user.relationsLooking.length > 0
+              ? user.relationsLooking.map((r) => RELATION_LABELS[r]).join(" · ")
+              : undefined
+          }
+          onEdit={openRelationsEdit}
         />
-        <div className="max-h-[min(70vh,520px)] overflow-y-auto mb-4 pr-1">
-          <HierarchicalIndustrySelector
-            value={industriesDraft}
-            onChange={setIndustriesDraft}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="lg"
-            className="flex-1 justify-center"
-            onClick={() => setIndustriesEditOpen(false)}
-          >
-            Cancelar
-          </Button>
-          <Button
-            size="lg"
-            className="flex-1 justify-center"
-            onClick={saveIndustriesEdit}
-            disabled={savingIndustries}
-          >
-            {savingIndustries ? "Guardando..." : "Guardar"}
-          </Button>
-        </div>
-      </Drawer>
-
-      <Card padding="default" className="ds-fade-up">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="ds-label-uppercase">Tipos de relación que busco</h3>
-          <button
-            type="button"
-            onClick={openRelationsEdit}
-            className="text-[var(--text3)] hover:text-[var(--p)] p-1 -m-1"
-            aria-label="Editar tipos de relación"
-          >
-            <IconEdit size={14} />
-          </button>
-        </div>
-        {user.relationsLooking.length ? (
-          <div className="flex flex-wrap gap-1.5">
-            {user.relationsLooking.map((r) => (
-              <Tag key={r} variant="brand">
-                {RELATION_LABELS[r]}
-              </Tag>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[13px] text-[var(--text3)]">Sin definir</p>
-        )}
       </Card>
 
       <Drawer

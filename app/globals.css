@@ -313,7 +313,8 @@
     background: var(--bg);
     border-radius: 20px 20px 0 0;
     padding: 22px 24px calc(22px + var(--sab));
-    max-height: 90dvh;
+    /* Altura: priorizar área útil; en escritorio más “aire” vertical que 90dvh. */
+    max-height: min(94dvh, 100dvh);
     overflow-y: auto;
     transform: translateY(100%);
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -321,6 +322,20 @@
   }
   .ds-overlay[data-open="true"] .ds-drawer {
     transform: translateY(0);
+  }
+
+  /* Escritorio: hoja centrada; más alto disponible para listas y pies fijos. */
+  @media (min-width: 768px) {
+    .ds-drawer {
+      left: 50%;
+      right: auto;
+      width: min(calc(100vw - 48px), 40rem);
+      max-height: min(96dvh, calc(100dvh - 1rem));
+      transform: translateX(-50%) translateY(100%);
+    }
+    .ds-overlay[data-open="true"] .ds-drawer {
+      transform: translateX(-50%) translateY(0);
+    }
   }
 
   .ds-drawer-handle {

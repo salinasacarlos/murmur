@@ -1,4 +1,5 @@
 import type { FunctionalArea } from "@/lib/types"
+import { filterVerticalSlugsForIndustrySlug } from "@/lib/leaf-catalog"
 
 /** Industria principal (perfil / búsqueda): una sola. */
 export interface IndustryDefinition {
@@ -59,6 +60,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Automatización",
       "Desarrollo web/móvil",
       "Open source",
+      "MLOps y ML en producción",
+      "Visión por computadora",
+      "Procesamiento de lenguaje natural",
+      "Edge computing",
+      "Observabilidad y SRE",
+      "Platform engineering",
+      "FinOps y costos en nube",
+      "APIs e integraciones",
+      "QA y automatización de pruebas",
+      "Producto técnico (TPM/PM)",
+      "Ingeniería de datos y pipelines",
+      "Analytics engineering y BI",
+      "AdTech y MarTech",
+      "CRM y sistemas comerciales",
+      "Sistemas embebidos y firmware",
+      "Cómputo científico e HPC",
+      "OT, SCADA y sistemas industriales",
+      "Audio, voz y speech tech",
+      "Identity y gestión de acceso (IAM)",
+      "Gobernanza de datos y privacidad",
     ],
   },
   {
@@ -81,6 +102,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Bioingeniería",
       "Laboratorios",
       "Medicina tradicional/alternativa",
+      "Enfermería y cuidados especializados",
+      "Cardiología",
+      "Dermatología",
+      "Pediatría",
+      "Inmunología",
+      "Radiología e imagen médica",
+      "Patología clínica",
+      "Salud digital y apps clínicas",
+      "Longevidad y medicina antienvejecimiento",
+      "Odontología",
+      "Oftalmología y optometría",
+      "Medicina veterinaria y One Health",
+      "Ensayos clínicos y CRO",
+      "Farmacovigilancia",
+      "Biomarcadores y diagnóstico avanzado",
+      "Salud materno-infantil",
+      "Epidemiología",
+      "Salud ocupacional",
+      "Terapia física y ocupacional",
+      "Bienestar laboral y salud corporativa",
     ],
   },
   {
@@ -101,6 +142,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Certificaciones profesionales",
       "Educación a distancia",
       "Bibliotecología",
+      "STEM y divulgación científica",
+      "Evaluación y medición del aprendizaje",
+      "Currículo y diseño instruccional",
+      "Plataformas LMS y contenido digital",
+      "Gestión y dirección escolar",
+      "Inclusión, equidad y diversidad",
+      "Educación infantil y primera infancia",
+      "Educación de adultos y MAYEB",
+      "Bootcamps y entrenamiento intensivo",
+      "Comunidades de práctica y aprendizaje",
+      "Investigación educativa",
+      "Intercambios y movilidad estudiantil",
+      "Arte y cultura en el currículo",
+      "Bibliotecas y recursos digitales",
+      "Acreditación y aseguramiento de calidad",
+      "Psicología educativa",
+      "Comunicación y relaciones educativas",
+      "Alfabetización y competencias digitales",
+      "Neuroeducación",
+      "Educación intercultural y comunitaria",
     ],
   },
   {
@@ -122,6 +183,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Mercados de capitales",
       "Economía conductual",
       "Planeación fiscal",
+      "Wealth management",
+      "Private equity",
+      "Family office",
+      "FX, tesorería y mercados globales",
+      "Riesgo crediticio y scoring",
+      "RegTech",
+      "AML, KYC y compliance financiero",
+      "Neobanca y banca digital",
+      "BNPL y crédito punto de venta",
+      "Factoring, leasing y arrendamiento financiero",
+      "Reaseguros y gestión actuarial",
+      "FP&A y finanzas corporativas",
+      "Valuación de activos y fairness opinion",
+      "Trading cuantitativo y mercados",
+      "Inversión sostenible y ESG",
+      "Crowdfunding y capital semilla regulado",
+      "Cobranza y recuperación de cartera",
+      "Operaciones y middle/back office",
+      "Research y estrategia de mercados",
+      "Structured finance y project finance",
     ],
   },
   {
@@ -143,6 +224,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Realidad virtual inmersiva",
       "Producción audiovisual",
       "Relaciones públicas",
+      "Esports y competición",
+      "Creators, UGC y comunidades de fans",
+      "Marketing y management musical",
+      "Festivales, giras y venue management",
+      "Derechos, licencias y clearances",
+      "Postproducción, color y VFX",
+      "Desarrollo de guion e IP",
+      "Casting y representación de talento",
+      "Distribución multiplataforma",
+      "Locución, voice-over y audio para medios",
+      "Fotografía editorial y lifestyle",
+      "Diseño de sonido y música para medios",
+      "Experiencias inmersivas y museografía",
+      "Brand integration y branded content",
+      "Publishing y edición independiente",
+      "Stand-up, comedia en vivo y clubes",
+      "Moda y contenido lifestyle",
+      "No ficción y formatos documentales",
+      "Radio tradicional y syndication",
+      "Representación artística y booking",
     ],
   },
   {
@@ -165,6 +266,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Cerámica",
       "Dirección de arte",
       "Diseño editorial",
+      "Tipografía y lettering",
+      "Motion graphics y animación gráfica",
+      "Branding e identidad visual",
+      "Packaging y unboxing experience",
+      "Diseño de espacios expositivos",
+      "Arte digital y cultura web3",
+      "Restauración y conservación",
+      "Curaduría y producción de exposiciones",
+      "Producción escénica y stagework",
+      "Textiles, patronaje y confección autoral",
+      "Storyboard y previsualización",
+      "Concept art y visdev",
+      "Diseño de producto y prototipado",
+      "Bellas artes académicas",
+      "Artes mixtas e instalación",
+      "Comisariado independiente",
+      "Diseño regenerativo y materiales",
+      "Fotografía documental y ensayo",
+      "Videoarte y nuevos medios",
+      "Performance y arte en vivo",
     ],
   },
   {
@@ -184,6 +305,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Arquitectura sustentable",
       "Facility management",
       "Vivienda social",
+      "BIM, gemelos digitales y colaboración 3D",
+      "Prefabricación, modular y construcción industrializada",
+      "Costos, control presupuestal y quantity surveying",
+      "Contratación, licitaciones y claims",
+      "Seguridad, higiene y medio ambiente en obra",
+      "Certificaciones LEED, BREEAM y construcción verde",
+      "Ingeniería estructural de precisión",
+      "Instalaciones MEP y especialidades",
+      "Project finance y estructuración inmobiliaria",
+      "Asset y property management",
+      "Brokerage y transacciones comerciales",
+      "Desarrollo de loteos y uso de suelo mixto",
+      "Logística industrial y parques",
+      "Hospitality real estate y mixed-use",
+      "Due diligence técnica y estudios de prefactibilidad",
+      "Mantenimiento predictivo de inmuebles",
+      "Edificios inteligentes y sistemas integrados",
+      "Topografía, levantamientos y lidar",
+      "Permisos, impacto urbano y compliance regulatorio",
+      "Real estate proptech y captación digital",
     ],
   },
   {
@@ -205,6 +346,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Industria naval",
       "Maquinaria pesada",
       "Industria del plástico",
+      "Lean manufacturing y mejora continua",
+      "TPM y confiabilidad operativa",
+      "Industria 4.0, sensórica y analytics de planta",
+      "Robotización y cobots",
+      "Química fina y especialidades",
+      "Farmoquímica y síntesis industrial",
+      "Bebidas y agua embotellada",
+      "Cosmética, fragrance y cuidado personal industrial",
+      "Papel, celulosa y embalajes fibra",
+      "Vidrio, cerámica técnica y refractarios",
+      "Minería, metalurgia y fundición",
+      "Simulación de planta y plant layout",
+      "Compras estratégicas y sourcing global",
+      "Manufactura para exportación y nearshoring",
+      "Esquemas de maquila y subcontratación",
+      "Materiales compuestos y biopolímeros",
+      "Energía térmica y utilities de planta",
+      "Calibración metrológica y laboratorio industrial",
+      "Reverse logistics industrial",
+      "Puesta en marcha y commissioning",
     ],
   },
   {
@@ -225,6 +386,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Investigación agrícola",
       "Silvicultura",
       "Food design",
+      "Hidroponía, invernaderos y agricultura vertical",
+      "Agricultura de precisión y agrodrones",
+      "Semillas, biotecnología vegetal y fitomejoramiento",
+      "Insumos, fertilización y nutrición de cultivos",
+      "Fitosanidad y manejo integrado de plagas",
+      "Lácteos, quesos y derivados industriales",
+      "Cárnicos, aves y productos transformados",
+      "Panadería, molinos y harinas industriales",
+      "Cacao, café y commodity de altura",
+      "Retail alimentario y abasto moderno",
+      "Inocuidad HACCP y cultura de calidad",
+      "Trazabilidad, cadena de frío y última milla alimentaria",
+      "Bebidas fermentadas y destilados artesanales",
+      "Pesca, acuicultura industrial y valor agregado",
+      "Apicultura y polinización comercial",
+      "Forestería comercial y aserradero",
+      "Biocombustibles y oleoquímicos agrícolas",
+      "Comercialización agrícola y desk de commodities",
+      "Cooperativas, asociaciones y extensionismo",
+      "Nutrición animal y formulación de alimento balanceado",
     ],
   },
   {
@@ -246,6 +427,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Salud pública",
       "Migración",
       "Regulación",
+      "Protección civil y gestión de emergencias",
+      "Procuración e impartición de justicia",
+      "Hacienda pública y finanzas gubernamentales",
+      "Compras públicas y adquisiciones estratégicas",
+      "Datos abiertos e interoperabilidad",
+      "Gobierno digital y servicios en línea",
+      "Participación ciudadana y presupuesto participativo",
+      "Ordenamiento territorial y uso de suelo",
+      "Políticas educativas públicas",
+      "Infraestructura pública y APP",
+      "Áreas naturales protegidas y ANP",
+      "Cultura, patrimonio y memoria",
+      "Estadística oficial y censos",
+      "Planeación del desarrollo",
+      "Cooperación internacional para el desarrollo",
+      "Capital humano y carrera administrativa",
+      "Organismos autónomos y reguladores sectoriales",
+      "Innovación pública y laboratorios de política",
+      "Seguridad nacional y enfoque multidimensional",
+      "Fomento económico y clusters regionales",
     ],
   },
   {
@@ -266,6 +467,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Cruceros",
       "Aerolíneas",
       "Concierge",
+      "Revenue management y distribución hotelera",
+      "Housekeeping y operaciones de habitaciones",
+      "F&B hotelero y banquetería",
+      "MICE y congresos",
+      "Oficinas de turismo y gestión de destino",
+      "Turismo religioso y peregrinaciones",
+      "Turismo de naturaleza y observación",
+      "Ecoturismo certificado",
+      "Rentas vacacionales y hospitality alternativo",
+      "Hostels, glamping y coliving viajero",
+      "Hospitalidad de lujo y personalización",
+      "Integración de casino-resort y entretenimiento",
+      "Parques temáticos y atracciones",
+      "Wellness tourism y spas destino",
+      "Turismo deportivo y megaeventos",
+      "Turismo LGBTQ+ friendly",
+      "Turismo accesible y diseño inclusivo",
+      "Producto digital y apps de destino",
+      "Asistencia al viajero y seguros turísticos",
+      "Experiencias gastronómicas destacadas",
     ],
   },
   {
@@ -285,6 +506,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Movilidad eléctrica",
       "Carbono neutro",
       "Consultoría ambiental",
+      "Almacenamiento distribuido y BESS",
+      "Redes inteligentes y flexibilidad",
+      "Geotermia y bombeo térmico",
+      "Biogás, digestión anaeróbica y gestión de finos",
+      "Captura, uso y almacenamiento de carbono",
+      "Mercados de carbono y MRV",
+      "Certificaciones ambientales sectoriales",
+      "Gestión hídrica y plantas de tratamiento",
+      "Biodiversidad, offsets y bancos de hábitat",
+      "Impacto ambiental y licencias sectoriales",
+      "Due diligence ambiental y M&A verde",
+      "Energía nuclear (servicios y regulación)",
+      "Minería responsable y cierre de minas",
+      "Transición justa y reconversión industrial",
+      "Movilidad urbana baja en emisiones",
+      "Edificaciones net-zero y envelopes eficientes",
+      "Suelos y agricultura climáticamente inteligente",
+      "Energía oceánica y mareomotriz",
+      "Reportes TCFD y disclosure climático",
+      "Generación distribuida y microrredes",
     ],
   },
   {
@@ -304,6 +545,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Retail media",
       "Distribución",
       "Importación/exportación",
+      "Pricing y estrategia omnicanal",
+      "Revenue management retail",
+      "Planogramas, layout y shopper marketing",
+      "Fulfillment, dark stores y última milla",
+      "Quick commerce y entregas instantáneas",
+      "Social commerce y live shopping",
+      "Marcas D2C y flagship digital",
+      "Outlet, off-price y inventarios estratégicos",
+      "Mayoreo B2B y cash & carry",
+      "Trade marketing y ejecución en punto de venta",
+      "Analítica retail y forecasting de demanda",
+      "Prevención de mermas y loss prevention",
+      "Loyalty, CRM y datos first-party",
+      "Tiendas concepto y flagship físicas",
+      "Retail efímero y pop-up stores",
+      "Retail en centros comerciales",
+      "Retail internacional, aranceles y compliance",
+      "Marca propia y sourcing de private label",
+      "Canales informales, ferias y micromercados",
+      "CDP, analítica omnicanal y personalización",
     ],
   },
   {
@@ -323,6 +584,26 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Derecho internacional",
       "Consultoría de innovación",
       "Gestión del cambio",
+      "Litigio civil y mercantil",
+      "Arbitraje nacional e internacional",
+      "Derecho de familia y sucesiones",
+      "Derecho inmobiliario y condominales",
+      "Fusiones y adquisiciones (M&A)",
+      "Capital markets y ofertas públicas",
+      "Privacidad, datos personales y ciberlegal",
+      "Contratos tecnológicos y outsourcing IT",
+      "Derecho penal corporativo y compliance penal",
+      "Planeación fiscal avanzada y controversia",
+      "Consultoría operativa y mejoras de procesos",
+      "Advisory tecnológico y transformación digital",
+      "Executive search de alto nivel",
+      "Cultura organizacional y engagement",
+      "Desarrollo de liderazgo y coaching ejecutivo",
+      "Gestión del desempeño y OKRs",
+      "Compensación, nómina estratégica y equity",
+      "People analytics y workforce planning",
+      "Relaciones laborales, sindicales y negociación colectiva",
+      "Servicios integrales de HR outsourcing",
     ],
   },
   {
@@ -342,16 +623,36 @@ const INDUSTRY_SEEDS: readonly Seed[] = [
       "Biohacking",
       "Spas y wellness",
       "Deporte adaptado",
+      "Entrenamiento personal y coaching one-on-one",
+      "Fuerza, powerlifting y entrenamiento de rendimiento",
+      "Running, trail y endurance",
+      "Natación, triatlón y deportes acuáticos",
+      "Ciclismo indoor, outdoor y indoor training tech",
+      "Functional fitness y HIIT",
+      "Danza fitness y coreografías grupales",
+      "Artes marciales y combate deportivo",
+      "Montañismo, escalada y outdoor sports",
+      "Nutrición deportiva suplementada",
+      "Fisioterapia y readaptación al esfuerzo",
+      "Recuperación, contrast therapy y sueño",
+      "Analítica de rendimiento y wearables",
+      "Marketing deportivo y activaciones",
+      "Patrocinios, naming rights y hospitality deportiva",
+      "Derecho deportivo y agentes",
+      "Diseño y operación de instalaciones deportivas",
+      "Escuelas formativas y captación de talento joven",
+      "Turismo activo y deporte experiencial",
+      "Salud mental y mindfulness aplicado al deporte",
     ],
   },
 ] as const
 
 function buildFromSeeds(): {
   industries: readonly IndustryDefinition[]
-  expertiseByIndustry: Readonly<Record<string, readonly ExpertiseDefinition[]>>
+  expertiseByVertical: Readonly<Record<string, readonly ExpertiseDefinition[]>>
 } {
   const industries: IndustryDefinition[] = []
-  const expertiseByIndustry: Record<string, ExpertiseDefinition[]> = {}
+  const expertiseByVertical: Record<string, ExpertiseDefinition[]> = {}
   let iOrd = 10
   for (const seed of INDUSTRY_SEEDS) {
     industries.push({
@@ -361,6 +662,7 @@ function buildFromSeeds(): {
       mapsTo: seed.mapsTo,
     })
     iOrd += 10
+    const genKey = `${seed.slug}-general`
     const ex: ExpertiseDefinition[] = []
     let eOrd = 10
     const usedSlugs = new Set<string>()
@@ -381,21 +683,58 @@ function buildFromSeeds(): {
       })
       eOrd += 10
     }
-    expertiseByIndustry[seed.slug] = ex
+    expertiseByVertical[genKey] = ex
   }
-  return { industries, expertiseByIndustry }
+  return { industries, expertiseByVertical }
 }
 
 const built = buildFromSeeds()
 
 export const INDUSTRIES: readonly IndustryDefinition[] = built.industries
 
+/** Expertise fino (nivel 3) por vertical; hoy todas las filas viven bajo `{industria}-general` en DB. */
+export const EXPERTISE_BY_VERTICAL: Readonly<
+  Record<string, readonly ExpertiseDefinition[]>
+> = built.expertiseByVertical
+
+/** @deprecated Usar EXPERTISE_BY_VERTICAL[`${ind}-general`] o expertiseListForIndustryVerticals. */
 export const EXPERTISE_BY_INDUSTRY: Readonly<
   Record<string, readonly ExpertiseDefinition[]>
-> = built.expertiseByIndustry
+> = Object.fromEntries(
+  INDUSTRIES.map((ind) => {
+    const k = `${ind.slug}-general`
+    return [ind.slug, built.expertiseByVertical[k] ?? []]
+  })
+) as Readonly<Record<string, readonly ExpertiseDefinition[]>>
 
-export const ALL_EXPERTISE: readonly ExpertiseDefinition[] =
-  INDUSTRIES.flatMap((ind) => EXPERTISE_BY_INDUSTRY[ind.slug] ?? [])
+export const ALL_EXPERTISE: readonly ExpertiseDefinition[] = Object.values(
+  EXPERTISE_BY_VERTICAL
+).flat()
+
+export function expertiseSlugsForGeneralVertical(
+  industrySlug: string
+): string[] {
+  const k = `${industrySlug}-general`
+  return (EXPERTISE_BY_VERTICAL[k] ?? []).map((e) => e.slug)
+}
+
+/** Opciones de expertise (nivel 3) para las verticales elegidas; usa catálogo «General» como fallback por vertical sin filas propias. */
+export function expertiseListForIndustryVerticals(
+  industrySlug: string | null,
+  verticalSlugs: readonly string[]
+): readonly ExpertiseDefinition[] {
+  if (!industrySlug || verticalSlugs.length === 0) return []
+  const genKey = `${industrySlug}-general`
+  const fallback = EXPERTISE_BY_VERTICAL[genKey] ?? []
+  const bySlug = new Map<string, ExpertiseDefinition>()
+  for (const v of verticalSlugs) {
+    const list = EXPERTISE_BY_VERTICAL[v] ?? fallback
+    for (const e of list) {
+      bySlug.set(e.slug, e)
+    }
+  }
+  return [...bySlug.values()].sort((a, b) => a.sortOrder - b.sortOrder)
+}
 
 const TALENT_LABELS: readonly string[] = [
   "Comunicación",
@@ -568,10 +907,15 @@ export function resolveHeroIndustrySlug(input: {
 
 export function deriveEditableTaxonomy(input: {
   primaryIndustrySlug?: string | null
+  verticalSlugs?: string[] | null | undefined
   expertiseSlugs?: string[] | null | undefined
   functionalAreaTags?: string[] | null | undefined
   area?: FunctionalArea
-}): { primaryIndustrySlug: string | null; expertiseSlugs: string[] } {
+}): {
+  primaryIndustrySlug: string | null
+  verticalSlugs: string[]
+  expertiseSlugs: string[]
+} {
   const inferred =
     input.primaryIndustrySlug ??
     inferIndustryFromExpertiseSlugs(
@@ -580,16 +924,40 @@ export function deriveEditableTaxonomy(input: {
         : input.functionalAreaTags ?? []
     ) ??
     (input.area ? defaultIndustryForFunctionalArea(input.area) : null)
-  const allowed = inferred ? new Set(expertiseSlugsForIndustry(inferred)) : null
+
+  const verticalFiltered = filterVerticalSlugsForIndustrySlug(
+    inferred,
+    input.verticalSlugs,
+    3
+  )
+
+  const vertsForExpertise =
+    verticalFiltered.length > 0
+      ? verticalFiltered
+      : inferred
+        ? [`${inferred}-general`]
+        : []
+
+  const expertOpts =
+    inferred && vertsForExpertise.length > 0
+      ? expertiseListForIndustryVerticals(inferred, vertsForExpertise)
+      : []
+  const allowedExpert = new Set(expertOpts.map((e) => e.slug))
+
   const raw =
     input.expertiseSlugs?.length
       ? input.expertiseSlugs
       : (input.functionalAreaTags ?? [])
   const expertiseFiltered =
-    allowed && allowed.size > 0
-      ? raw.filter((s) => allowed!.has(s)).slice(0, 5)
+    allowedExpert.size > 0
+      ? raw.filter((s) => allowedExpert.has(s)).slice(0, 5)
       : [...raw].slice(0, 5)
-  return { primaryIndustrySlug: inferred, expertiseSlugs: expertiseFiltered }
+
+  return {
+    primaryIndustrySlug: inferred,
+    verticalSlugs: verticalFiltered,
+    expertiseSlugs: expertiseFiltered,
+  }
 }
 
 /** Etiqueta legada para slugs antiguos no presentes en el catálogo actual. */

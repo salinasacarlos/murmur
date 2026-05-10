@@ -242,7 +242,7 @@ export type Database = {
         }
         Relationships: []
       }
-      expertise_catalog: {
+      industry_verticals: {
         Row: {
           industry_slug: string
           label: string
@@ -266,10 +266,52 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "industry_verticals_industry_slug_fkey"
+            columns: ["industry_slug"]
+            isOneToOne: false
+            referencedRelation: "industries"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      expertise_catalog: {
+        Row: {
+          industry_slug: string
+          label: string
+          maps_to: Database["public"]["Enums"]["functional_area"]
+          slug: string
+          sort_order: number
+          vertical_slug: string
+        }
+        Insert: {
+          industry_slug: string
+          label: string
+          maps_to: Database["public"]["Enums"]["functional_area"]
+          slug: string
+          sort_order?: number
+          vertical_slug: string
+        }
+        Update: {
+          industry_slug?: string
+          label?: string
+          maps_to?: Database["public"]["Enums"]["functional_area"]
+          slug?: string
+          sort_order?: number
+          vertical_slug?: string
+        }
+        Relationships: [
+          {
             foreignKeyName: "expertise_catalog_industry_slug_fkey"
             columns: ["industry_slug"]
             isOneToOne: false
             referencedRelation: "industries"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "expertise_catalog_vertical_slug_fkey"
+            columns: ["vertical_slug"]
+            isOneToOne: false
+            referencedRelation: "industry_verticals"
             referencedColumns: ["slug"]
           },
         ]
@@ -513,39 +555,6 @@ export type Database = {
           },
         ]
       }
-      profile_industries: {
-        Row: {
-          created_at: string
-          industry_slug: string
-          profile_id: string
-        }
-        Insert: {
-          created_at?: string
-          industry_slug: string
-          profile_id: string
-        }
-        Update: {
-          created_at?: string
-          industry_slug?: string
-          profile_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profile_industries_industry_slug_fkey"
-            columns: ["industry_slug"]
-            isOneToOne: false
-            referencedRelation: "industries_catalog"
-            referencedColumns: ["slug"]
-          },
-          {
-            foreignKeyName: "profile_industries_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profile_relations_looking: {
         Row: {
           profile_id: string
@@ -623,6 +632,7 @@ export type Database = {
           stats_messages: number
           talent_slugs: string[]
           updated_at: string
+          vertical_slugs: string[]
           visible: boolean
         }
         Insert: {
@@ -655,6 +665,7 @@ export type Database = {
           stats_messages?: number
           talent_slugs?: string[]
           updated_at?: string
+          vertical_slugs?: string[]
           visible?: boolean
         }
         Update: {
@@ -687,39 +698,10 @@ export type Database = {
           stats_messages?: number
           talent_slugs?: string[]
           updated_at?: string
+          vertical_slugs?: string[]
           visible?: boolean
         }
         Relationships: []
-      }
-      search_industries: {
-        Row: {
-          industry_slug: string
-          search_id: string
-        }
-        Insert: {
-          industry_slug: string
-          search_id: string
-        }
-        Update: {
-          industry_slug?: string
-          search_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "search_industries_industry_slug_fkey"
-            columns: ["industry_slug"]
-            isOneToOne: false
-            referencedRelation: "industries_catalog"
-            referencedColumns: ["slug"]
-          },
-          {
-            foreignKeyName: "search_industries_search_id_fkey"
-            columns: ["search_id"]
-            isOneToOne: false
-            referencedRelation: "searches"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       search_relations: {
         Row: {
@@ -759,6 +741,7 @@ export type Database = {
           talent_slugs: string[]
           title: string
           updated_at: string
+          vertical_slugs: string[]
         }
         Insert: {
           area?: Database["public"]["Enums"]["functional_area"] | null
@@ -774,6 +757,7 @@ export type Database = {
           talent_slugs?: string[]
           title: string
           updated_at?: string
+          vertical_slugs?: string[]
         }
         Update: {
           area?: Database["public"]["Enums"]["functional_area"] | null
@@ -789,6 +773,7 @@ export type Database = {
           talent_slugs?: string[]
           title?: string
           updated_at?: string
+          vertical_slugs?: string[]
         }
         Relationships: [
           {

@@ -7,18 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
 import {
-  AREA_LABELS,
   RELATION_LABELS,
   type Search,
 } from "@/lib/types"
+import { labelProfileVerticalSlug } from "@/lib/industry-tree"
 import {
-  defaultIndustryForFunctionalArea,
-  inferIndustryFromExpertiseSlugs,
   labelIndustrySlug,
   labelExpertiseSlug,
   labelTalentSlug,
+  resolveHeroIndustrySlug,
 } from "@/lib/profile-taxonomy"
-import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import { IconEdit, IconPause, IconPlay, IconTrash } from "@/components/icons"
 
 interface SearchCardProps {
@@ -32,18 +30,14 @@ export function SearchCard({
   onToggleStatus,
   onDelete,
 }: SearchCardProps) {
-  const heroIndustrySlug =
-    search.primaryIndustrySlug ??
-    inferIndustryFromExpertiseSlugs(
-      search.expertiseSlugs?.length
-        ? search.expertiseSlugs
-        : search.functionalAreaTags
-    ) ??
-    (search.area ? defaultIndustryForFunctionalArea(search.area) : null)
-  const heroExpertise =
-    search.expertiseSlugs?.length
-      ? search.expertiseSlugs
-      : (search.functionalAreaTags ?? [])
+  const heroIndustrySlug = resolveHeroIndustrySlug({
+    primaryIndustrySlug: search.primaryIndustrySlug,
+    expertiseSlugs: search.expertiseSlugs,
+    functionalAreaTags: search.functionalAreaTags,
+    area: search.area ?? "negocio",
+  })
+  const heroVerticals = search.verticalSlugs ?? []
+  const heroExpertise = search.expertiseSlugs ?? []
   const talentSlugs = search.talentSlugs ?? []
 
   return (
@@ -71,14 +65,19 @@ export function SearchCard({
         {heroIndustrySlug ? (
           <Tag variant="amber">{labelIndustrySlug(heroIndustrySlug)}</Tag>
         ) : null}
+        {heroVerticals.map((slug) => (
+          <Tag key={`v-${slug}`} variant="amber">
+            {labelProfileVerticalSlug(slug)}
+          </Tag>
+        ))}
         {heroExpertise.length > 0
           ? heroExpertise.map((slug) => (
               <Tag key={slug} variant="amber">
                 {labelExpertiseSlug(slug)}
               </Tag>
             ))
-          : !heroIndustrySlug && search.area ? (
-              <Tag variant="amber">{AREA_LABELS[search.area]}</Tag>
+          : search.primaryIndustrySlug || heroVerticals.length > 0 ? (
+              <Tag variant="neutral">Sin expertise</Tag>
             ) : null}
         {talentSlugs.map((slug) => (
           <Tag key={`talent-${slug}`} variant="neutral">
@@ -86,21 +85,6 @@ export function SearchCard({
           </Tag>
         ))}
       </div>
-
-      {search.industries.length > 0 ? (
-        <div className="flex flex-col gap-1.5">
-          <span className="ds-label-uppercase text-[var(--text3)]">
-            {PROFILE_FIELD_COPY.verticalesAfinidad}
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {search.industries.map((i) => (
-              <Tag key={i} variant="green">
-                {i}
-              </Tag>
-            ))}
-          </div>
-        </div>
-      ) : null}
 
       <div className="flex items-center justify-between pt-2 border-t-[0.5px] border-[var(--border)]">
         <span className="text-[11px] text-[var(--text3)] uppercase tracking-[0.05em] font-semibold">

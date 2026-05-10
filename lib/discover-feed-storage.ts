@@ -54,12 +54,12 @@ export function readFeedFilters(userId: string): DiscoverFeedFilters {
       availability: p.availability ?? base.availability,
       relation: p.relation ?? base.relation,
       primaryIndustrySlug: p.primaryIndustrySlug ?? base.primaryIndustrySlug,
+      verticalSlugs: Array.isArray(p.verticalSlugs)
+        ? (p.verticalSlugs as string[])
+        : base.verticalSlugs,
       expertiseSlugs: Array.isArray(p.expertiseSlugs)
         ? (p.expertiseSlugs as string[])
         : base.expertiseSlugs,
-      affinityLabels: Array.isArray(p.affinityLabels)
-        ? (p.affinityLabels as string[])
-        : base.affinityLabels,
       talentSlugs: Array.isArray(p.talentSlugs)
         ? (p.talentSlugs as string[])
         : base.talentSlugs,

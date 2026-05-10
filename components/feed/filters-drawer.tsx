@@ -5,7 +5,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
-import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
+import { VerticalMultiSelect } from "@/components/ui/vertical-multi-select"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { Field, Input } from "@/components/ui/input"
@@ -30,7 +30,7 @@ interface FiltersDrawerProps {
   onOpenChange: (open: boolean) => void
   filters: DiscoverFeedFilters
   onFiltersChange: (next: DiscoverFeedFilters) => void
-  /** Filtros avanzados (afinidad, talentos) solo en Premium. */
+  /** Filtro por soft skills solo en Premium. */
   isPremium: boolean
 }
 
@@ -46,8 +46,8 @@ export function FiltersDrawer({
     onFiltersChange({
       ...filters,
       primaryIndustrySlug: slug,
+      verticalSlugs: industryChanged ? [] : filters.verticalSlugs,
       expertiseSlugs: industryChanged ? [] : filters.expertiseSlugs,
-      affinityLabels: industryChanged ? [] : filters.affinityLabels,
     })
   }
 
@@ -62,7 +62,7 @@ export function FiltersDrawer({
         description={
           isPremium
             ? PROFILE_FIELD_HINTS.feedDrawerIntro
-            : "Plan Free: ciudad, disponibilidad, relación, industria y verticales de foco. Afinidad y talentos en Premium."
+            : "Plan Free: ciudad, disponibilidad, relación, industria, verticales y expertise. Filtro por soft skills en Premium."
         }
       />
 
@@ -128,48 +128,49 @@ export function FiltersDrawer({
           label={PROFILE_FIELD_COPY.verticales}
           hint={PROFILE_FIELD_HINTS.verticalesFilterFeed}
         >
+          <VerticalMultiSelect
+            industrySlug={filters.primaryIndustrySlug}
+            value={filters.verticalSlugs}
+            onChange={(slugs) =>
+              onFiltersChange({
+                ...filters,
+                verticalSlugs: slugs,
+                expertiseSlugs: [],
+              })
+            }
+          />
+        </Field>
+
+        <Field
+          label={PROFILE_FIELD_COPY.expertise}
+          hint={PROFILE_FIELD_HINTS.expertiseFilterFeed}
+        >
           <ExpertiseMultiSelect
             industrySlug={filters.primaryIndustrySlug}
+            verticalSlugs={filters.verticalSlugs}
             value={filters.expertiseSlugs}
             onChange={(slugs) =>
               onFiltersChange({ ...filters, expertiseSlugs: slugs })
             }
-            footerNote="Elige primero una industria arriba; mismo catálogo que tus Verticales en el perfil."
+            footerNote="Elige primero industria y verticales; mismo catálogo que tu perfil."
           />
         </Field>
 
         {isPremium ? (
-          <>
-            <Field
-              label={PROFILE_FIELD_COPY.verticalesAfinidad}
-              hint={PROFILE_FIELD_HINTS.verticalesAfinidadFilterFeed}
-            >
-              <div className="max-h-[min(52vh,400px)] overflow-y-auto pr-1">
-                <HierarchicalIndustrySelector
-                  value={filters.affinityLabels}
-                  onChange={(labels) =>
-                    onFiltersChange({ ...filters, affinityLabels: labels })
-                  }
-                />
-              </div>
-            </Field>
-
-            <Field
-              label={PROFILE_FIELD_COPY.talentos}
-              hint={PROFILE_FIELD_HINTS.talentosFilterFeed}
-            >
-              <TalentMultiSelect
-                value={filters.talentSlugs}
-                onChange={(slugs) =>
-                  onFiltersChange({ ...filters, talentSlugs: slugs })
-                }
-              />
-            </Field>
-          </>
+          <Field
+            label={PROFILE_FIELD_COPY.softSkills}
+            hint={PROFILE_FIELD_HINTS.softSkillsFilterFeed}
+          >
+            <TalentMultiSelect
+              value={filters.talentSlugs}
+              onChange={(slugs) =>
+                onFiltersChange({ ...filters, talentSlugs: slugs })
+              }
+            />
+          </Field>
         ) : (
           <p className="text-[11px] text-[var(--text3)] leading-snug">
-            {PROFILE_FIELD_COPY.verticalesAfinidad} y {PROFILE_FIELD_COPY.talentos}{" "}
-            en filtros están disponibles con Premium.
+            Filtro por {PROFILE_FIELD_COPY.softSkills.toLowerCase()} en Descubrir está disponible con Premium.
           </p>
         )}
       </div>

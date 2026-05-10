@@ -6,6 +6,7 @@ import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { VerticalMultiSelect } from "@/components/ui/vertical-multi-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { Field, Input, Textarea } from "@/components/ui/input"
 import {
@@ -36,6 +37,7 @@ export default function ProfileStepPage() {
   const [highlight, setHighlight] = React.useState("")
   const [primaryIndustrySlug, setPrimaryIndustrySlug] =
     React.useState<string | null>(null)
+  const [verticalSlugs, setVerticalSlugs] = React.useState<string[]>([])
   const [expertiseSlugs, setExpertiseSlugs] = React.useState<string[]>([])
   const [talentSlugs, setTalentSlugs] = React.useState<string[]>([])
   const [experience, setExperience] = React.useState<ExperienceRange | null>(
@@ -61,11 +63,12 @@ export default function ProfileStepPage() {
       <Stepper current={4} total={6} />
       <OnboardingCard
         title="Cuéntanos quién eres"
-        description={`Datos básicos y señales para conectar. Las ${PROFILE_FIELD_COPY.verticalesAfinidad.toLowerCase()} extra las añades luego en tu perfil.`}
+        description="Datos básicos e industria con verticales y expertise para empezar a matchear."
         back="/onboarding/relationships"
         next="/onboarding/location"
         nextDisabled={
           !primaryIndustrySlug ||
+          verticalSlugs.length === 0 ||
           expertiseSlugs.length === 0 ||
           experience == null ||
           availability == null ||
@@ -84,12 +87,12 @@ export default function ProfileStepPage() {
             funFact,
             achievement: highlight,
             primaryIndustrySlug: primaryIndustrySlug!,
+            verticalSlugs,
             expertiseSlugs,
             talentSlugs,
             experience,
             availability,
             workStyle,
-            industries: [],
           })
           if (!r.ok) {
             console.error(r.error)
@@ -139,21 +142,31 @@ export default function ProfileStepPage() {
             value={primaryIndustrySlug}
             onChange={(slug) => {
               setPrimaryIndustrySlug(slug)
+              setVerticalSlugs([])
               setExpertiseSlugs([])
             }}
           />
         </Field>
 
         <Field label={PROFILE_FIELD_COPY.verticales} required>
-          <ExpertiseMultiSelect
+          <VerticalMultiSelect
             industrySlug={primaryIndustrySlug}
-            value={expertiseSlugs}
-            onChange={setExpertiseSlugs}
-            footerNote="La primera vertical define el matiz principal para matching."
+            value={verticalSlugs}
+            onChange={setVerticalSlugs}
           />
         </Field>
 
-        <Field label={PROFILE_FIELD_COPY.talentos}>
+        <Field label={PROFILE_FIELD_COPY.expertise} required>
+          <ExpertiseMultiSelect
+            industrySlug={primaryIndustrySlug}
+            verticalSlugs={verticalSlugs}
+            value={expertiseSlugs}
+            onChange={setExpertiseSlugs}
+            footerNote="Las opciones dependen de las verticales elegidas."
+          />
+        </Field>
+
+        <Field label={PROFILE_FIELD_COPY.softSkills}>
           <TalentMultiSelect value={talentSlugs} onChange={setTalentSlugs} />
         </Field>
 

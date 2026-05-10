@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
+import { VerticalMultiSelect } from "@/components/ui/vertical-multi-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { Field, Input, Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
@@ -41,6 +41,7 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
     if (!initial) {
       return {
         primaryIndustrySlug: null as string | null,
+        verticalSlugs: [] as string[],
         expertiseSlugs: [] as string[],
         talentSlugs: [] as string[],
       }
@@ -48,6 +49,7 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
     const t = deriveEditableTaxonomy(initial)
     return {
       primaryIndustrySlug: t.primaryIndustrySlug,
+      verticalSlugs: t.verticalSlugs,
       expertiseSlugs: t.expertiseSlugs,
       talentSlugs: [...(initial.talentSlugs ?? [])].slice(0, 5),
     }
@@ -62,6 +64,9 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
   )
   const [primaryIndustrySlug, setPrimaryIndustrySlug] =
     React.useState<string | null>(() => hydrated.primaryIndustrySlug)
+  const [verticalSlugs, setVerticalSlugs] = React.useState<string[]>(
+    () => hydrated.verticalSlugs
+  )
   const [expertiseSlugs, setExpertiseSlugs] = React.useState<string[]>(
     () => hydrated.expertiseSlugs
   )
@@ -74,48 +79,64 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
       profile
         ? deriveEditableTaxonomy({
             primaryIndustrySlug: profile.primary_industry_slug,
+            verticalSlugs: profile.vertical_slugs,
             expertiseSlugs: profile.expertise_slugs ?? undefined,
             functionalAreaTags: profile.functional_area_tags ?? undefined,
             area: (profile.area ?? "negocio") as FunctionalArea,
           })
-        : { primaryIndustrySlug: null as string | null, expertiseSlugs: [] as string[] },
+        : {
+            primaryIndustrySlug: null as string | null,
+            verticalSlugs: [] as string[],
+            expertiseSlugs: [] as string[],
+          },
     [profile]
   )
 
   React.useEffect(() => {
     if (mode !== "create" || !profile) return
     setPrimaryIndustrySlug((prev) => prev ?? fromUserTaxonomy.primaryIndustrySlug)
+    setVerticalSlugs((prev) =>
+      prev.length > 0 ? prev : fromUserTaxonomy.verticalSlugs
+    )
     setExpertiseSlugs((prev) =>
       prev.length > 0 ? prev : fromUserTaxonomy.expertiseSlugs
     )
-    setTalentSlugs((prev) =>
-      prev.length > 0 ? prev : [...(profile.talent_slugs ?? [])].slice(0, 5)
-    )
   }, [mode, profile, fromUserTaxonomy])
-  const [industries, setIndustries] = React.useState<string[]>(
-    initial?.industries ?? []
-  )
+
   const [saving, setSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [activeSearchCount, setActiveSearchCount] = React.useState<number | null>(
     null
   )
+  const [activeSearchCapLoading, setActiveSearchCapLoading] = React.useState(
+    () => mode === "create"
+  )
 
   React.useEffect(() => {
     if (mode !== "create" || !user?.id) {
       setActiveSearchCount(null)
+      setActiveSearchCapLoading(false)
+      return
+    }
+    if (profile && isPremiumPlan(profile.plan)) {
+      setActiveSearchCount(null)
+      setActiveSearchCapLoading(false)
       return
     }
     let cancelled = false
+    setActiveSearchCapLoading(true)
     ;(async () => {
       const supabase = getSupabaseBrowserClient()
       const n = await countActiveSearchesForOwner(supabase, user.id)
-      if (!cancelled) setActiveSearchCount(n)
+      if (!cancelled) {
+        setActiveSearchCount(n)
+        setActiveSearchCapLoading(false)
+      }
     })()
     return () => {
       cancelled = true
     }
-  }, [mode, user?.id])
+  }, [mode, user?.id, profile?.plan])
 
   function toggleArr<T extends string>(
     list: T[],
@@ -144,9 +165,9 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
         description,
         relations,
         primaryIndustrySlug,
+        verticalSlugs,
         expertiseSlugs,
         talentSlugs,
-        industryLabels: industries,
       }
 
       if (mode === "create") {
@@ -192,11 +213,18 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
       {mode === "create" &&
       profile &&
       !isPremiumPlan(profile.plan) &&
-      activeSearchCount !== null &&
-      activeSearchCount >= 1 ? (
-        <p className="text-[12px] text-[var(--text2)] mb-4 p-3 rounded-lg border border-[var(--border)] bg-[var(--bg2)]">
-          {MSG_FREE_SEARCH_LIMIT}
-        </p>
+      !activeSearchCapLoading ? (
+        activeSearchCount === null ? (
+          <p className="text-[12px] text-[var(--text2)] mb-4 p-3 rounded-lg border border-[var(--border)] bg-[var(--bg2)]">
+            No se pudo comprobar cuántas búsquedas activas tienes. Revisa la
+            conexión y recarga; hasta entonces no podrás crear una búsqueda
+            nueva en Free.
+          </p>
+        ) : activeSearchCount >= 1 ? (
+          <p className="text-[12px] text-[var(--text2)] mb-4 p-3 rounded-lg border border-[var(--border)] bg-[var(--bg2)]">
+            {MSG_FREE_SEARCH_LIMIT}
+          </p>
+        ) : null
       ) : null}
 
       <div className="flex flex-col gap-4 mb-6">
@@ -238,6 +266,7 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
             value={primaryIndustrySlug}
             onChange={(slug) => {
               setPrimaryIndustrySlug(slug)
+              setVerticalSlugs([])
               setExpertiseSlugs([])
             }}
           />
@@ -247,11 +276,11 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
               className="text-[11px] text-[var(--p)] underline font-medium self-start"
               onClick={() => {
                 setPrimaryIndustrySlug(null)
+                setVerticalSlugs([])
                 setExpertiseSlugs([])
-                setIndustries([])
               }}
             >
-              Quitar industria, verticales y afinidad
+              Quitar industria, verticales y expertise
             </button>
           ) : null}
         </Field>
@@ -260,29 +289,31 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
           label={PROFILE_FIELD_COPY.verticales}
           hint={PROFILE_FIELD_HINTS.verticalesOptional}
         >
+          <VerticalMultiSelect
+            industrySlug={primaryIndustrySlug}
+            value={verticalSlugs}
+            onChange={setVerticalSlugs}
+          />
+        </Field>
+
+        <Field
+          label={PROFILE_FIELD_COPY.expertise}
+          hint={PROFILE_FIELD_HINTS.expertiseOptional}
+        >
           <ExpertiseMultiSelect
             industrySlug={primaryIndustrySlug}
+            verticalSlugs={verticalSlugs}
             value={expertiseSlugs}
             onChange={setExpertiseSlugs}
-            footerNote="Opcional. Mismo catálogo que tus Verticales en el perfil."
+            footerNote="Opcional. Mismo catálogo que en tu perfil."
           />
         </Field>
 
         <Field
-          label={PROFILE_FIELD_COPY.talentos}
-          hint={PROFILE_FIELD_HINTS.talentosOptional}
+          label={PROFILE_FIELD_COPY.softSkills}
+          hint={PROFILE_FIELD_HINTS.softSkillsOptional}
         >
           <TalentMultiSelect value={talentSlugs} onChange={setTalentSlugs} />
-        </Field>
-
-        <Field
-          label={PROFILE_FIELD_COPY.verticalesAfinidad}
-          hint={PROFILE_FIELD_HINTS.verticalesAfinidadOptional}
-        >
-          <HierarchicalIndustrySelector
-            value={industries}
-            onChange={setIndustries}
-          />
         </Field>
       </div>
 
@@ -297,10 +328,10 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
           disabled={
             saving ||
             (mode === "create" &&
-              !!profile &&
-              !isPremiumPlan(profile.plan) &&
-              activeSearchCount !== null &&
-              activeSearchCount >= 1)
+              !isPremiumPlan(profile?.plan) &&
+              (activeSearchCapLoading ||
+                activeSearchCount === null ||
+                activeSearchCount >= 1))
           }
           onClick={() => void save()}
         >

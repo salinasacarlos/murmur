@@ -17,14 +17,12 @@ import {
 } from "@/lib/data/connections"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import {
   FREE_MAX_ACCEPTED_CONNECTIONS,
   isPremiumPlan,
   MSG_FREE_CONNECTION_SEND_LIMIT,
 } from "@/lib/plan-limits"
 import {
-  AREA_LABELS,
   AVAILABILITY_LABELS,
   COMPATIBILITY_COLORS,
   COMPATIBILITY_LABELS,
@@ -41,6 +39,7 @@ import {
   labelExpertiseSlug,
   labelTalentSlug,
 } from "@/lib/profile-taxonomy"
+import { labelProfileVerticalSlug } from "@/lib/industry-tree"
 import {
   IconMapPin,
   IconBriefcase,
@@ -121,14 +120,14 @@ export function ProfileDetailPanel({
         : profile.functionalAreaTags
     ) ??
     defaultIndustryForFunctionalArea(profile.area)
-  const heroExpertise =
-    profile.expertiseSlugs?.length
-      ? profile.expertiseSlugs
-      : (profile.functionalAreaTags ?? [])
-  const expertiseLine =
-    heroExpertise.length > 0
-      ? heroExpertise.map((s) => labelExpertiseSlug(s)).join(" · ")
-      : AREA_LABELS[profile.area]
+  const verticalPart =
+    profile.verticalSlugs && profile.verticalSlugs.length > 0
+      ? profile.verticalSlugs.map((s) => labelProfileVerticalSlug(s)).join(" · ")
+      : null
+  const expertisePart =
+    profile.expertiseSlugs && profile.expertiseSlugs.length > 0
+      ? profile.expertiseSlugs.map((s) => labelExpertiseSlug(s)).join(" · ")
+      : "Sin definir"
   const talentsLine =
     profile.talentSlugs && profile.talentSlugs.length > 0
       ? profile.talentSlugs.map((s) => labelTalentSlug(s)).join(" · ")
@@ -222,14 +221,20 @@ export function ProfileDetailPanel({
                   <span className="font-medium text-[var(--text)]">
                     {labelIndustrySlug(heroIndustrySlug)}
                   </span>
+                  {verticalPart ? (
+                    <>
+                      <span className="text-[var(--text3)]"> · </span>
+                      <span>{verticalPart}</span>
+                    </>
+                  ) : null}
                   <span className="text-[var(--text3)]"> · </span>
-                  <span>{expertiseLine}</span>
+                  <span>{expertisePart}</span>
                   <span className="text-[var(--text3)]"> · </span>
                   {EXPERIENCE_LABELS[profile.experience]}
                 </Row>
                 {talentsLine ? (
                   <Row icon={<IconSpark size={14} />}>
-                    <span className="text-[var(--text3)]">Talentos: </span>
+                    <span className="text-[var(--text3)]">Soft skills: </span>
                     {talentsLine}
                   </Row>
                 ) : null}
@@ -253,16 +258,6 @@ export function ProfileDetailPanel({
                 {profile.workStyle.map((w) => (
                   <Tag key={w} variant="neutral">
                     {WORK_STYLE_LABELS[w]}
-                  </Tag>
-                ))}
-              </div>
-            </Section>
-
-            <Section title={PROFILE_FIELD_COPY.verticalesAfinidad}>
-              <div className="flex flex-wrap gap-1.5">
-                {profile.industries.map((i) => (
-                  <Tag key={i} variant="green">
-                    {i}
                   </Tag>
                 ))}
               </div>

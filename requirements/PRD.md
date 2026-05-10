@@ -102,7 +102,8 @@ El proceso de registro captura la información necesaria para el matching desde 
 - Años de experiencia: 0-2 / 3-5 / 6-10 / 10+
 - Logro más relevante (una línea)
 - Disponibilidad: Full-time ya / Part-time explorando / En 3-6 meses
-- Industrias de afinidad *(multi-select, expandible)*
+- Industria principal (nivel 1), hasta **3 verticales** de foco (nivel 2) y hasta **5 expertise** (nivel 3) bajo esas verticales *(catálogo alineado a DB)*
+- Soft skills *(hasta 5; catálogo `talent_catalog`)*
 - Forma de trabajar *(multi-select)*: Remoto, Presencial, Híbrido, Decisiones rápidas, Proceso estructurado, Async
 
 **Paso 5 — Contexto del proyecto o búsqueda**
@@ -139,7 +140,7 @@ Cada card muestra:
 - Área funcional + experiencia
 - Logro destacado
 - Disponibilidad
-- Industrias de afinidad
+- Industria principal, verticales (≤3) y expertise (≤5)
 - Indicador de compatibilidad: Baja / Media / Alta
 
 **Panel de detalle**
@@ -153,7 +154,9 @@ Cada card muestra:
 - Disponibilidad
 - Área funcional
 - Tipo de relación buscada
-- Industria
+- Industria principal
+- Verticales (nivel 2) y expertise (nivel 3), mismo criterio que el perfil
+- Soft skills *(solo Premium en cliente)*
 
 ---
 
@@ -165,8 +168,7 @@ Sección dedicada para gestionar múltiples búsquedas paralelas.
 - Título descriptivo
 - Descripción libre de lo que busca
 - Tipo de relación *(multi-select)*
-- Área funcional buscada *(mismo catálogo que onboarding)*
-- Industrias *(multi-select con expandible)*
+- Industria principal, verticales (≤3), expertise (≤5) y soft skills opcional
 - Estado: Activa / Pausada
 
 **Acciones:**
@@ -231,8 +233,7 @@ Pantalla de gestión del perfil propio del usuario.
 - Hero: foto, nombre, rol, bio
 - Logro destacado
 - Disponibilidad y forma de trabajar
-- Industrias de afinidad
-- Tipos de relación que busco + área funcional
+- Industria principal, verticales (≤3), expertise (≤5) y soft skills
 
 **Stats:**
 - Matches recibidos
@@ -264,7 +265,7 @@ El campo `profiles.plan` usa el enum `user_plan` (`free` | `premium`). **En V1 n
 | Ciudades en perfil | 1 (un slug en `profile_cities`) |
 | Búsquedas con estado `active` | 1 |
 | Conexiones con estado `accepted` | máx. 10 por usuario |
-| Filtros en Descubrir | Subconjunto: ciudad, disponibilidad, tipo de relación, industria principal, verticales de foco. Sin filtros por verticales de afinidad ni talentos. |
+| Filtros en Descubrir | Subconjunto: ciudad, disponibilidad, tipo de relación, industria, verticales y expertise. Sin filtro por soft skills. |
 | Notificaciones `high_compatibility_suggestion` | No (la RPC no encola para Free) |
 
 ### Plan Premium
@@ -272,7 +273,7 @@ El campo `profiles.plan` usa el enum `user_plan` (`free` | `premium`). **En V1 n
 - Varias ciudades / radar amplio
 - Búsquedas activas ilimitadas
 - Conexiones aceptadas ilimitadas
-- Filtros completos en Descubrir (incl. afinidad y talentos)
+- Filtros completos en Descubrir (incl. soft skills)
 - Alertas de alta compatibilidad (`ensure_high_compatibility_suggestions`) para usuarios Premium
 
 ### Precios (referencia producto)

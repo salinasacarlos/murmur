@@ -12,7 +12,7 @@ import {
   fetchSearchesForOwner,
   updateSearchStatus,
 } from "@/lib/data/searches"
-import { isPremiumPlan } from "@/lib/plan-limits"
+import { isPremiumPlan, MSG_FREE_SEARCH_LIMIT } from "@/lib/plan-limits"
 import { peekSearchesList, putSearchesList } from "@/lib/searches-list-cache"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Search } from "@/lib/types"
@@ -91,6 +91,11 @@ export default function SearchesPage() {
     })
   }
 
+  const freeBlocksNewSearch =
+    !!profile &&
+    !isPremiumPlan(profile.plan) &&
+    searches.some((s) => s.status === "active")
+
   return (
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full">
       <div className="flex items-center justify-between mb-5">
@@ -104,12 +109,19 @@ export default function SearchesPage() {
               : "Plan Free: una búsqueda activa a la vez. Pausa una para activar otra o pasa a Premium para varias activas."}
           </p>
         </div>
-        <Link href="/searches/new">
-          <Button size="md">
+        {freeBlocksNewSearch ? (
+          <Button size="md" disabled title={MSG_FREE_SEARCH_LIMIT}>
             <IconPlus size={14} />
             Nueva
           </Button>
-        </Link>
+        ) : (
+          <Link href="/searches/new">
+            <Button size="md">
+              <IconPlus size={14} />
+              Nueva
+            </Button>
+          </Link>
+        )}
       </div>
 
       {statusError ? (

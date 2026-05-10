@@ -255,7 +255,7 @@ export default function LandingPage() {
                   <PricingLi>Una búsqueda activa a la vez</PricingLi>
                   <PricingLi>Hasta 10 conexiones aceptadas</PricingLi>
                   <PricingLi>
-                    Feed Descubrir con filtros básicos (sin afinidad ni talentos en filtros)
+                    Feed Descubrir con filtros básicos (sin filtro por soft skills)
                   </PricingLi>
                   <PricingLi>Chat con tus conexiones</PricingLi>
                   <PricingLi>Sin alertas de alta compatibilidad</PricingLi>
@@ -298,7 +298,7 @@ export default function LandingPage() {
                   <PricingLi>Varias ciudades / radar amplio</PricingLi>
                   <PricingLi>Búsquedas activas ilimitadas</PricingLi>
                   <PricingLi>Conexiones aceptadas ilimitadas</PricingLi>
-                  <PricingLi>Filtros completos en Descubrir (afinidad y talentos)</PricingLi>
+                  <PricingLi>Filtros completos en Descubrir (incl. soft skills)</PricingLi>
                   <PricingLi>Alertas de alta compatibilidad con tu búsqueda</PricingLi>
                   <PricingLi>Solicitudes de conexión sin tope por el plan</PricingLi>
                 </ul>

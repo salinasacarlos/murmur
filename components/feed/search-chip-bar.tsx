@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 
 import { IconPlus, IconFilter, IconMapPin } from "@/components/icons"
+import { MSG_FREE_SEARCH_LIMIT } from "@/lib/plan-limits"
 import { cn } from "@/lib/utils"
 import type { Search } from "@/lib/types"
 
@@ -14,6 +15,9 @@ interface SearchChipBarProps {
   onOpenFilters?: () => void
   onOpenEvent?: () => void
   eventActive?: boolean
+  /** Free: false cuando ya hay una búsqueda activa (no abrir /searches/new). */
+  canAddSearch?: boolean
+  addSearchBlockedTitle?: string
 }
 
 export function SearchChipBar({
@@ -23,6 +27,8 @@ export function SearchChipBar({
   onOpenFilters,
   onOpenEvent,
   eventActive,
+  canAddSearch = true,
+  addSearchBlockedTitle = MSG_FREE_SEARCH_LIMIT,
 }: SearchChipBarProps) {
   return (
     <div className="flex items-center gap-2 px-4 md:px-6 py-3 border-b-[0.5px] border-[var(--border)] bg-[var(--bg)]">
@@ -43,13 +49,26 @@ export function SearchChipBar({
               onClick={() => onSelect(s.id)}
             />
           ))}
-        <Link
-          href="/searches/new"
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-dashed border-[var(--border2)] text-[var(--text2)] hover:text-[var(--p)] hover:border-[var(--p)] text-[12px] whitespace-nowrap transition-colors"
-        >
-          <IconPlus size={12} />
-          Nueva
-        </Link>
+        {canAddSearch ? (
+          <Link
+            href="/searches/new"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-dashed border-[var(--border2)] text-[var(--text2)] hover:text-[var(--p)] hover:border-[var(--p)] text-[12px] whitespace-nowrap transition-colors"
+          >
+            <IconPlus size={12} />
+            Nueva
+          </Link>
+        ) : (
+          <span
+            role="button"
+            tabIndex={-1}
+            aria-disabled="true"
+            title={addSearchBlockedTitle}
+            className="inline-flex cursor-not-allowed items-center gap-1 px-2.5 py-1 rounded-full border border-dashed border-[var(--border)] text-[var(--text3)] text-[12px] whitespace-nowrap opacity-70"
+          >
+            <IconPlus size={12} />
+            Nueva
+          </span>
+        )}
       </div>
 
       {onOpenEvent && (

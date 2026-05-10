@@ -1,4 +1,3 @@
-import { industrySlugToLabel } from "@/lib/catalogs"
 import type { Tables } from "@/lib/database.types"
 import type {
   Availability,
@@ -18,10 +17,6 @@ type ProfileJoinRow = Tables<"profiles"> & {
   profile_relations_looking?:
     | { relation: RelationType }[]
     | { relation: RelationType }
-    | null
-  profile_industries?:
-    | { industry_slug: string }[]
-    | { industry_slug: string }
     | null
   profile_work_styles?:
     | { work_style: WorkStyle }[]
@@ -52,9 +47,6 @@ export function mapEventRowToEntry(row: Pick<Tables<"events">, "code" | "name" |
 
 export function mapProfileJoinRow(row: ProfileJoinRow): Profile {
   const rels = asArray(row.profile_relations_looking).map((x) => x.relation)
-  const industries = asArray(row.profile_industries).map((x) =>
-    industrySlugToLabel(x.industry_slug)
-  )
   const workStyle = asArray(row.profile_work_styles).map((x) => x.work_style)
   const eventCodes = asArray(row.profile_events).map((x) => x.event_code)
   const citySlugs = asArray(row.profile_cities)
@@ -82,13 +74,13 @@ export function mapProfileJoinRow(row: ProfileJoinRow): Profile {
     functionalAreaTags:
       row.functional_area_tags?.length ? row.functional_area_tags : undefined,
     primaryIndustrySlug: row.primary_industry_slug ?? undefined,
+    verticalSlugs: row.vertical_slugs?.length ? row.vertical_slugs : undefined,
     expertiseSlugs:
       row.expertise_slugs?.length ? row.expertise_slugs : undefined,
     talentSlugs: row.talent_slugs?.length ? row.talent_slugs : undefined,
     experience: (row.experience ?? "3-5") as ExperienceRange,
     achievement: row.achievement,
     availability: (row.availability ?? "full-time") as Availability,
-    industries,
     workStyle,
     city: row.city ?? cities[0] ?? "",
     cities: cities.length > 0 ? cities : undefined,
@@ -104,7 +96,6 @@ export function mapProfileBareRow(row: Tables<"profiles">): Profile {
   return mapProfileJoinRow({
     ...row,
     profile_relations_looking: [],
-    profile_industries: [],
     profile_work_styles: [],
     profile_events: [],
     profile_cities: [],
@@ -113,17 +104,10 @@ export function mapProfileBareRow(row: Tables<"profiles">): Profile {
 
 type SearchJoinRow = Tables<"searches"> & {
   search_relations?: { relation: RelationType }[] | { relation: RelationType } | null
-  search_industries?:
-    | { industry_slug: string }[]
-    | { industry_slug: string }
-    | null
 }
 
 export function mapSearchJoinRow(row: SearchJoinRow): Search {
   const relations = asArray(row.search_relations).map((r) => r.relation)
-  const industries = asArray(row.search_industries).map((i) =>
-    industrySlugToLabel(i.industry_slug)
-  )
   return {
     id: row.id,
     title: row.title,
@@ -133,10 +117,10 @@ export function mapSearchJoinRow(row: SearchJoinRow): Search {
     functionalAreaTags:
       row.functional_area_tags?.length ? row.functional_area_tags : undefined,
     primaryIndustrySlug: row.primary_industry_slug ?? undefined,
+    verticalSlugs: row.vertical_slugs?.length ? row.vertical_slugs : undefined,
     expertiseSlugs:
       row.expertise_slugs?.length ? row.expertise_slugs : undefined,
     talentSlugs: row.talent_slugs?.length ? row.talent_slugs : undefined,
-    industries,
     status: row.status as SearchStatus,
     matchesCount: row.matches_count,
     createdAt: row.created_at,

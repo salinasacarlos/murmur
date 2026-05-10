@@ -2,231 +2,20 @@
  * Verticales (hojas) agrupadas por industria de producto (`public.industries` /
  * `INDUSTRIES` en profile-taxonomy). Alineado con migración
  * `20260524120000_industries_catalog_profile_parents.sql`.
- * Solo las hojas deben usarse en profile_industries / search_industries.
  */
 
+import type { FunctionalArea } from "@/lib/types"
+import {
+  ALL_INDUSTRY_LEAVES,
+  LEAF_SLUG_TO_PROFILE_INDUSTRY,
+  type IndustryLeaf,
+} from "@/lib/leaf-catalog"
 import { INDUSTRIES } from "@/lib/profile-taxonomy"
 
-export interface IndustryLeaf {
-  slug: string
-  label: string
-}
+export type { IndustryLeaf }
+export { LEAF_SLUG_TO_PROFILE_INDUSTRY } from "@/lib/leaf-catalog"
 
-/** Cada hoja del catálogo jerárquico → una industria de perfil (slug). */
-export const LEAF_SLUG_TO_PROFILE_INDUSTRY: Readonly<Record<string, string>> = {
-  // Finanzas y fintech
-  fintech: "finanzas-fintech",
-  insurtech: "finanzas-fintech",
-  crypto: "finanzas-fintech",
-  pagos: "finanzas-fintech",
-  lending: "finanzas-fintech",
-  "open-finance": "finanzas-fintech",
-  "finanzas-personales": "finanzas-fintech",
-  seguros: "finanzas-fintech",
-
-  healthtech: "salud-biotech",
-  biotech: "salud-biotech",
-  salud: "salud-biotech",
-
-  edtech: "educacion",
-  educacion: "educacion",
-
-  // Tecnología e IA
-  saas: "tecnologia-ia",
-  "b2b-saas": "tecnologia-ia",
-  devtools: "tecnologia-ia",
-  ai: "tecnologia-ia",
-  deeptech: "tecnologia-ia",
-  infra: "tecnologia-ia",
-  cybersecurity: "tecnologia-ia",
-  data: "tecnologia-ia",
-  analytics: "tecnologia-ia",
-  productividad: "tecnologia-ia",
-  "no-code": "tecnologia-ia",
-  web3: "tecnologia-ia",
-  iot: "tecnologia-ia",
-  "ar-vr": "tecnologia-ia",
-  telecom: "tecnologia-ia",
-  hardware: "tecnologia-ia",
-  robotics: "tecnologia-ia",
-  govtech: "gobierno-sector-publico",
-
-  marketplace: "retail-comercio",
-  "e-commerce": "retail-comercio",
-
-  gaming: "entretenimiento-medios",
-  media: "entretenimiento-medios",
-  entertainment: "entretenimiento-medios",
-  cine: "entretenimiento-medios",
-  teatro: "entretenimiento-medios",
-  musica: "entretenimiento-medios",
-  "radio-y-podcast": "entretenimiento-medios",
-  documental: "entretenimiento-medios",
-  animacion: "entretenimiento-medios",
-  "video-y-produccion-audiovisual": "entretenimiento-medios",
-  "videojuegos-y-narrativa-interactiva": "entretenimiento-medios",
-  "creator-economy": "entretenimiento-medios",
-
-  arquitectura: "artes-diseno-creativo",
-  danza: "artes-diseno-creativo",
-  diseno: "artes-diseno-creativo",
-  moda: "artes-diseno-creativo",
-  fotografia: "artes-diseno-creativo",
-  periodismo: "artes-diseno-creativo",
-  "museos-y-patrimonio": "artes-diseno-creativo",
-  literatura: "artes-diseno-creativo",
-  "artes-plasticas-y-visuales": "artes-diseno-creativo",
-  "escenografia-y-direccion-de-arte": "artes-diseno-creativo",
-
-  construccion: "construccion-inmobiliario",
-  "real-estate": "construccion-inmobiliario",
-  proptech: "construccion-inmobiliario",
-
-  manufactura: "manufactura-industria",
-  "supply-chain": "manufactura-industria",
-  logistica: "manufactura-industria",
-  movilidad: "manufactura-industria",
-  transporte: "manufactura-industria",
-  aeroespacial: "manufactura-industria",
-
-  climate: "energia-sustentabilidad",
-  sostenibilidad: "energia-sustentabilidad",
-  energia: "energia-sustentabilidad",
-
-  agtech: "agro-alimentacion",
-  foodtech: "agro-alimentacion",
-
-  traveltech: "turismo-hospitalidad",
-
-  legaltech: "legal-consultoria",
-  hrtech: "legal-consultoria",
-  recruiting: "legal-consultoria",
-
-  "impacto-social": "gobierno-sector-publico",
-  comunidad: "gobierno-sector-publico",
-
-  consumer: "retail-comercio",
-  b2b: "retail-comercio",
-  retail: "retail-comercio",
-  ventas: "retail-comercio",
-  marketing: "retail-comercio",
-
-  wellness: "deporte-bienestar",
-  sports: "deporte-bienestar",
-}
-
-/** Fuente única de hojas (slugs + labels); coincide con seeds históricos del catálogo. */
-const ALL_LEAVES: readonly IndustryLeaf[] = [
-  { slug: "fintech", label: "Fintech" },
-  { slug: "healthtech", label: "Healthtech" },
-  { slug: "edtech", label: "Edtech" },
-  { slug: "saas", label: "SaaS" },
-  { slug: "b2b-saas", label: "B2B SaaS" },
-  { slug: "devtools", label: "DevTools" },
-  { slug: "ai", label: "AI" },
-  { slug: "deeptech", label: "DeepTech" },
-  { slug: "crypto", label: "Crypto" },
-  { slug: "marketplace", label: "Marketplace" },
-  { slug: "infra", label: "Infra" },
-  { slug: "gaming", label: "Gaming" },
-  { slug: "e-commerce", label: "E-commerce" },
-  { slug: "cybersecurity", label: "Cybersecurity" },
-  { slug: "data", label: "Data" },
-  { slug: "analytics", label: "Analytics" },
-  { slug: "creator-economy", label: "Creator Economy" },
-  { slug: "legaltech", label: "Legaltech" },
-  { slug: "insurtech", label: "Insurtech" },
-  { slug: "agtech", label: "Agtech" },
-  { slug: "foodtech", label: "Foodtech" },
-  { slug: "traveltech", label: "Traveltech" },
-  { slug: "productividad", label: "Productividad" },
-  { slug: "finanzas-personales", label: "Finanzas personales" },
-  { slug: "pagos", label: "Pagos" },
-  { slug: "lending", label: "Lending" },
-  { slug: "open-finance", label: "Open Finance" },
-  { slug: "govtech", label: "GovTech" },
-  { slug: "no-code", label: "No-code" },
-  { slug: "web3", label: "Web3" },
-  { slug: "iot", label: "IoT" },
-  { slug: "ar-vr", label: "AR/VR" },
-  { slug: "proptech", label: "Proptech" },
-  { slug: "telecom", label: "Telecom" },
-  { slug: "hrtech", label: "HRTech" },
-  { slug: "biotech", label: "Biotech" },
-  { slug: "robotics", label: "Robotics" },
-  { slug: "climate", label: "Climate" },
-  { slug: "hardware", label: "Hardware" },
-  { slug: "energia", label: "Energía" },
-  { slug: "movilidad", label: "Movilidad" },
-  { slug: "transporte", label: "Transporte" },
-  { slug: "supply-chain", label: "Supply Chain" },
-  { slug: "manufactura", label: "Manufactura" },
-  { slug: "sostenibilidad", label: "Sostenibilidad" },
-  { slug: "aeroespacial", label: "Aeroespacial" },
-  { slug: "logistica", label: "Logística" },
-  { slug: "media", label: "Media" },
-  { slug: "entertainment", label: "Entertainment" },
-  { slug: "arquitectura", label: "Arquitectura" },
-  { slug: "cine", label: "Cine" },
-  { slug: "teatro", label: "Teatro" },
-  { slug: "musica", label: "Música" },
-  { slug: "danza", label: "Danza" },
-  { slug: "diseno", label: "Diseño" },
-  { slug: "moda", label: "Moda" },
-  { slug: "fotografia", label: "Fotografía" },
-  { slug: "periodismo", label: "Periodismo" },
-  { slug: "radio-y-podcast", label: "Radio y podcast" },
-  { slug: "museos-y-patrimonio", label: "Museos y patrimonio" },
-  { slug: "literatura", label: "Literatura" },
-  { slug: "artes-plasticas-y-visuales", label: "Artes plásticas y visuales" },
-  { slug: "documental", label: "Documental" },
-  { slug: "animacion", label: "Animación" },
-  {
-    slug: "video-y-produccion-audiovisual",
-    label: "Video y producción audiovisual",
-  },
-  {
-    slug: "escenografia-y-direccion-de-arte",
-    label: "Escenografía y dirección de arte",
-  },
-  {
-    slug: "videojuegos-y-narrativa-interactiva",
-    label: "Videojuegos y narrativa interactiva",
-  },
-  { slug: "construccion", label: "Construcción" },
-  { slug: "real-estate", label: "Real Estate" },
-  { slug: "educacion", label: "Educación" },
-  { slug: "salud", label: "Salud" },
-  { slug: "wellness", label: "Wellness" },
-  { slug: "sports", label: "Sports" },
-  { slug: "impacto-social", label: "Impacto social" },
-  { slug: "comunidad", label: "Comunidad" },
-  { slug: "consumer", label: "Consumer" },
-  { slug: "b2b", label: "B2B" },
-  { slug: "retail", label: "Retail" },
-  { slug: "ventas", label: "Ventas" },
-  { slug: "marketing", label: "Marketing" },
-  { slug: "recruiting", label: "Recruiting" },
-  { slug: "seguros", label: "Seguros" },
-]
-
-function assertLeafCoverageMap() {
-  if (process.env.NODE_ENV === "production") return
-  for (const leaf of ALL_LEAVES) {
-    if (!LEAF_SLUG_TO_PROFILE_INDUSTRY[leaf.slug]) {
-      throw new Error(
-        `industry-tree: falta LEAF_SLUG_TO_PROFILE_INDUSTRY para ${leaf.slug}`
-      )
-    }
-  }
-  for (const slug of Object.keys(LEAF_SLUG_TO_PROFILE_INDUSTRY)) {
-    if (!ALL_LEAVES.some((l) => l.slug === slug)) {
-      throw new Error(`industry-tree: slug extra en mapa: ${slug}`)
-    }
-  }
-}
-assertLeafCoverageMap()
-
+const ALL_LEAVES = ALL_INDUSTRY_LEAVES
 function buildLeavesByProfileIndustry(): Readonly<
   Record<string, readonly IndustryLeaf[]>
 > {
@@ -305,3 +94,82 @@ export function leavesForDomain(
 
 /** @deprecated usar DEFAULT_PROFILE_INDUSTRY_SLUG */
 export const DEFAULT_INDUSTRY_DOMAIN_SLUG = DEFAULT_PROFILE_INDUSTRY_SLUG
+
+/** Vertical de perfil (nivel 2): General + hojas (`IndustryLeaf`) por industria. */
+export interface ProfileVerticalDefinition {
+  slug: string
+  label: string
+  sortOrder: number
+  mapsTo: FunctionalArea
+  industrySlug: string
+}
+
+function buildProfileVerticalsByIndustry(): Readonly<
+  Record<string, readonly ProfileVerticalDefinition[]>
+> {
+  const out: Record<string, ProfileVerticalDefinition[]> = {}
+  for (const ind of INDUSTRIES) {
+    const genSlug = `${ind.slug}-general`
+    const rows: ProfileVerticalDefinition[] = [
+      {
+        slug: genSlug,
+        label: "General",
+        sortOrder: 0,
+        mapsTo: ind.mapsTo,
+        industrySlug: ind.slug,
+      },
+    ]
+    let ord = 100
+    for (const leaf of leavesForProfileIndustry(ind.slug)) {
+      rows.push({
+        slug: leaf.slug,
+        label: leaf.label,
+        sortOrder: ord,
+        mapsTo: ind.mapsTo,
+        industrySlug: ind.slug,
+      })
+      ord += 10
+    }
+    out[ind.slug] = rows
+  }
+  return out
+}
+
+/** Catálogo UI verticales (nivel 2) por industria principal. */
+export const PROFILE_VERTICALS_BY_INDUSTRY: Readonly<
+  Record<string, readonly ProfileVerticalDefinition[]>
+> = buildProfileVerticalsByIndustry()
+
+const PROFILE_VERTICAL_MAP = new Map<string, ProfileVerticalDefinition>()
+for (const ind of INDUSTRIES) {
+  for (const v of PROFILE_VERTICALS_BY_INDUSTRY[ind.slug] ?? []) {
+    PROFILE_VERTICAL_MAP.set(v.slug, v)
+  }
+}
+
+export function labelProfileVerticalSlug(slug: string): string {
+  return PROFILE_VERTICAL_MAP.get(slug)?.label ?? slug
+}
+
+export function profileVerticalBelongsToIndustry(
+  verticalSlug: string,
+  industrySlug: string
+): boolean {
+  return PROFILE_VERTICAL_MAP.get(verticalSlug)?.industrySlug === industrySlug
+}
+
+export function filterProfileVerticalSlugsForIndustry(
+  industrySlug: string | null | undefined,
+  verticalSlugs: string[] | null | undefined,
+  max = 3
+): string[] {
+  if (!industrySlug || !verticalSlugs?.length) return []
+  const allowed = new Set(
+    (PROFILE_VERTICALS_BY_INDUSTRY[industrySlug] ?? []).map((v) => v.slug)
+  )
+  return verticalSlugs.filter((s) => allowed.has(s)).slice(0, max)
+}
+
+export function defaultGeneralVerticalSlug(industrySlug: string): string {
+  return `${industrySlug}-general`
+}

@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
-import { industryLabelToSlug } from "@/lib/catalogs"
 import type { Database } from "@/lib/database.types"
 import { mapSearchJoinRow } from "@/lib/data/mappers"
+import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import {
   inferIndustryFromExpertiseSlugs,
   resolveProfileArea,
@@ -32,13 +32,13 @@ async function fetchOwnerPlan(
 export async function countActiveSearchesForOwner(
   supabase: Client,
   ownerId: string
-): Promise<number> {
+): Promise<number | null> {
   const { count, error } = await supabase
     .from("searches")
     .select("*", { count: "exact", head: true })
     .eq("owner_id", ownerId)
     .eq("status", "active")
-  if (error) return 0
+  if (error) return null
   return count ?? 0
 }
 
@@ -46,21 +46,20 @@ async function countOtherActiveSearches(
   supabase: Client,
   ownerId: string,
   excludeSearchId: string
-): Promise<number> {
+): Promise<number | null> {
   const { count, error } = await supabase
     .from("searches")
     .select("*", { count: "exact", head: true })
     .eq("owner_id", ownerId)
     .eq("status", "active")
     .neq("id", excludeSearchId)
-  if (error) return 0
+  if (error) return null
   return count ?? 0
 }
 
 const SEARCH_SELECT = `
   *,
-  search_relations(relation),
-  search_industries(industry_slug)
+  search_relations(relation)
 ` as const
 
 export async function fetchSearchesForOwner(
@@ -114,6 +113,13 @@ export async function updateSearchStatus(
           ownerId,
           searchId
         )
+        if (others === null) {
+          return {
+            ok: false,
+            error:
+              "No se pudo comprobar tus otras búsquedas activas. Intenta de nuevo.",
+          }
+        }
         if (!freeAllowsNewActiveSearch(others)) {
           return { ok: false, error: MSG_FREE_SEARCH_LIMIT }
         }
@@ -142,12 +148,6 @@ export async function deleteSearchForOwner(
     .eq("search_id", searchId)
   if (sr) return { ok: false, error: sr.message }
 
-  const { error: si } = await supabase
-    .from("search_industries")
-    .delete()
-    .eq("search_id", searchId)
-  if (si) return { ok: false, error: si.message }
-
   const { error } = await supabase
     .from("searches")
     .delete()
@@ -163,9 +163,9 @@ export interface SearchFormPayload {
   description: string
   relations: Database["public"]["Enums"]["relation_type"][]
   primaryIndustrySlug: string | null
+  verticalSlugs: string[]
   expertiseSlugs: string[]
   talentSlugs: string[]
-  industryLabels: string[]
 }
 
 function taxonomyRowForPayload(
@@ -174,26 +174,31 @@ function taxonomyRowForPayload(
   Database["public"]["Tables"]["searches"]["Insert"],
   | "area"
   | "primary_industry_slug"
+  | "vertical_slugs"
   | "expertise_slugs"
   | "talent_slugs"
   | "functional_area_tags"
 > {
   const expertise = payload.expertiseSlugs.slice(0, 5)
   const talents = payload.talentSlugs.slice(0, 5)
-  const hasCore = expertise.length > 0 || !!payload.primaryIndustrySlug
   const industry =
     payload.primaryIndustrySlug ??
     inferIndustryFromExpertiseSlugs(expertise) ??
     null
+  const verticalsFiltered = industry
+    ? filterProfileVerticalSlugsForIndustry(industry, payload.verticalSlugs, 3)
+    : []
+  const hasCore = !!industry || expertise.length > 0
   const area = hasCore
     ? (resolveProfileArea(industry, expertise) as Database["public"]["Enums"]["functional_area"])
     : null
   return {
-    area,
-    primary_industry_slug: hasCore ? industry : null,
-    expertise_slugs: expertise,
-    talent_slugs: talents,
-    functional_area_tags: expertise,
+      area,
+      primary_industry_slug: hasCore ? industry : null,
+      vertical_slugs: hasCore ? verticalsFiltered : [],
+      expertise_slugs: expertise,
+      talent_slugs: talents,
+      functional_area_tags: [],
   }
 }
 
@@ -205,6 +210,13 @@ export async function createSearch(
   const plan = await fetchOwnerPlan(supabase, ownerId)
   if (!isPremiumPlan(plan)) {
     const n = await countActiveSearchesForOwner(supabase, ownerId)
+    if (n === null) {
+      return {
+        ok: false,
+        error:
+          "No se pudo comprobar tus búsquedas activas. Revisa la conexión e intenta de nuevo.",
+      }
+    }
     if (!freeAllowsNewActiveSearch(n)) {
       return { ok: false, error: MSG_FREE_SEARCH_LIMIT }
     }
@@ -236,18 +248,6 @@ export async function createSearch(
     if (relErr) return { ok: false, error: relErr.message }
   }
 
-  const slugs = [
-    ...new Set(
-      payload.industryLabels.map((label) => industryLabelToSlug(label)).filter(Boolean)
-    ),
-  ]
-  if (slugs.length > 0) {
-    const { error: indErr } = await supabase.from("search_industries").insert(
-      slugs.map((industry_slug) => ({ search_id: searchId, industry_slug }))
-    )
-    if (indErr) return { ok: false, error: indErr.message }
-  }
-
   return { ok: true, id: searchId }
 }
 
@@ -262,7 +262,7 @@ export async function updateSearch(
   const { data: currentRow, error: curErr } = await supabase
     .from("searches")
     .select(
-      "area, functional_area_tags, primary_industry_slug, expertise_slugs, talent_slugs"
+      "area, functional_area_tags, primary_industry_slug, vertical_slugs, expertise_slugs, talent_slugs"
     )
     .eq("id", searchId)
     .eq("owner_id", ownerId)
@@ -273,11 +273,16 @@ export async function updateSearch(
   }
 
   const expertise = tax.expertise_slugs ?? []
-  const hasCore = expertise.length > 0 || !!tax.primary_industry_slug
+  const verticals = tax.vertical_slugs ?? []
+  const hasCore =
+    expertise.length > 0 ||
+    !!tax.primary_industry_slug ||
+    verticals.length > 0
   const prevHadCore =
     (currentRow.expertise_slugs?.length ?? 0) > 0 ||
     !!currentRow.primary_industry_slug ||
-    (currentRow.functional_area_tags?.length ?? 0) > 0
+    (currentRow.functional_area_tags?.length ?? 0) > 0 ||
+    (currentRow.vertical_slugs?.length ?? 0) > 0
 
   let nextArea: Database["public"]["Enums"]["functional_area"] | null
   if (hasCore) {
@@ -295,6 +300,7 @@ export async function updateSearch(
       description: payload.description.trim(),
       area: nextArea,
       primary_industry_slug: hasCore ? tax.primary_industry_slug : null,
+      vertical_slugs: hasCore ? verticals : [],
       expertise_slugs: tax.expertise_slugs,
       talent_slugs: tax.talent_slugs,
       functional_area_tags: tax.functional_area_tags,
@@ -311,29 +317,11 @@ export async function updateSearch(
     .eq("search_id", searchId)
   if (dr) return { ok: false, error: dr.message }
 
-  const { error: di } = await supabase
-    .from("search_industries")
-    .delete()
-    .eq("search_id", searchId)
-  if (di) return { ok: false, error: di.message }
-
   if (payload.relations.length > 0) {
     const { error: ir } = await supabase.from("search_relations").insert(
       payload.relations.map((relation) => ({ search_id: searchId, relation }))
     )
     if (ir) return { ok: false, error: ir.message }
-  }
-
-  const slugs = [
-    ...new Set(
-      payload.industryLabels.map((label) => industryLabelToSlug(label)).filter(Boolean)
-    ),
-  ]
-  if (slugs.length > 0) {
-    const { error: ii } = await supabase.from("search_industries").insert(
-      slugs.map((industry_slug) => ({ search_id: searchId, industry_slug }))
-    )
-    if (ii) return { ok: false, error: ii.message }
   }
 
   return { ok: true }

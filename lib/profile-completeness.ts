@@ -1,5 +1,5 @@
-import type { Compatibility, CurrentUser, Profile } from "@/lib/types"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
+import type { Compatibility, CurrentUser, Profile } from "@/lib/types"
 
 export type ProfileCompletenessSection =
   | "identity"
@@ -37,12 +37,12 @@ export function profileFromCurrentUserForCompleteness(
     area: user.area,
     functionalAreaTags: user.functionalAreaTags,
     primaryIndustrySlug: user.primaryIndustrySlug,
+    verticalSlugs: user.verticalSlugs,
     expertiseSlugs: user.expertiseSlugs,
     talentSlugs: user.talentSlugs,
     experience: user.experience,
     achievement: user.achievement,
     availability: user.availability,
-    industries: user.industries,
     workStyle: user.workStyle,
     city: user.city,
     cities: user.cities,
@@ -100,6 +100,24 @@ export function computeProfileCompleteness(
       section: "identity",
     },
     {
+      id: "primary_industry",
+      label: PROFILE_FIELD_COPY.industryPrincipal,
+      ok: Boolean(profile.primaryIndustrySlug),
+      section: "professional",
+    },
+    {
+      id: "verticals",
+      label: PROFILE_FIELD_COPY.verticales,
+      ok: (profile.verticalSlugs?.length ?? 0) >= 1,
+      section: "professional",
+    },
+    {
+      id: "expertise",
+      label: PROFILE_FIELD_COPY.expertise,
+      ok: (profile.expertiseSlugs?.length ?? 0) >= 1,
+      section: "professional",
+    },
+    {
       id: "achievement",
       label: "Logro destacado",
       ok: profile.achievement.trim().length > 0,
@@ -110,12 +128,6 @@ export function computeProfileCompleteness(
       label: "Forma de trabajar",
       ok: profile.workStyle.length > 0,
       section: "work",
-    },
-    {
-      id: "industries",
-      label: PROFILE_FIELD_COPY.verticalesAfinidad,
-      ok: profile.industries.length > 0,
-      section: "interests",
     },
     {
       id: "relations",
@@ -146,13 +158,12 @@ export function computeProfileCompleteness(
   const core = items.filter(
     (i) =>
       i.id !== "photo" &&
-      i.id !== "fun_fact" &&
-      i.id !== "industries"
+      i.id !== "fun_fact"
   )
   const okCore = core.filter((i) => i.ok).length
   const percent = Math.round((okCore / core.length) * 100)
   /** Detalle que el usuario puede completar después en perfil; no bloquea % ni la tarjeta. */
-  const OPTIONAL_GAP_IDS = new Set<string>(["fun_fact", "industries"])
+  const OPTIONAL_GAP_IDS = new Set<string>(["fun_fact"])
 
   const missing = items.filter(
     (i) => !i.ok && !OPTIONAL_GAP_IDS.has(i.id)

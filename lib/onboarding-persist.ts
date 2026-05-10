@@ -4,10 +4,10 @@ import { initialsFromName } from "@/lib/current-user-mapping"
 import type { Database } from "@/lib/database.types"
 import {
   replaceProfileCities,
-  replaceProfileIndustries,
   replaceProfileRelationsLooking,
   replaceProfileWorkStyles,
 } from "@/lib/data/profile-mutations"
+import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
 import { resolveProfileArea } from "@/lib/profile-taxonomy"
 import type {
@@ -44,16 +44,21 @@ export async function persistOnboardingProfileStep(
     funFact: string
     achievement: string
     primaryIndustrySlug: string
+    verticalSlugs: string[]
     expertiseSlugs: string[]
     talentSlugs: string[]
     experience: ExperienceRange
     availability: Availability
     workStyle: WorkStyle[]
-    industries: string[]
   }
 ): Promise<{ ok: boolean; error?: string }> {
   const name = input.name.trim()
   const role = input.jobTitle.trim()
+  const verticals = filterProfileVerticalSlugsForIndustry(
+    input.primaryIndustrySlug,
+    input.verticalSlugs,
+    3
+  )
   const expertise = input.expertiseSlugs.slice(0, 5)
   const talents = input.talentSlugs.slice(0, 5)
   const area = resolveProfileArea(input.primaryIndustrySlug, expertise)
@@ -68,9 +73,10 @@ export async function persistOnboardingProfileStep(
       fun_fact: input.funFact.trim().slice(0, 500),
       achievement: input.achievement.trim(),
       primary_industry_slug: input.primaryIndustrySlug,
+      vertical_slugs: verticals,
       expertise_slugs: expertise,
       talent_slugs: talents,
-      functional_area_tags: expertise,
+      functional_area_tags: [],
       area,
       experience: input.experience,
       availability: input.availability,
@@ -81,15 +87,6 @@ export async function persistOnboardingProfileStep(
 
   const ws = await replaceProfileWorkStyles(supabase, userId, input.workStyle)
   if (!ws.ok) return ws
-
-  if (input.industries.length > 0) {
-    const ind = await replaceProfileIndustries(
-      supabase,
-      userId,
-      input.industries
-    )
-    if (!ind.ok) return ind
-  }
 
   return { ok: true }
 }

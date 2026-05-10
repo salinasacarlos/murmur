@@ -39,12 +39,13 @@ export interface Profile {
   /** @deprecated prefer primaryIndustrySlug + expertiseSlugs */
   functionalAreaTags?: string[]
   primaryIndustrySlug?: string | null
+  /** Verticales (nivel 2) bajo la industria principal; hasta 3. */
+  verticalSlugs?: string[]
   expertiseSlugs?: string[]
   talentSlugs?: string[]
   experience: ExperienceRange
   achievement: string
   availability: Availability
-  industries: string[]
   workStyle: WorkStyle[]
   city: string
   cities?: string[]
@@ -71,9 +72,9 @@ export interface Search {
   /** @deprecated */
   functionalAreaTags?: string[]
   primaryIndustrySlug?: string | null
+  verticalSlugs?: string[]
   expertiseSlugs?: string[]
   talentSlugs?: string[]
-  industries: string[]
   status: SearchStatus
   matchesCount: number
   createdAt: string
@@ -135,12 +136,12 @@ export interface CurrentUser {
   area: FunctionalArea
   functionalAreaTags?: string[]
   primaryIndustrySlug?: string | null
+  verticalSlugs?: string[]
   expertiseSlugs?: string[]
   talentSlugs?: string[]
   experience: ExperienceRange
   achievement: string
   availability: Availability
-  industries: string[]
   workStyle: WorkStyle[]
   city: string
   cities?: string[]

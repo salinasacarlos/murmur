@@ -9,7 +9,6 @@ type Client = SupabaseClient<Database>
 const PROFILE_SELECT = `
   *,
   profile_relations_looking(relation),
-  profile_industries(industry_slug),
   profile_work_styles(work_style),
   profile_events(event_code),
   profile_cities(city_slug, is_primary)

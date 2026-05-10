@@ -9,19 +9,18 @@ import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
 import type { PeerConnectionHint } from "@/lib/data/connections"
 import {
-  AREA_LABELS,
   AVAILABILITY_LABELS,
   COMPATIBILITY_COLORS,
   COMPATIBILITY_LABELS,
   EXPERIENCE_LABELS,
   type Profile,
 } from "@/lib/types"
+import { labelProfileVerticalSlug } from "@/lib/industry-tree"
 import {
-  defaultIndustryForFunctionalArea,
-  inferIndustryFromExpertiseSlugs,
   labelIndustrySlug,
   labelExpertiseSlug,
   labelTalentSlug,
+  resolveHeroIndustrySlug,
 } from "@/lib/profile-taxonomy"
 import { IconMapPin } from "@/components/icons"
 import { cn } from "@/lib/utils"
@@ -37,18 +36,14 @@ export function ProfileCard({
   onClick,
   connectionHint = { state: "none" },
 }: ProfileCardProps) {
-  const heroIndustrySlug =
-    profile.primaryIndustrySlug ??
-    inferIndustryFromExpertiseSlugs(
-      profile.expertiseSlugs?.length
-        ? profile.expertiseSlugs
-        : profile.functionalAreaTags
-    ) ??
-    defaultIndustryForFunctionalArea(profile.area)
-  const heroExpertise =
-    profile.expertiseSlugs?.length
-      ? profile.expertiseSlugs
-      : (profile.functionalAreaTags ?? [])
+  const heroIndustrySlug = resolveHeroIndustrySlug({
+    primaryIndustrySlug: profile.primaryIndustrySlug,
+    expertiseSlugs: profile.expertiseSlugs,
+    functionalAreaTags: profile.functionalAreaTags,
+    area: profile.area,
+  })
+  const heroVerticals = profile.verticalSlugs ?? []
+  const heroExpertise = profile.expertiseSlugs ?? []
   const talentSlugs = profile.talentSlugs ?? []
 
   return (
@@ -89,6 +84,14 @@ export function ProfileCard({
 
       <div className="flex flex-wrap gap-1.5">
         <Tag variant="amber">{labelIndustrySlug(heroIndustrySlug)}</Tag>
+        {heroVerticals.slice(0, 1).map((slug) => (
+          <Tag key={`v-${slug}`} variant="amber">
+            {labelProfileVerticalSlug(slug)}
+          </Tag>
+        ))}
+        {heroVerticals.length > 1 ? (
+          <Tag variant="neutral">+{heroVerticals.length - 1} vert.</Tag>
+        ) : null}
         {heroExpertise.length > 0 ? (
           <>
             {heroExpertise.slice(0, 2).map((slug) => (
@@ -101,7 +104,7 @@ export function ProfileCard({
             ) : null}
           </>
         ) : (
-          <Tag variant="amber">{AREA_LABELS[profile.area]}</Tag>
+          <Tag variant="neutral">Sin expertise</Tag>
         )}
         {talentSlugs.slice(0, 1).map((slug) => (
           <Tag key={`talent-${slug}`} variant="neutral">
@@ -134,14 +137,6 @@ export function ProfileCard({
           </p>
         </div>
       ) : null}
-
-      <div className="flex flex-wrap gap-1.5">
-        {profile.industries.slice(0, 3).map((ind) => (
-          <Tag key={ind} variant="green">
-            {ind}
-          </Tag>
-        ))}
-      </div>
 
       <div className="flex items-center gap-1.5 text-[11px] text-[var(--text3)] mt-auto">
         <IconMapPin size={12} />
