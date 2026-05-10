@@ -10,7 +10,7 @@ export async function getSupabaseServerClient() {
   const env = getSupabasePublicEnv()
   if (!env) {
     throw new Error(
-      "Missing Supabase env: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)"
+      "Faltan variables de Supabase (URL y clave pública). Revisa .env.local o Vercel → Environment Variables."
     )
   }
   const { url, key } = env

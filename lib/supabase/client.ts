@@ -22,7 +22,7 @@ export function getSupabaseBrowserClient() {
   const env = getSupabasePublicEnv()
   if (!env) {
     throw new Error(
-      "Missing Supabase env: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)"
+      "Faltan variables de Supabase. Crea murmur1/.env.local (copia .env.local.example) con la URL y la clave publishable/anon del dashboard, o configúralas en Vercel → Settings → Environment Variables y vuelve a desplegar."
     )
   }
   const { url, key } = env
