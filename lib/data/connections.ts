@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
+import {
+  freeAllowsNewConnection,
+  isPremiumPlan,
+  MSG_FREE_CONNECTION_SEND_LIMIT,
+  type UserPlan,
+} from "@/lib/plan-limits"
 import { fetchProfilesByIds } from "@/lib/data/profiles"
 import type {
   IgnoredConnection,
@@ -10,6 +16,38 @@ import type {
 } from "@/lib/types"
 
 type Client = SupabaseClient<Database>
+
+async function fetchProfilePlan(
+  supabase: Client,
+  profileId: string
+): Promise<UserPlan> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", profileId)
+    .maybeSingle()
+  return data?.plan === "premium" ? "premium" : "free"
+}
+
+/** Conexiones aceptadas donde el usuario es remitente o destinatario (una fila = una conexión). */
+export async function countAcceptedConnectionsForProfile(
+  supabase: Client,
+  profileId: string
+): Promise<number> {
+  const [sent, recv] = await Promise.all([
+    supabase
+      .from("connections")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "accepted")
+      .eq("sender_id", profileId),
+    supabase
+      .from("connections")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "accepted")
+      .eq("receiver_id", profileId),
+  ])
+  return (sent.count ?? 0) + (recv.count ?? 0)
+}
 
 /** Estado de conexión con otro perfil (vista Descubrir / tarjeta). */
 export type PeerConnectionHint =
@@ -343,6 +381,17 @@ export async function sendConnectionRequest(
 
   if (acceptedAB || acceptedBA) {
     return { ok: false, error: "Ya tienen una conexión aceptada." }
+  }
+
+  const senderPlan = await fetchProfilePlan(supabase, input.senderId)
+  if (!isPremiumPlan(senderPlan)) {
+    const acceptedN = await countAcceptedConnectionsForProfile(
+      supabase,
+      input.senderId
+    )
+    if (!freeAllowsNewConnection(acceptedN)) {
+      return { ok: false, error: MSG_FREE_CONNECTION_SEND_LIMIT }
+    }
   }
 
   const body = input.message.trim() || "—"

@@ -115,11 +115,20 @@ export async function persistOnboardingLocationFinish(
 
   if (error) return { ok: false, error: error.message }
 
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", userId)
+    .maybeSingle()
+  const plan = prof?.plan === "premium" ? "premium" : "free"
+  const activeCities = plan === "premium" ? input.activeCities : []
+
   const cities = await replaceProfileCities(
     supabase,
     userId,
     city,
-    input.activeCities
+    activeCities,
+    plan
   )
   if (!cities.ok) return cities
 

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
+import { isPremiumPlan, type UserPlan } from "@/lib/plan-limits"
 
 type Client = SupabaseClient<Database>
 
@@ -46,12 +47,17 @@ export async function touchProfileActivity(supabase: Client): Promise<void> {
 export async function fetchNotifications(
   supabase: Client,
   userId: string,
-  limit = 80
+  limit = 80,
+  plan: UserPlan | null | undefined = null
 ): Promise<AppNotification[]> {
-  const { data, error } = await supabase
+  let q = supabase
     .from("notifications")
     .select("*")
     .eq("user_id", userId)
+  if (!isPremiumPlan(plan)) {
+    q = q.neq("kind", "high_compatibility_suggestion")
+  }
+  const { data, error } = await q
     .order("created_at", { ascending: false })
     .limit(limit)
 
@@ -61,13 +67,18 @@ export async function fetchNotifications(
 
 export async function countUnreadNotifications(
   supabase: Client,
-  userId: string
+  userId: string,
+  plan: UserPlan | null | undefined = null
 ): Promise<number> {
-  const { count, error } = await supabase
+  let q = supabase
     .from("notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .is("read_at", null)
+  if (!isPremiumPlan(plan)) {
+    q = q.neq("kind", "high_compatibility_suggestion")
+  }
+  const { count, error } = await q
 
   if (error) return 0
   return count ?? 0

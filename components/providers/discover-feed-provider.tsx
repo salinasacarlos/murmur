@@ -21,6 +21,7 @@ import {
   emptyDiscoverFeedFilters,
   type DiscoverFeedFilters,
 } from "@/lib/feed-filters"
+import { sanitizeDiscoverFiltersForPlan } from "@/lib/plan-limits"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { EventEntry, Profile, Search } from "@/lib/types"
@@ -48,7 +49,7 @@ const DiscoverFeedContext = React.createContext<DiscoverFeedContextValue | null>
 )
 
 export function DiscoverFeedProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useCurrentUser()
+  const { user, profile } = useCurrentUser()
   const userId = user?.id ?? null
 
   const [activated, setActivated] = React.useState(false)
@@ -82,9 +83,12 @@ export function DiscoverFeedProvider({ children }: { children: React.ReactNode }
     }
     setActivated(readFeedActivated(userId))
     setActiveSearchState(readFeedActiveSearch(userId) ?? "all")
-    setDiscoverFilters(readFeedFilters(userId))
+    const raw = readFeedFilters(userId)
+    setDiscoverFilters(
+      sanitizeDiscoverFiltersForPlan(raw, profile?.plan ?? "free")
+    )
     setActiveEventState(readFeedActiveEvent(userId))
-  }, [userId])
+  }, [userId, profile?.plan])
 
   const setActiveSearch = React.useCallback(
     (id: string) => {

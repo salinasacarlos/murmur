@@ -3,6 +3,11 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import { cityLabelToSlug, industryLabelToSlug } from "@/lib/catalogs"
 import type { Database } from "@/lib/database.types"
 import type { RelationType, WorkStyle } from "@/lib/types"
+import {
+  freeAllowsCitySlugs,
+  isPremiumPlan,
+  MSG_FREE_CITIES_LIMIT,
+} from "@/lib/plan-limits"
 
 type Client = SupabaseClient<Database>
 
@@ -78,7 +83,8 @@ export async function replaceProfileCities(
   supabase: Client,
   profileId: string,
   primaryCityLabel: string,
-  activeCityLabels: string[]
+  activeCityLabels: string[],
+  plan: Database["public"]["Enums"]["user_plan"]
 ): Promise<{ ok: boolean; error?: string }> {
   const { data: rows, error: catErr } = await supabase
     .from("cities_catalog")
@@ -124,6 +130,13 @@ export async function replaceProfileCities(
     is_primary,
   }))
   if (resolved.length === 0) return { ok: true }
+
+  if (
+    !isPremiumPlan(plan) &&
+    !freeAllowsCitySlugs(resolved.length)
+  ) {
+    return { ok: false, error: MSG_FREE_CITIES_LIMIT }
+  }
 
   const { error } = await supabase.from("profile_cities").insert(resolved)
   if (error) return { ok: false, error: error.message }

@@ -30,6 +30,8 @@ interface FiltersDrawerProps {
   onOpenChange: (open: boolean) => void
   filters: DiscoverFeedFilters
   onFiltersChange: (next: DiscoverFeedFilters) => void
+  /** Filtros avanzados (afinidad, talentos) solo en Premium. */
+  isPremium: boolean
 }
 
 export function FiltersDrawer({
@@ -37,6 +39,7 @@ export function FiltersDrawer({
   onOpenChange,
   filters,
   onFiltersChange,
+  isPremium,
 }: FiltersDrawerProps) {
   function setIndustry(slug: string | null) {
     const industryChanged = slug !== filters.primaryIndustrySlug
@@ -56,7 +59,11 @@ export function FiltersDrawer({
     <Drawer open={open} onOpenChange={onOpenChange} ariaLabel="Filtros">
       <DrawerHeader
         title="Filtros"
-        description={PROFILE_FIELD_HINTS.feedDrawerIntro}
+        description={
+          isPremium
+            ? PROFILE_FIELD_HINTS.feedDrawerIntro
+            : "Plan Free: ciudad, disponibilidad, relación, industria y verticales de foco. Afinidad y talentos en Premium."
+        }
       />
 
       <div className="flex flex-col gap-4 mb-4">
@@ -131,31 +138,40 @@ export function FiltersDrawer({
           />
         </Field>
 
-        <Field
-          label={PROFILE_FIELD_COPY.verticalesAfinidad}
-          hint={PROFILE_FIELD_HINTS.verticalesAfinidadFilterFeed}
-        >
-          <div className="max-h-[min(52vh,400px)] overflow-y-auto pr-1">
-            <HierarchicalIndustrySelector
-              value={filters.affinityLabels}
-              onChange={(labels) =>
-                onFiltersChange({ ...filters, affinityLabels: labels })
-              }
-            />
-          </div>
-        </Field>
+        {isPremium ? (
+          <>
+            <Field
+              label={PROFILE_FIELD_COPY.verticalesAfinidad}
+              hint={PROFILE_FIELD_HINTS.verticalesAfinidadFilterFeed}
+            >
+              <div className="max-h-[min(52vh,400px)] overflow-y-auto pr-1">
+                <HierarchicalIndustrySelector
+                  value={filters.affinityLabels}
+                  onChange={(labels) =>
+                    onFiltersChange({ ...filters, affinityLabels: labels })
+                  }
+                />
+              </div>
+            </Field>
 
-        <Field
-          label={PROFILE_FIELD_COPY.talentos}
-          hint={PROFILE_FIELD_HINTS.talentosFilterFeed}
-        >
-          <TalentMultiSelect
-            value={filters.talentSlugs}
-            onChange={(slugs) =>
-              onFiltersChange({ ...filters, talentSlugs: slugs })
-            }
-          />
-        </Field>
+            <Field
+              label={PROFILE_FIELD_COPY.talentos}
+              hint={PROFILE_FIELD_HINTS.talentosFilterFeed}
+            >
+              <TalentMultiSelect
+                value={filters.talentSlugs}
+                onChange={(slugs) =>
+                  onFiltersChange({ ...filters, talentSlugs: slugs })
+                }
+              />
+            </Field>
+          </>
+        ) : (
+          <p className="text-[11px] text-[var(--text3)] leading-snug">
+            {PROFILE_FIELD_COPY.verticalesAfinidad} y {PROFILE_FIELD_COPY.talentos}{" "}
+            en filtros están disponibles con Premium.
+          </p>
+        )}
       </div>
 
       <div className="flex gap-2">

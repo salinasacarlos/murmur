@@ -38,6 +38,7 @@ export function ConnectionsClient() {
   const [ignored, setIgnored] = React.useState<IgnoredConnection[]>([])
   const [loading, setLoading] = React.useState(true)
   const [acceptingId, setAcceptingId] = React.useState<string | null>(null)
+  const [acceptError, setAcceptError] = React.useState<string | null>(null)
   const redirectTimer = React.useRef<number | null>(null)
 
   React.useLayoutEffect(() => {
@@ -110,11 +111,12 @@ export function ConnectionsClient() {
     if (acceptingId || !user?.id) return
 
     setAcceptingId(c.id)
+    setAcceptError(null)
     const supabase = getSupabaseBrowserClient()
     const res = await acceptConnectionRpc(supabase, c.id)
     if (!res.ok) {
       setAcceptingId(null)
-      console.error(res.message)
+      setAcceptError(res.message)
       return
     }
 
@@ -165,6 +167,12 @@ export function ConnectionsClient() {
           Recibidas, enviadas y solicitudes que ignoraste.
         </p>
       </div>
+
+      {acceptError ? (
+        <p className="text-[12px] text-[var(--red)] mb-3" role="alert">
+          {acceptError}
+        </p>
+      ) : null}
 
       {loading ? (
         <Card padding="default" className="text-center py-10">

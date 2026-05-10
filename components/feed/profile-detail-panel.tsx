@@ -10,10 +10,19 @@ import { Drawer, DrawerHeader, SidePanel } from "@/components/ui/drawer"
 import { Tag } from "@/components/ui/tag"
 import { Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
-import { sendConnectionRequest, type PeerConnectionHint } from "@/lib/data/connections"
+import {
+  countAcceptedConnectionsForProfile,
+  sendConnectionRequest,
+  type PeerConnectionHint,
+} from "@/lib/data/connections"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
+import {
+  FREE_MAX_ACCEPTED_CONNECTIONS,
+  isPremiumPlan,
+  MSG_FREE_CONNECTION_SEND_LIMIT,
+} from "@/lib/plan-limits"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -57,7 +66,8 @@ export function ProfileDetailPanel({
   onConnectionsChanged,
 }: ProfileDetailPanelProps) {
   const router = useRouter()
-  const { user: authUser } = useCurrentUser()
+  const { user: authUser, profile: myProfile } = useCurrentUser()
+  const [acceptedCount, setAcceptedCount] = React.useState<number | null>(null)
   const [connectOpen, setConnectOpen] = React.useState(false)
   const [message, setMessage] = React.useState("")
   const [connectRelation, setConnectRelation] = React.useState<
@@ -65,6 +75,22 @@ export function ProfileDetailPanel({
   >(null)
   const [sending, setSending] = React.useState(false)
   const [sendError, setSendError] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (!authUser?.id || !open) {
+      setAcceptedCount(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const supabase = getSupabaseBrowserClient()
+      const n = await countAcceptedConnectionsForProfile(supabase, authUser.id)
+      if (!cancelled) setAcceptedCount(n)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [authUser?.id, open])
 
   React.useEffect(() => {
     if (!profile) return
@@ -80,6 +106,12 @@ export function ProfileDetailPanel({
   if (!profile) return null
 
   const isSelf = Boolean(authUser?.id && profile.id === authUser.id)
+
+  const connectionCapReached =
+    Boolean(myProfile) &&
+    !isPremiumPlan(myProfile?.plan) &&
+    acceptedCount !== null &&
+    acceptedCount >= FREE_MAX_ACCEPTED_CONNECTIONS
 
   const heroIndustrySlug =
     profile.primaryIndustrySlug ??
@@ -248,9 +280,15 @@ export function ProfileDetailPanel({
           </div>
 
           <div
-            className="border-t-[0.5px] border-[var(--border)] px-5 py-4 sticky bottom-0 bg-[var(--bg)] flex gap-2"
+            className="border-t-[0.5px] border-[var(--border)] px-5 py-4 sticky bottom-0 bg-[var(--bg)] flex flex-col gap-2"
             style={{ paddingBottom: "calc(16px + var(--sab))" }}
           >
+            {connectionCapReached ? (
+              <p className="text-[11px] text-[var(--text2)] leading-snug">
+                {MSG_FREE_CONNECTION_SEND_LIMIT}
+              </p>
+            ) : null}
+            <div className="flex gap-2">
             <Button
               variant="secondary"
               size="lg"
@@ -263,7 +301,7 @@ export function ProfileDetailPanel({
               <Button
                 size="lg"
                 className="flex-1 justify-center"
-                disabled={isSelf || !authUser?.id}
+                disabled={isSelf || !authUser?.id || connectionCapReached}
                 onClick={() => {
                   setSendError(null)
                   setConnectOpen(true)
@@ -309,6 +347,7 @@ export function ProfileDetailPanel({
                 Ver solicitud
               </Link>
             )}
+            </div>
           </div>
         </div>
       </SidePanel>

@@ -12,13 +12,18 @@ import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
 import { Field, Input, Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
-import { createSearch, updateSearch } from "@/lib/data/searches"
+import {
+  countActiveSearchesForOwner,
+  createSearch,
+  updateSearch,
+} from "@/lib/data/searches"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
   PROFILE_FIELD_COPY,
   PROFILE_FIELD_HINTS,
 } from "@/lib/profile-field-copy"
 import { deriveEditableTaxonomy } from "@/lib/profile-taxonomy"
+import { isPremiumPlan, MSG_FREE_SEARCH_LIMIT } from "@/lib/plan-limits"
 import { cn } from "@/lib/utils"
 import { RELATION_LABELS, type FunctionalArea, type RelationType, type Search } from "@/lib/types"
 
@@ -92,6 +97,25 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
   )
   const [saving, setSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [activeSearchCount, setActiveSearchCount] = React.useState<number | null>(
+    null
+  )
+
+  React.useEffect(() => {
+    if (mode !== "create" || !user?.id) {
+      setActiveSearchCount(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const supabase = getSupabaseBrowserClient()
+      const n = await countActiveSearchesForOwner(supabase, user.id)
+      if (!cancelled) setActiveSearchCount(n)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [mode, user?.id])
 
   function toggleArr<T extends string>(
     list: T[],
@@ -163,6 +187,16 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
 
       {error ? (
         <p className="text-[12px] text-[var(--red)] mb-4">{error}</p>
+      ) : null}
+
+      {mode === "create" &&
+      profile &&
+      !isPremiumPlan(profile.plan) &&
+      activeSearchCount !== null &&
+      activeSearchCount >= 1 ? (
+        <p className="text-[12px] text-[var(--text2)] mb-4 p-3 rounded-lg border border-[var(--border)] bg-[var(--bg2)]">
+          {MSG_FREE_SEARCH_LIMIT}
+        </p>
       ) : null}
 
       <div className="flex flex-col gap-4 mb-6">
@@ -258,7 +292,18 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
             Cancelar
           </Button>
         </Link>
-        <Button size="lg" disabled={saving} onClick={() => void save()}>
+        <Button
+          size="lg"
+          disabled={
+            saving ||
+            (mode === "create" &&
+              !!profile &&
+              !isPremiumPlan(profile.plan) &&
+              activeSearchCount !== null &&
+              activeSearchCount >= 1)
+          }
+          onClick={() => void save()}
+        >
           {saving
             ? "Guardando…"
             : mode === "create"

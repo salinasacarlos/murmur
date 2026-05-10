@@ -12,14 +12,16 @@ import {
   fetchSearchesForOwner,
   updateSearchStatus,
 } from "@/lib/data/searches"
+import { isPremiumPlan } from "@/lib/plan-limits"
 import { peekSearchesList, putSearchesList } from "@/lib/searches-list-cache"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Search } from "@/lib/types"
 
 export default function SearchesPage() {
-  const { user } = useCurrentUser()
+  const { user, profile } = useCurrentUser()
   const [searches, setSearches] = React.useState<Search[]>([])
   const [loading, setLoading] = React.useState(true)
+  const [statusError, setStatusError] = React.useState<string | null>(null)
 
   React.useLayoutEffect(() => {
     if (!user?.id) {
@@ -54,6 +56,7 @@ export default function SearchesPage() {
 
   async function toggleStatus(id: string) {
     if (!user?.id) return
+    setStatusError(null)
     const target = searches.find((s) => s.id === id)
     if (!target) return
     const next =
@@ -61,7 +64,7 @@ export default function SearchesPage() {
     const supabase = getSupabaseBrowserClient()
     const res = await updateSearchStatus(supabase, id, user.id, next)
     if (!res.ok) {
-      console.error(res.error)
+      setStatusError(res.error ?? "No se pudo actualizar el estado")
       return
     }
     setSearches((prev) => {
@@ -96,7 +99,9 @@ export default function SearchesPage() {
             Mis búsquedas
           </h2>
           <p className="text-[12px] text-[var(--text2)] mt-1">
-            Gestiona tus búsquedas paralelas. Cada una alimenta el feed.
+            {isPremiumPlan(profile?.plan)
+              ? "Gestiona tus búsquedas paralelas. Cada una alimenta el feed."
+              : "Plan Free: una búsqueda activa a la vez. Pausa una para activar otra o pasa a Premium para varias activas."}
           </p>
         </div>
         <Link href="/searches/new">
@@ -106,6 +111,12 @@ export default function SearchesPage() {
           </Button>
         </Link>
       </div>
+
+      {statusError ? (
+        <p className="text-[12px] text-[var(--red)] mb-4" role="alert">
+          {statusError}
+        </p>
+      ) : null}
 
       {loading ? (
         <div className="ds-card p-10 text-center">

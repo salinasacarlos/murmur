@@ -45,6 +45,7 @@ import {
   computeProfileCompleteness,
   profileFromCurrentUserForCompleteness,
 } from "@/lib/profile-completeness"
+import { isPremiumPlan } from "@/lib/plan-limits"
 import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
@@ -519,16 +520,23 @@ export default function ProfilePage() {
 
   function openLocationEdit() {
     if (!profileUser) return
+    const multi = isPremiumPlan(profileUser.plan)
     setLocationDraft({
       city: profileUser.city,
-      cities: profileUser.cities ?? [profileUser.city],
+      cities: multi
+        ? profileUser.cities?.length
+          ? profileUser.cities
+          : profileUser.city
+            ? [profileUser.city]
+            : []
+        : [],
       searchRadiusKm: profileUser.searchRadiusKm ?? 50,
     })
     setLocationEditOpen(true)
   }
 
   async function saveLocationEdit() {
-    if (!authUser || savingLocation) return
+    if (!authUser || !profileUser || savingLocation) return
     setSavingLocation(true)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
@@ -543,11 +551,15 @@ export default function ProfilePage() {
       console.error("Failed to save location", error)
       return
     }
+    const citiesForSave = isPremiumPlan(profileUser.plan)
+      ? locationDraft.cities
+      : []
     const citiesRes = await replaceProfileCities(
       supabase,
       authUser.id,
       locationDraft.city.trim(),
-      locationDraft.cities
+      citiesForSave,
+      profileUser.plan
     )
     setSavingLocation(false)
     if (!citiesRes.ok) {
@@ -1308,7 +1320,11 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Editar ubicación y radio"
-          description="Define dónde estás y en qué ciudades quieres aparecer cuando tu búsqueda esté activa."
+          description={
+            isPremiumPlan(profileUser.plan)
+              ? "Define dónde estás y en qué ciudades quieres aparecer cuando tu búsqueda esté activa."
+              : "Plan Free: una sola ciudad. Amplía a Premium para activar tu búsqueda en varias ciudades."
+          }
         />
 
         <div className="flex flex-col gap-3 mb-4">
@@ -1331,17 +1347,24 @@ export default function ProfilePage() {
             </datalist>
           </Field>
 
-          <Field
-            label="Ciudades donde mi búsqueda está activa"
-            hint="Puedes seleccionar varias ciudades principales de México, Colombia, EE.UU. y LatAm."
-          >
-            <CitySelector
-              value={locationDraft.cities}
-              onChange={(cities) =>
-                setLocationDraft((prev) => ({ ...prev, cities }))
-              }
-            />
-          </Field>
+          {isPremiumPlan(profileUser.plan) ? (
+            <Field
+              label="Ciudades donde mi búsqueda está activa"
+              hint="Puedes seleccionar varias ciudades principales de México, Colombia, EE.UU. y LatAm."
+            >
+              <CitySelector
+                value={locationDraft.cities}
+                onChange={(cities) =>
+                  setLocationDraft((prev) => ({ ...prev, cities }))
+                }
+              />
+            </Field>
+          ) : (
+            <p className="text-[12px] text-[var(--text2)] leading-relaxed">
+              En el plan Free solo aplica tu ciudad principal arriba. Las ciudades
+              extra están disponibles en Premium.
+            </p>
+          )}
 
           <Field
             label="Radio de búsqueda"

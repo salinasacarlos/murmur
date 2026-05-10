@@ -22,7 +22,7 @@ export function NotificationsUnreadProvider({
 }: {
   children: React.ReactNode
 }) {
-  const { user } = useCurrentUser()
+  const { user, profile } = useCurrentUser()
   const userId = user?.id ?? null
   const [hasUnread, setHasUnread] = React.useState(false)
 
@@ -32,9 +32,9 @@ export function NotificationsUnreadProvider({
       return
     }
     const supabase = getSupabaseBrowserClient()
-    const n = await countUnreadNotifications(supabase, userId)
+    const n = await countUnreadNotifications(supabase, userId, profile?.plan)
     setHasUnread(n > 0)
-  }, [userId])
+  }, [userId, profile?.plan])
 
   React.useEffect(() => {
     if (!userId) {
@@ -46,7 +46,11 @@ export function NotificationsUnreadProvider({
 
     async function tick() {
       const supabase = getSupabaseBrowserClient()
-      const n = await countUnreadNotifications(supabase, uid)
+      const n = await countUnreadNotifications(
+        supabase,
+        uid,
+        profile?.plan
+      )
       if (!cancelled) setHasUnread(n > 0)
     }
 
@@ -62,7 +66,7 @@ export function NotificationsUnreadProvider({
       window.clearInterval(interval)
       document.removeEventListener("visibilitychange", onVisible)
     }
-  }, [userId])
+  }, [userId, profile?.plan])
 
   const value = React.useMemo(
     (): NotificationsUnreadContextValue => ({ hasUnread, refresh }),

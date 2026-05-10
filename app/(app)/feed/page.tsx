@@ -54,7 +54,7 @@ function profileMatchesSearchChip(p: Profile, s: Search): boolean {
 function FeedPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user } = useCurrentUser()
+  const { user, profile } = useCurrentUser()
   const userId = user?.id ?? null
 
   const [peerHints, setPeerHints] = React.useState<
@@ -254,6 +254,7 @@ function FeedPageContent() {
         onOpenChange={setFiltersOpen}
         filters={discoverFilters}
         onFiltersChange={setDiscoverFilters}
+        isPremium={profile?.plan === "premium"}
       />
 
       <EventCodeJoin

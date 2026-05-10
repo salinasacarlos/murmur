@@ -255,23 +255,33 @@ Pantalla de gestión del perfil propio del usuario.
 
 ## 7. Modelo de negocio — Freemium
 
-### Plan gratuito
-- 1 búsqueda activa
-- Máximo 10 conexiones en total
-- Acceso al feed y mensajes sin límite para conexiones existentes
+El campo `profiles.plan` usa el enum `user_plan` (`free` | `premium`). **En V1 no hay pasarela de pago:** el plan se actualiza manualmente (equipo o script administrativo) hasta integrar checkout.
+
+### Plan gratuito (Free)
+
+| Límite | Valor |
+|--------|--------|
+| Ciudades en perfil | 1 (un slug en `profile_cities`) |
+| Búsquedas con estado `active` | 1 |
+| Conexiones con estado `accepted` | máx. 10 por usuario |
+| Filtros en Descubrir | Subconjunto: ciudad, disponibilidad, tipo de relación, industria principal, verticales de foco. Sin filtros por verticales de afinidad ni talentos. |
+| Notificaciones `high_compatibility_suggestion` | No (la RPC no encola para Free) |
 
 ### Plan Premium
-- Búsquedas activas ilimitadas
-- Conexiones ilimitadas
-- Acceso completo a todos los filtros
-- Prioridad en el ranking del feed
 
-### Precios
+- Varias ciudades / radar amplio
+- Búsquedas activas ilimitadas
+- Conexiones aceptadas ilimitadas
+- Filtros completos en Descubrir (incl. afinidad y talentos)
+- Alertas de alta compatibilidad (`ensure_high_compatibility_suggestions`) para usuarios Premium
+
+### Precios (referencia producto)
+
 | Plan | Precio |
 |------|--------|
 | Gratuito | $0 |
-| Premium semanal | $120 MXN / semana |
-| Premium anual | $999 MXN / año |
+| Premium semanal | **$49 MXN / semana** |
+| Premium anual | **$699 MXN / año** |
 
 ---
 

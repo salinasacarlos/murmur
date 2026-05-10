@@ -8,8 +8,54 @@ import {
   resolveProfileArea,
 } from "@/lib/profile-taxonomy"
 import type { Search } from "@/lib/types"
+import {
+  freeAllowsNewActiveSearch,
+  isPremiumPlan,
+  MSG_FREE_SEARCH_LIMIT,
+  type UserPlan,
+} from "@/lib/plan-limits"
 
 type Client = SupabaseClient<Database>
+
+async function fetchOwnerPlan(
+  supabase: Client,
+  ownerId: string
+): Promise<UserPlan> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("plan")
+    .eq("id", ownerId)
+    .maybeSingle()
+  return data?.plan === "premium" ? "premium" : "free"
+}
+
+export async function countActiveSearchesForOwner(
+  supabase: Client,
+  ownerId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("searches")
+    .select("*", { count: "exact", head: true })
+    .eq("owner_id", ownerId)
+    .eq("status", "active")
+  if (error) return 0
+  return count ?? 0
+}
+
+async function countOtherActiveSearches(
+  supabase: Client,
+  ownerId: string,
+  excludeSearchId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("searches")
+    .select("*", { count: "exact", head: true })
+    .eq("owner_id", ownerId)
+    .eq("status", "active")
+    .neq("id", excludeSearchId)
+  if (error) return 0
+  return count ?? 0
+}
 
 const SEARCH_SELECT = `
   *,
@@ -53,6 +99,28 @@ export async function updateSearchStatus(
   ownerId: string,
   status: Database["public"]["Enums"]["search_status"]
 ): Promise<{ ok: boolean; error?: string }> {
+  if (status === "active") {
+    const { data: row } = await supabase
+      .from("searches")
+      .select("status")
+      .eq("id", searchId)
+      .eq("owner_id", ownerId)
+      .maybeSingle()
+    if (row?.status !== "active") {
+      const plan = await fetchOwnerPlan(supabase, ownerId)
+      if (!isPremiumPlan(plan)) {
+        const others = await countOtherActiveSearches(
+          supabase,
+          ownerId,
+          searchId
+        )
+        if (!freeAllowsNewActiveSearch(others)) {
+          return { ok: false, error: MSG_FREE_SEARCH_LIMIT }
+        }
+      }
+    }
+  }
+
   const { error } = await supabase
     .from("searches")
     .update({ status, updated_at: new Date().toISOString() })
@@ -134,6 +202,14 @@ export async function createSearch(
   ownerId: string,
   payload: SearchFormPayload
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const plan = await fetchOwnerPlan(supabase, ownerId)
+  if (!isPremiumPlan(plan)) {
+    const n = await countActiveSearchesForOwner(supabase, ownerId)
+    if (!freeAllowsNewActiveSearch(n)) {
+      return { ok: false, error: MSG_FREE_SEARCH_LIMIT }
+    }
+  }
+
   const tax = taxonomyRowForPayload(payload)
   const insert: Database["public"]["Tables"]["searches"]["Insert"] = {
     owner_id: ownerId,
