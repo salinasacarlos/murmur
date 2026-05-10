@@ -1,69 +1,10 @@
-export const INDUSTRIES_CATALOG = [
-  "Fintech",
-  "Healthtech",
-  "Edtech",
-  "Logística",
-  "Consumer",
-  "B2B",
-  "B2B SaaS",
-  "SaaS",
-  "DevTools",
-  "AI",
-  "Climate",
-  "DeepTech",
-  "Crypto",
-  "Marketplace",
-  "Infra",
-  "Gaming",
-  "Hardware",
-  "E-commerce",
-  "Retail",
-  "Real Estate",
-  "Proptech",
-  "Legaltech",
-  "Insurtech",
-  "Agtech",
-  "Foodtech",
-  "Traveltech",
-  "Cybersecurity",
-  "Data",
-  "Analytics",
-  "HRTech",
-  "Creator Economy",
-  "Media",
-  "Entertainment",
-  "Biotech",
-  "Robotics",
-  "Energía",
-  "Movilidad",
-  "Transporte",
-  "Supply Chain",
-  "Manufactura",
-  "Construcción",
-  "Educación",
-  "Salud",
-  "Wellness",
-  "Sports",
-  "Comunidad",
-  "Productividad",
-  "Finanzas personales",
-  "Pagos",
-  "Lending",
-  "Open Finance",
-  "GovTech",
-  "Impacto social",
-  "Sostenibilidad",
-  "Aeroespacial",
-  "Telecom",
-  "Seguros",
-  "Recruiting",
-  "Ventas",
-  "Marketing",
-  "No-code",
-  "Web3",
-  "IoT",
-  "AR/VR",
-] as const
+import {
+  ALL_INDUSTRY_LEAF_LABELS,
+  INDUSTRY_SLUG_TO_LABEL,
+} from "@/lib/industry-tree"
+
+/** All leaf industry labels (align with `industries_catalog` rows that have a parent). */
+export const INDUSTRIES_CATALOG = ALL_INDUSTRY_LEAF_LABELS
 
 export const WORLDWIDE_CITY_LABEL = "Todo el mundo" as const
 
@@ -159,17 +100,12 @@ export function industryLabelToSlug(label: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
-export function industrySlugToLabel(
-  slug: string,
-  catalog: readonly string[] = INDUSTRIES_CATALOG
-): string {
-  const found = catalog.find((label) => industryLabelToSlug(label) === slug)
-  return (
-    found ??
-    slug
-      .split("-")
-      .filter(Boolean)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ")
-  )
+export function industrySlugToLabel(slug: string): string {
+  const fromTree = INDUSTRY_SLUG_TO_LABEL.get(slug)
+  if (fromTree) return fromTree
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
 }

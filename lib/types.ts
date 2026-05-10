@@ -35,6 +35,8 @@ export interface Profile {
   role: string
   bio: string
   area: FunctionalArea
+  /** Slugs from onboarding catalog (max 5) when present */
+  functionalAreaTags?: string[]
   experience: ExperienceRange
   achievement: string
   availability: Availability
@@ -121,6 +123,7 @@ export interface CurrentUser {
   role: string
   bio: string
   area: FunctionalArea
+  functionalAreaTags?: string[]
   experience: ExperienceRange
   achievement: string
   availability: Availability

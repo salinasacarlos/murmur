@@ -33,6 +33,7 @@ export function profileFromCurrentUserForCompleteness(
     role: user.role,
     bio: user.bio,
     area: user.area,
+    functionalAreaTags: user.functionalAreaTags,
     experience: user.experience,
     achievement: user.achievement,
     availability: user.availability,

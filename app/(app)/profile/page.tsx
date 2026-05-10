@@ -11,7 +11,13 @@ import { Field, Input, Textarea } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
-import { CITIES_CATALOG, INDUSTRIES_CATALOG } from "@/lib/catalogs"
+import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
+import { FunctionalAreasOnboardingSelect } from "@/components/ui/functional-areas-onboarding-select"
+import { CITIES_CATALOG } from "@/lib/catalogs"
+import {
+  labelForOnboardingAreaSlug,
+  mapsToForOnboardingSlug,
+} from "@/lib/onboarding-functional-areas"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -21,7 +27,6 @@ import {
   type Availability,
   type CurrentUser,
   type ExperienceRange,
-  type FunctionalArea,
   type Profile,
   type RelationType,
   type WorkStyle,
@@ -97,7 +102,7 @@ export default function ProfilePage() {
       photoUrl: undefined as string | undefined,
       role: "",
       bio: "",
-      area: "negocio" as FunctionalArea,
+      areaTagSlugs: [] as string[],
       experience: "3-5" as ExperienceRange,
     }),
     []
@@ -153,7 +158,7 @@ export default function ProfilePage() {
       photoUrl: profileUser.photoUrl,
       role: profileUser.role,
       bio: profileUser.bio,
-      area: profileUser.area,
+      areaTagSlugs: [...(profileUser.functionalAreaTags ?? [])],
       experience: profileUser.experience,
     })
     setProfileEditOpen(true)
@@ -195,6 +200,11 @@ export default function ProfilePage() {
     setSavingProfile(true)
     const nextInitials =
       initialsFromName(profileDraft.name) || profileUser.initials
+    const tags = profileDraft.areaTagSlugs.slice(0, 5)
+    const area =
+      tags.length > 0
+        ? (mapsToForOnboardingSlug(tags[0]) ?? profileUser.area)
+        : profileUser.area
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
       .from("profiles")
@@ -203,7 +213,8 @@ export default function ProfilePage() {
         initials: nextInitials,
         role: profileDraft.role.trim(),
         bio: profileDraft.bio,
-        area: profileDraft.area,
+        area,
+        functional_area_tags: tags,
         experience: profileDraft.experience,
         photo_url: profileDraft.photoUrl ?? null,
       })
@@ -334,14 +345,6 @@ export default function ProfilePage() {
     if (!profileUser) return
     setIndustriesDraft([...profileUser.industries])
     setIndustriesEditOpen(true)
-  }
-
-  function toggleIndustryLabel(label: string) {
-    setIndustriesDraft((prev) =>
-      prev.includes(label)
-        ? prev.filter((x) => x !== label)
-        : [...prev, label]
-    )
   }
 
   async function saveIndustriesEdit() {
@@ -505,7 +508,15 @@ export default function ProfilePage() {
             )}
           </p>
           <div className="flex flex-wrap gap-1.5 mt-3">
-            <Tag variant="amber">{AREA_LABELS[user.area]}</Tag>
+            {user.functionalAreaTags && user.functionalAreaTags.length > 0 ? (
+              user.functionalAreaTags.map((slug) => (
+                <Tag key={slug} variant="amber">
+                  {labelForOnboardingAreaSlug(slug)}
+                </Tag>
+              ))
+            ) : (
+              <Tag variant="amber">{AREA_LABELS[user.area]}</Tag>
+            )}
             <Tag variant="neutral">{EXPERIENCE_LABELS[user.experience]}</Tag>
             <Tag variant="success">{AVAILABILITY_LABELS[user.availability]}</Tag>
           </div>
@@ -569,19 +580,14 @@ export default function ProfilePage() {
             />
           </Field>
 
-          <Field label="Área funcional">
-            <div className="flex flex-wrap gap-1.5">
-              {(Object.keys(AREA_LABELS) as FunctionalArea[]).map((id) => (
-                <ProfileEditChip
-                  key={id}
-                  label={AREA_LABELS[id]}
-                  selected={profileDraft.area === id}
-                  onClick={() =>
-                    setProfileDraft((prev) => ({ ...prev, area: id }))
-                  }
-                />
-              ))}
-            </div>
+          <Field label="Áreas funcionales">
+            <FunctionalAreasOnboardingSelect
+              value={profileDraft.areaTagSlugs}
+              onChange={(slugs) =>
+                setProfileDraft((prev) => ({ ...prev, areaTagSlugs: slugs }))
+              }
+              footerNote={`Máximo 5. La primera define tu ámbito principal en matching.`}
+            />
           </Field>
 
           <Field label="Años de experiencia">
@@ -660,7 +666,16 @@ export default function ProfilePage() {
             <IconEdit size={14} />
           </button>
         </div>
-        <ProfileValueRow label="Área" value={AREA_LABELS[user.area]} />
+        <ProfileValueRow
+          label="Áreas funcionales"
+          value={
+            user.functionalAreaTags && user.functionalAreaTags.length > 0
+              ? user.functionalAreaTags
+                  .map((slug) => labelForOnboardingAreaSlug(slug))
+                  .join(" · ")
+              : AREA_LABELS[user.area]
+          }
+        />
         <ProfileValueRow
           label="Experiencia"
           value={EXPERIENCE_LABELS[user.experience]}
@@ -974,17 +989,13 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Industrias de afinidad"
-          description="Selecciona las industrias con las que más te identificas."
+          description="Elige un ámbito y luego las subindustrias. Puedes sumar etiquetas de varios ámbitos."
         />
-        <div className="max-h-[50vh] overflow-y-auto flex flex-wrap gap-1.5 mb-4 pr-1">
-          {INDUSTRIES_CATALOG.map((label) => (
-            <ProfileEditChip
-              key={label}
-              label={label}
-              selected={industriesDraft.includes(label)}
-              onClick={() => toggleIndustryLabel(label)}
-            />
-          ))}
+        <div className="max-h-[min(70vh,520px)] overflow-y-auto mb-4 pr-1">
+          <HierarchicalIndustrySelector
+            value={industriesDraft}
+            onChange={setIndustriesDraft}
+          />
         </div>
         <div className="flex gap-2">
           <Button

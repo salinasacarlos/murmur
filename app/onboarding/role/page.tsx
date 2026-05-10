@@ -38,7 +38,7 @@ export default function RoleStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={2} total={6} />
       <OnboardingCard
-        title="¿Qué te trae a Murmur?"
+        title="¿Qué te trae a murmur?"
         description="Una sola elección para orientar el matching. Si tienes startup o buscas unirte a un equipo, ya queda cubierto aquí; podrás detallar en tu perfil y en tus búsquedas."
         back="/onboarding/event"
         next="/onboarding/relationships"

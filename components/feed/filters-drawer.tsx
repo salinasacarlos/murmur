@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
-import { IndustrySelector } from "@/components/ui/industry-selector"
+import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { Field, Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import {
@@ -94,7 +94,10 @@ export function FiltersDrawer({ open, onOpenChange }: FiltersDrawerProps) {
         </Field>
 
         <Field label="Industrias">
-          <IndustrySelector value={industries} onChange={setIndustries} />
+          <HierarchicalIndustrySelector
+            value={industries}
+            onChange={setIndustries}
+          />
         </Field>
       </div>
 

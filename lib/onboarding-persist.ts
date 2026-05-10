@@ -12,10 +12,10 @@ import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
 import type {
   Availability,
   ExperienceRange,
-  FunctionalArea,
   RelationType,
   WorkStyle,
 } from "@/lib/types"
+import { mapsToForOnboardingSlug } from "@/lib/onboarding-functional-areas"
 
 type Client = SupabaseClient<Database>
 
@@ -42,7 +42,7 @@ export async function persistOnboardingProfileStep(
     jobTitle: string
     bio: string
     achievement: string
-    areas: FunctionalArea[]
+    areaTagSlugs: string[]
     experience: ExperienceRange
     availability: Availability
     workStyle: WorkStyle[]
@@ -51,7 +51,9 @@ export async function persistOnboardingProfileStep(
 ): Promise<{ ok: boolean; error?: string }> {
   const name = input.name.trim()
   const role = input.jobTitle.trim()
-  const area = input.areas[0] ?? "negocio"
+  const tags = input.areaTagSlugs.slice(0, 5)
+  const firstMaps = tags[0] ? mapsToForOnboardingSlug(tags[0]) : undefined
+  const area = firstMaps ?? "negocio"
 
   const { error } = await supabase
     .from("profiles")
@@ -62,6 +64,7 @@ export async function persistOnboardingProfileStep(
       bio: input.bio.trim(),
       achievement: input.achievement.trim(),
       area,
+      functional_area_tags: tags,
       experience: input.experience,
       availability: input.availability,
     })

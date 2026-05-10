@@ -212,18 +212,21 @@ export type Database = {
         Row: {
           created_at: string
           name: string
+          parent_slug: string | null
           slug: string
           sort_order: number
         }
         Insert: {
           created_at?: string
           name: string
+          parent_slug?: string | null
           slug: string
           sort_order?: number
         }
         Update: {
           created_at?: string
           name?: string
+          parent_slug?: string | null
           slug?: string
           sort_order?: number
         }
@@ -427,6 +430,7 @@ export type Database = {
           created_at: string
           email: string
           experience: Database["public"]["Enums"]["experience_range"] | null
+          functional_area_tags: string[]
           id: string
           initials: string
           name: string
@@ -452,6 +456,7 @@ export type Database = {
           created_at?: string
           email: string
           experience?: Database["public"]["Enums"]["experience_range"] | null
+          functional_area_tags?: string[]
           id: string
           initials?: string
           name?: string
@@ -477,6 +482,7 @@ export type Database = {
           created_at?: string
           email?: string
           experience?: Database["public"]["Enums"]["experience_range"] | null
+          functional_area_tags?: string[]
           id?: string
           initials?: string
           name?: string

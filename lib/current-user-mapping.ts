@@ -37,6 +37,10 @@ export function deriveCurrentUser(
     role: profile?.role ?? "",
     bio: profile?.bio ?? "",
     area: (profile?.area as FunctionalArea | null) ?? DEFAULT_AREA,
+    functionalAreaTags:
+      profile?.functional_area_tags && profile.functional_area_tags.length > 0
+        ? profile.functional_area_tags
+        : undefined,
     experience:
       (profile?.experience as ExperienceRange | null) ?? DEFAULT_EXPERIENCE,
     achievement: profile?.achievement ?? "",
@@ -69,6 +73,8 @@ export function mergeEnrichedIntoCurrentUser(
     role: enriched.role,
     bio: enriched.bio,
     area: enriched.area,
+    functionalAreaTags:
+      enriched.functionalAreaTags ?? base.functionalAreaTags,
     experience: enriched.experience,
     achievement: enriched.achievement,
     availability: enriched.availability,

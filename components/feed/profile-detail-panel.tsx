@@ -17,6 +17,7 @@ import {
   WORK_STYLE_LABELS,
   type Profile,
 } from "@/lib/types"
+import { labelForOnboardingAreaSlug } from "@/lib/onboarding-functional-areas"
 import {
   IconMapPin,
   IconBriefcase,
@@ -123,7 +124,12 @@ export function ProfileDetailPanel({
             <Section title="Sobre su trabajo">
               <div className="flex flex-col gap-2.5">
                 <Row icon={<IconBriefcase size={14} />}>
-                  {AREA_LABELS[profile.area]} · {EXPERIENCE_LABELS[profile.experience]}
+                  {(profile.functionalAreaTags?.length
+                    ? profile.functionalAreaTags
+                        .map((slug) => labelForOnboardingAreaSlug(slug))
+                        .join(" · ")
+                    : AREA_LABELS[profile.area])}{" "}
+                  · {EXPERIENCE_LABELS[profile.experience]}
                 </Row>
                 <Row icon={<IconClock size={14} />}>
                   {AVAILABILITY_LABELS[profile.availability]}

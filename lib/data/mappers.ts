@@ -78,6 +78,8 @@ export function mapProfileJoinRow(row: ProfileJoinRow): Profile {
     role: row.role,
     bio: row.bio,
     area: (row.area ?? "negocio") as FunctionalArea,
+    functionalAreaTags:
+      row.functional_area_tags?.length ? row.functional_area_tags : undefined,
     experience: (row.experience ?? "3-5") as ExperienceRange,
     achievement: row.achievement,
     availability: (row.availability ?? "full-time") as Availability,

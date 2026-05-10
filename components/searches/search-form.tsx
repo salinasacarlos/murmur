@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { IndustrySelector } from "@/components/ui/industry-selector"
+import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { Field, Input, Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { createSearch, updateSearch } from "@/lib/data/searches"
@@ -160,7 +160,10 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
         </Field>
 
         <Field label="Industrias">
-          <IndustrySelector value={industries} onChange={setIndustries} />
+          <HierarchicalIndustrySelector
+            value={industries}
+            onChange={setIndustries}
+          />
         </Field>
       </div>
 

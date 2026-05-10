@@ -55,7 +55,7 @@ export default function OnboardingIntroPage() {
           Conoce a tu próxima tribu
         </h1>
         <p className="text-[13px] text-[var(--text2)] leading-relaxed max-w-[340px] mx-auto">
-          Murmur conecta founders, talento y builders con intención clara.
+          murmur conecta founders, talento y builders con intención clara.
         </p>
       </div>
 

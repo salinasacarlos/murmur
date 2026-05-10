@@ -15,12 +15,72 @@ import {
   persistOnboardingLocationFinish,
   requireUserId,
 } from "@/lib/onboarding-persist"
+import { reverseGeocodeClient } from "@/lib/reverse-geocode"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export default function LocationStepPage() {
   const [city, setCity] = React.useState("")
   const [extraCities, setExtraCities] = React.useState<string[]>([])
   const [radius, setRadius] = React.useState(50)
+  const [geoBusy, setGeoBusy] = React.useState(false)
+  const [geoHint, setGeoHint] = React.useState<string | null>(null)
+
+  async function detectLocation() {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setGeoHint(
+        "Tu navegador no permite geolocalización en este dispositivo. Elige la ciudad a mano."
+      )
+      return
+    }
+
+    setGeoBusy(true)
+    setGeoHint(null)
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const rev = await reverseGeocodeClient(
+            pos.coords.latitude,
+            pos.coords.longitude
+          )
+          if (!rev?.cityLabel) {
+            setGeoHint("No pudimos obtener la ciudad. Escríbela o elige del listado.")
+            setGeoBusy(false)
+            return
+          }
+          const primary = rev.cityLabel.split("·")[0]?.trim() ?? rev.cityLabel
+          setCity(primary)
+          setExtraCities((prev) =>
+            prev.includes(primary) ? prev : [primary, ...prev]
+          )
+          setGeoHint("Listo: revisa la ciudad y el radio antes de continuar.")
+        } catch {
+          setGeoHint("Error al buscar la dirección. Inténtalo de nuevo o elige manual.")
+        } finally {
+          setGeoBusy(false)
+        }
+      },
+      (err) => {
+        setGeoBusy(false)
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoHint(
+            "Permiso de ubicación denegado. Actívalo en el navegador o escribe tu ciudad."
+          )
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGeoHint("No hay señal de ubicación disponible. Elige manualmente.")
+        } else if (err.code === err.TIMEOUT) {
+          setGeoHint("Tiempo agotado al obtener ubicación. Intenta de nuevo.")
+        } else {
+          setGeoHint("No pudimos leer tu ubicación.")
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 25_000,
+        maximumAge: 0,
+      }
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -46,10 +106,27 @@ export default function LocationStepPage() {
           }
         }}
       >
-        <Button variant="brand" size="lg" className="justify-center">
-          <IconMapPin size={14} />
-          Detectar mi ubicación
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="brand"
+            size="lg"
+            className="justify-center"
+            type="button"
+            disabled={geoBusy}
+            onClick={() => void detectLocation()}
+          >
+            <IconMapPin size={14} />
+            {geoBusy ? "Obteniendo ubicación…" : "Detectar mi ubicación"}
+          </Button>
+          <p className="text-[11px] text-[var(--text3)] leading-snug">
+            El navegador te pedirá permiso para ubicación aproximada; luego
+            rellenamos la ciudad (puedes editarla). No compartimos coordenadas
+            exactas.
+          </p>
+          {geoHint ? (
+            <p className="text-[12px] text-[var(--text2)]">{geoHint}</p>
+          ) : null}
+        </div>
 
         <div className="flex items-center gap-3 my-1">
           <div className="flex-1 h-px bg-[var(--border)]" />

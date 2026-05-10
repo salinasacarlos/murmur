@@ -5,8 +5,10 @@ import * as React from "react"
 import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
-import { IndustrySelector } from "@/components/ui/industry-selector"
+import { FunctionalAreasOnboardingSelect } from "@/components/ui/functional-areas-onboarding-select"
+import { HierarchicalIndustrySelector } from "@/components/ui/hierarchical-industry-selector"
 import { Field, Input, Textarea } from "@/components/ui/input"
+import { DEFAULT_INDUSTRY_DOMAIN_SLUG } from "@/lib/industry-tree"
 import {
   persistOnboardingProfileStep,
   requireUserId,
@@ -14,22 +16,24 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import {
-  AREA_LABELS,
   AVAILABILITY_LABELS,
   EXPERIENCE_LABELS,
   WORK_STYLE_LABELS,
   type Availability,
   type ExperienceRange,
-  type FunctionalArea,
   type WorkStyle,
 } from "@/lib/types"
+
+const WORK_STYLES_ONBOARDING = (
+  Object.keys(WORK_STYLE_LABELS) as WorkStyle[]
+).filter((id) => id !== "rapido")
 
 export default function ProfileStepPage() {
   const [name, setName] = React.useState("")
   const [jobTitle, setJobTitle] = React.useState("")
   const [bio, setBio] = React.useState("")
   const [highlight, setHighlight] = React.useState("")
-  const [areas, setAreas] = React.useState<FunctionalArea[]>([])
+  const [areaTagSlugs, setAreaTagSlugs] = React.useState<string[]>([])
   const [experience, setExperience] = React.useState<ExperienceRange | null>(
     null
   )
@@ -38,13 +42,18 @@ export default function ProfileStepPage() {
   )
   const [workStyle, setWorkStyle] = React.useState<WorkStyle[]>([])
   const [industries, setIndustries] = React.useState<string[]>([])
+  const [, setIndustryBrowseDomain] = React.useState(
+    DEFAULT_INDUSTRY_DOMAIN_SLUG
+  )
 
   function toggleArr<T extends string>(
     list: T[],
     setList: (v: T[]) => void,
     value: T
   ) {
-    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+    setList(
+      list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
+    )
   }
 
   return (
@@ -56,7 +65,7 @@ export default function ProfileStepPage() {
         back="/onboarding/relationships"
         next="/onboarding/location"
         nextDisabled={
-          areas.length === 0 ||
+          areaTagSlugs.length === 0 ||
           experience == null ||
           availability == null ||
           !name.trim() ||
@@ -72,7 +81,7 @@ export default function ProfileStepPage() {
             jobTitle,
             bio,
             achievement: highlight,
-            areas,
+            areaTagSlugs,
             experience,
             availability,
             workStyle,
@@ -115,18 +124,16 @@ export default function ProfileStepPage() {
           />
         </Field>
 
-        <Field label="Áreas funcionales" required hint="Elige todas las que te representen.">
+        <Field
+          label="Áreas funcionales"
+          required
+          hint="Lista amplia: elige hasta 5 que te representen. La primera define tu ámbito principal en matching."
+        >
           <PublicFieldNotice className="mb-1" compact />
-          <div className="flex flex-wrap gap-1.5">
-            {(Object.keys(AREA_LABELS) as FunctionalArea[]).map((id) => (
-              <ChipChoice
-                key={id}
-                label={AREA_LABELS[id]}
-                selected={areas.includes(id)}
-                onClick={() => toggleArr(areas, setAreas, id)}
-              />
-            ))}
-          </div>
+          <FunctionalAreasOnboardingSelect
+            value={areaTagSlugs}
+            onChange={setAreaTagSlugs}
+          />
         </Field>
 
         <Field label="Años de experiencia" required>
@@ -172,7 +179,7 @@ export default function ProfileStepPage() {
         <Field label="Forma de trabajar (multi)">
           <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
-            {(Object.keys(WORK_STYLE_LABELS) as WorkStyle[]).map((id) => (
+            {WORK_STYLES_ONBOARDING.map((id) => (
               <ChipChoice
                 key={id}
                 label={WORK_STYLE_LABELS[id]}
@@ -185,7 +192,11 @@ export default function ProfileStepPage() {
 
         <Field label="Industrias de afinidad (multi)">
           <PublicFieldNotice className="mb-1" compact />
-          <IndustrySelector value={industries} onChange={setIndustries} />
+          <HierarchicalIndustrySelector
+            value={industries}
+            onChange={setIndustries}
+            onActiveDomainChange={setIndustryBrowseDomain}
+          />
         </Field>
       </OnboardingCard>
     </div>

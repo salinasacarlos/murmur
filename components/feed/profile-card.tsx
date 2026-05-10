@@ -13,6 +13,7 @@ import {
   EXPERIENCE_LABELS,
   type Profile,
 } from "@/lib/types"
+import { labelForOnboardingAreaSlug } from "@/lib/onboarding-functional-areas"
 import { IconMapPin } from "@/components/icons"
 
 interface ProfileCardProps {
@@ -21,6 +22,10 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ profile, onClick }: ProfileCardProps) {
+  const areaSlugs = profile.functionalAreaTags?.length
+    ? profile.functionalAreaTags
+    : null
+
   return (
     <Card
       interactive
@@ -58,7 +63,20 @@ export function ProfileCard({ profile, onClick }: ProfileCardProps) {
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        <Tag variant="amber">{AREA_LABELS[profile.area]}</Tag>
+        {areaSlugs ? (
+          <>
+            {areaSlugs.slice(0, 3).map((slug) => (
+              <Tag key={slug} variant="amber">
+                {labelForOnboardingAreaSlug(slug)}
+              </Tag>
+            ))}
+            {areaSlugs.length > 3 ? (
+              <Tag variant="neutral">+{areaSlugs.length - 3}</Tag>
+            ) : null}
+          </>
+        ) : (
+          <Tag variant="amber">{AREA_LABELS[profile.area]}</Tag>
+        )}
         <Tag variant="neutral">{EXPERIENCE_LABELS[profile.experience]}</Tag>
         <Tag variant="success">{AVAILABILITY_LABELS[profile.availability]}</Tag>
       </div>

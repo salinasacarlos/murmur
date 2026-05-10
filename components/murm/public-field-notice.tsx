@@ -25,7 +25,7 @@ export function PublicFieldNotice({
     >
       {compact
         ? "Visible para otras personas cuando decidas mostrarte."
-        : "Así lo verán otras personas en Murmur cuando decidas mostrarte (no compartimos tu ubicación exacta ni mensajes fuera de conexión aceptada)."}
+        : "Así lo verán otras personas en murmur cuando decidas mostrarte (no compartimos tu ubicación exacta ni mensajes fuera de conexión aceptada)."}
     </p>
   )
 }
