@@ -23,6 +23,7 @@ import {
   PROFILE_FIELD_HINTS,
 } from "@/lib/profile-field-copy"
 import { deriveEditableTaxonomy } from "@/lib/profile-taxonomy"
+import { MAX_TALENT_SLUGS } from "@/lib/product-config"
 import { isPremiumPlan, MSG_FREE_SEARCH_LIMIT } from "@/lib/plan-limits"
 import { cn } from "@/lib/utils"
 import { RELATION_LABELS, type FunctionalArea, type RelationType, type Search } from "@/lib/types"
@@ -51,7 +52,7 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
       primaryIndustrySlug: t.primaryIndustrySlug,
       verticalSlugs: t.verticalSlugs,
       expertiseSlugs: t.expertiseSlugs,
-      talentSlugs: [...(initial.talentSlugs ?? [])].slice(0, 5),
+      talentSlugs: [...(initial.talentSlugs ?? [])].slice(0, MAX_TALENT_SLUGS),
     }
   }, [initial])
 

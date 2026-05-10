@@ -3,9 +3,8 @@
 import * as React from "react"
 
 import { TALENTS, labelTalentSlug } from "@/lib/profile-taxonomy"
+import { MAX_TALENT_SLUGS } from "@/lib/product-config"
 import { cn } from "@/lib/utils"
-
-const MAX = 5
 
 interface TalentMultiSelectProps {
   value: string[]
@@ -18,7 +17,7 @@ export function TalentMultiSelect({
   value,
   onChange,
   className,
-  footerNote = `Máximo ${MAX} soft skills · cómo aportas o trabajas (transversal a la industria).`,
+  footerNote = `Máximo ${MAX_TALENT_SLUGS} soft skills · cómo aportas o trabajas (transversal a la industria).`,
 }: TalentMultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
@@ -51,7 +50,7 @@ export function TalentMultiSelect({
       onChange(value.filter((s) => s !== slug))
       return
     }
-    if (value.length >= MAX) return
+    if (value.length >= MAX_TALENT_SLUGS) return
     onChange([...value, slug])
   }
 
@@ -96,8 +95,8 @@ export function TalentMultiSelect({
         >
           <span>
             {value.length === 0
-              ? `Elige hasta ${MAX} soft skills…`
-              : `${value.length} de ${MAX} seleccionados`}
+              ? `Elige hasta ${MAX_TALENT_SLUGS} soft skills…`
+              : `${value.length} de ${MAX_TALENT_SLUGS} seleccionados`}
           </span>
           <span className="text-[var(--text3)]" aria-hidden>
             {open ? "▴" : "▾"}
@@ -122,7 +121,7 @@ export function TalentMultiSelect({
             <ul className="overflow-y-auto p-1.5 md:p-2 flex flex-col gap-0.5 md:gap-1">
               {filtered.map((o) => {
                 const selected = value.includes(o.slug)
-                const disabled = !selected && value.length >= MAX
+                const disabled = !selected && value.length >= MAX_TALENT_SLUGS
                 return (
                   <li key={o.slug}>
                     <button

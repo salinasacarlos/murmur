@@ -5,6 +5,16 @@ import { Logo } from "@/components/brand/logo"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
+import {
+  FREE_MAX_ACCEPTED_CONNECTIONS,
+  FREE_MAX_ACTIVE_SEARCHES,
+  FREE_MAX_PROFILE_CITY_SLUGS,
+} from "@/lib/plan-limits"
+import {
+  formatPremiumAnnualLabel,
+  formatPremiumWeeklyLabel,
+  getSupportEmail,
+} from "@/lib/product-config"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -251,9 +261,19 @@ export default function LandingPage() {
                   Para explorar el ecosistema y hacer tus primeras conexiones.
                 </p>
                 <ul className="space-y-2.5 text-[13px] text-[var(--text2)] mb-8 flex-1">
-                  <PricingLi>Una ciudad en tu radar</PricingLi>
-                  <PricingLi>Una búsqueda activa a la vez</PricingLi>
-                  <PricingLi>Hasta 10 conexiones aceptadas</PricingLi>
+                  <PricingLi>
+                    {FREE_MAX_PROFILE_CITY_SLUGS === 1
+                      ? "Una ciudad en tu radar"
+                      : `Hasta ${FREE_MAX_PROFILE_CITY_SLUGS} ciudades en tu radar`}
+                  </PricingLi>
+                  <PricingLi>
+                    {FREE_MAX_ACTIVE_SEARCHES === 1
+                      ? "Una búsqueda activa a la vez"
+                      : `Hasta ${FREE_MAX_ACTIVE_SEARCHES} búsquedas activas`}
+                  </PricingLi>
+                  <PricingLi>
+                    Hasta {FREE_MAX_ACCEPTED_CONNECTIONS} conexiones aceptadas
+                  </PricingLi>
                   <PricingLi>
                     Feed Descubrir con filtros básicos (sin filtro por soft skills)
                   </PricingLi>
@@ -276,20 +296,23 @@ export default function LandingPage() {
                 <h3 className="text-[18px] font-bold mb-1">Premium</h3>
                 <div className="space-y-2 mb-1">
                   <p className="text-[24px] font-extrabold text-[var(--p)] leading-tight">
-                    $49 MXN{" "}
+                    {formatPremiumWeeklyLabel()}{" "}
                     <span className="text-[15px] font-bold text-[var(--text2)]">
                       / semana
                     </span>
                   </p>
                   <p className="text-[15px] font-semibold text-[var(--text)]">
                     o{" "}
-                    <span className="text-[var(--p)]">$699 MXN</span>
+                    <span className="text-[var(--p)]">
+                      {formatPremiumAnnualLabel()}
+                    </span>
                     <span className="text-[var(--text2)] font-medium"> / año</span>
                   </p>
                 </div>
                 <p className="text-[12px] text-[var(--text3)] mb-2">
-                  En V1 el acceso Premium se gestiona manualmente (equipo o script);
-                  próximamente checkout. Elige facturación semanal o anual al activar Premium.
+                  Paga con tarjeta vía Stripe (checkout seguro). Tras el pago,
+                  tu cuenta pasa a Premium automáticamente. También puedes
+                  gestionar la suscripción desde tu cuenta.
                 </p>
                 <p className="text-[13px] text-[var(--text2)] mb-6">
                   Para quien conecta en serio y necesita más alcance.
@@ -302,7 +325,7 @@ export default function LandingPage() {
                   <PricingLi>Alertas de alta compatibilidad con tu búsqueda</PricingLi>
                   <PricingLi>Solicitudes de conexión sin tope por el plan</PricingLi>
                 </ul>
-                <Link href="/auth/signup" className="block">
+                <Link href="/upgrade" className="block">
                   <Button size="lg" className="w-full justify-center">
                     Empezar Premium
                   </Button>
@@ -347,9 +370,13 @@ export default function LandingPage() {
             <a href="#precios" className={footerLink}>
               Precios
             </a>
-            <span className={cn(footerLink, "cursor-default opacity-70")}>Privacidad</span>
-            <span className={cn(footerLink, "cursor-default opacity-70")}>Términos</span>
-            <a href="mailto:hola@usemurmur.com" className={footerLink}>
+            <Link href="/privacy" className={footerLink}>
+              Privacidad
+            </Link>
+            <Link href="/terms" className={footerLink}>
+              Términos
+            </Link>
+            <a href={`mailto:${getSupportEmail()}`} className={footerLink}>
               Contacto
             </a>
           </nav>

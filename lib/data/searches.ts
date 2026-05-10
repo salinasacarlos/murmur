@@ -4,17 +4,21 @@ import type { Database } from "@/lib/database.types"
 import { mapSearchJoinRow } from "@/lib/data/mappers"
 import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import {
-  inferIndustryFromExpertiseSlugs,
-  resolveProfileArea,
-  MAX_EXPERTISE_SLUGS,
-} from "@/lib/profile-taxonomy"
-import type { Search } from "@/lib/types"
-import {
   freeAllowsNewActiveSearch,
   isPremiumPlan,
   MSG_FREE_SEARCH_LIMIT,
   type UserPlan,
 } from "@/lib/plan-limits"
+import {
+  MAX_PROFILE_VERTICAL_SLUGS,
+  MAX_TALENT_SLUGS,
+} from "@/lib/product-config"
+import {
+  inferIndustryFromExpertiseSlugs,
+  resolveProfileArea,
+  MAX_EXPERTISE_SLUGS,
+} from "@/lib/profile-taxonomy"
+import type { Search } from "@/lib/types"
 
 type Client = SupabaseClient<Database>
 
@@ -181,13 +185,17 @@ function taxonomyRowForPayload(
   | "functional_area_tags"
 > {
   const expertise = payload.expertiseSlugs.slice(0, MAX_EXPERTISE_SLUGS)
-  const talents = payload.talentSlugs.slice(0, 5)
+  const talents = payload.talentSlugs.slice(0, MAX_TALENT_SLUGS)
   const industry =
     payload.primaryIndustrySlug ??
     inferIndustryFromExpertiseSlugs(expertise) ??
     null
   const verticalsFiltered = industry
-    ? filterProfileVerticalSlugsForIndustry(industry, payload.verticalSlugs, 3)
+    ? filterProfileVerticalSlugsForIndustry(
+        industry,
+        payload.verticalSlugs,
+        MAX_PROFILE_VERTICAL_SLUGS
+      )
     : []
   const hasCore = !!industry || expertise.length > 0
   const area = hasCore

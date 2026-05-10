@@ -14,6 +14,7 @@ const PROTECTED_PREFIXES = [
   "/profile",
   "/notifications",
   "/onboarding",
+  "/upgrade",
 ]
 
 const AUTH_PAGES = ["/auth/login", "/auth/signup"]

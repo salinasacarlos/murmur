@@ -33,6 +33,10 @@ import {
   filterProfileVerticalSlugsForIndustry,
 } from "@/lib/industry-tree"
 import {
+  MAX_PROFILE_VERTICAL_SLUGS,
+  MAX_TALENT_SLUGS,
+} from "@/lib/product-config"
+import {
   AVAILABILITY_LABELS,
   EXPERIENCE_LABELS,
   RELATION_LABELS,
@@ -420,7 +424,7 @@ export default function ProfilePage() {
     const verticals = filterProfileVerticalSlugsForIndustry(
       nextSlug,
       taxonomy.verticalSlugs,
-      3
+      MAX_PROFILE_VERTICAL_SLUGS
     )
     const area = resolveProfileArea(nextSlug, expertise)
     const supabase = getSupabaseBrowserClient()
@@ -476,7 +480,7 @@ export default function ProfilePage() {
     const verticals = filterProfileVerticalSlugsForIndustry(
       industrySlug,
       verticalDraftSlugs,
-      3
+      MAX_PROFILE_VERTICAL_SLUGS
     )
     const allowedSet = new Set(
       expertiseListForIndustryVerticals(industrySlug, verticals).map(
@@ -531,7 +535,7 @@ export default function ProfilePage() {
   async function saveTalentsEdit() {
     if (!authUser || savingTalentsTax || !profileUser) return
     setSavingTalentsTax(true)
-    const talents = talentsDraftSlugs.slice(0, 5)
+    const talents = talentsDraftSlugs.slice(0, MAX_TALENT_SLUGS)
     const supabase = getSupabaseBrowserClient()
     try {
       const { error } = await supabase

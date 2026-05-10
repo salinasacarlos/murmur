@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar"
 import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { isPremiumPlan } from "@/lib/plan-limits"
 import {
   NotificationUnreadDot,
   useNotificationsUnread,
@@ -133,6 +134,19 @@ export function Sidebar() {
             </Link>
           )
         })}
+        {!isPremiumPlan(profile?.plan) ? (
+          <Link
+            href="/upgrade"
+            className={cn(
+              "mt-2 flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors",
+              pathname === "/upgrade"
+                ? "bg-[var(--pl)] text-[var(--p)] font-medium"
+                : "text-[var(--p)] hover:bg-[var(--pl)]/60 font-medium"
+            )}
+          >
+            Pasar a Premium
+          </Link>
+        ) : null}
       </nav>
 
       <div

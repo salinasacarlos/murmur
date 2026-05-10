@@ -256,7 +256,18 @@ Pantalla de gestión del perfil propio del usuario.
 
 ## 7. Modelo de negocio — Freemium
 
-El campo `profiles.plan` usa el enum `user_plan` (`free` | `premium`). **En V1 no hay pasarela de pago:** el plan se actualiza manualmente (equipo o script administrativo) hasta integrar checkout.
+El campo `profiles.plan` usa el enum `user_plan` (`free` | `premium`).
+
+**Checkout:** la suscripción Premium se activa con **Stripe Checkout** (`/upgrade`). El webhook en `/api/webhooks/stripe` actualiza `profiles.plan` (requiere `SUPABASE_SERVICE_ROLE_KEY` en el servidor). Variables: ver `.env.local.example`. URL canónica de producción: `https://joinmurmur.xyz` (webhook Stripe: `https://joinmurmur.xyz/api/webhooks/stripe`).
+
+### Checklist al cambiar límites Free (TS + SQL)
+
+Los números de Free viven en **código** ([`lib/plan-limits.ts`](../lib/plan-limits.ts), [`lib/product-config.ts`](../lib/product-config.ts) donde aplique) y en **RPCs** (p. ej. `accept_connection`: tope de conexiones aceptadas). Si cambias un límite en TypeScript, revisa y migra las funciones SQL que validen el mismo concepto para evitar errores en cliente vs servidor.
+
+### Plan referencia en código
+
+- Límites Free y helpers: `lib/plan-limits.ts`
+- Precios mostrados (MXN) y max verticales/talent: `lib/product-config.ts` (alinear con Stripe Prices y este PRD)
 
 ### Plan gratuito (Free)
 
@@ -276,7 +287,7 @@ El campo `profiles.plan` usa el enum `user_plan` (`free` | `premium`). **En V1 n
 - Filtros completos en Descubrir (incl. soft skills)
 - Alertas de alta compatibilidad (`ensure_high_compatibility_suggestions`) para usuarios Premium
 
-### Precios (referencia producto)
+### Precios (referencia producto — sincronizar con `lib/product-config` y Stripe)
 
 | Plan | Precio |
 |------|--------|

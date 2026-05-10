@@ -103,7 +103,7 @@ export function NotificationUnreadDot({
   return (
     <span
       className={cn(
-        "pointer-events-none absolute -top-0.5 -right-0.5 z-10 h-2 w-2 rounded-full bg-[#e11d48] ring-2",
+        "pointer-events-none absolute -top-0.5 -right-0.5 z-10 h-2 w-2 rounded-full bg-[var(--red)] ring-2",
         ringClassName
       )}
       aria-hidden

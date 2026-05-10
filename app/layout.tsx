@@ -4,6 +4,7 @@ import { Geist_Mono, Raleway } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { VisibilityProvider } from "@/components/providers/visibility-provider"
+import { CANONICAL_SITE_ORIGIN } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
 const raleway = Raleway({
@@ -18,6 +19,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ?? CANONICAL_SITE_ORIGIN
+  ),
   title: "Murmur — Construye con las personas correctas",
   description:
     "La red social para builders que buscan a las personas correctas para construir: co-founders, talento, mentores e inversionistas.",

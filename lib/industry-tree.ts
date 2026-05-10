@@ -10,6 +10,7 @@ import {
   LEAF_SLUG_TO_PROFILE_INDUSTRY,
   type IndustryLeaf,
 } from "@/lib/leaf-catalog"
+import { MAX_PROFILE_VERTICAL_SLUGS } from "@/lib/product-config"
 import { INDUSTRIES } from "@/lib/profile-taxonomy"
 
 export type { IndustryLeaf }
@@ -164,7 +165,7 @@ export function profileVerticalBelongsToIndustry(
 export function filterProfileVerticalSlugsForIndustry(
   industrySlug: string | null | undefined,
   verticalSlugs: string[] | null | undefined,
-  max = 3
+  max = MAX_PROFILE_VERTICAL_SLUGS
 ): string[] {
   if (!industrySlug || !verticalSlugs?.length) return []
   const allowed = new Set(

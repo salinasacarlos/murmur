@@ -9,6 +9,10 @@ import {
 } from "@/lib/data/profile-mutations"
 import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
+import {
+  MAX_PROFILE_VERTICAL_SLUGS,
+  MAX_TALENT_SLUGS,
+} from "@/lib/product-config"
 import { resolveProfileArea, MAX_EXPERTISE_SLUGS } from "@/lib/profile-taxonomy"
 import type {
   Availability,
@@ -57,10 +61,10 @@ export async function persistOnboardingProfileStep(
   const verticals = filterProfileVerticalSlugsForIndustry(
     input.primaryIndustrySlug,
     input.verticalSlugs,
-    3
+    MAX_PROFILE_VERTICAL_SLUGS
   )
   const expertise = input.expertiseSlugs.slice(0, MAX_EXPERTISE_SLUGS)
-  const talents = input.talentSlugs.slice(0, 5)
+  const talents = input.talentSlugs.slice(0, MAX_TALENT_SLUGS)
   const area = resolveProfileArea(input.primaryIndustrySlug, expertise)
 
   const { error } = await supabase
