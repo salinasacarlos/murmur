@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { CITIES_CATALOG } from "@/lib/catalogs"
+import { CITIES_CATALOG, WORLDWIDE_CITY_LABEL } from "@/lib/catalogs"
 import { cn } from "@/lib/utils"
 
 interface CitySelectorProps {
@@ -23,9 +23,15 @@ export function CitySelector({
   const [query, setQuery] = React.useState("")
   const normalizedQuery = normalize(query)
 
-  const results = CITIES_CATALOG.filter((city) =>
-    normalize(city).includes(normalizedQuery)
-  ).slice(0, maxVisibleResults)
+  const citiesScoped = CITIES_CATALOG.filter((c) => c !== WORLDWIDE_CITY_LABEL)
+
+  const results = citiesScoped
+    .filter((city) => normalize(city).includes(normalizedQuery))
+    .slice(0, maxVisibleResults)
+
+  const worldwideMatches =
+    normalizedQuery === "" ||
+    normalize(WORLDWIDE_CITY_LABEL).includes(normalizedQuery)
 
   function toggle(city: string) {
     onChange(
@@ -72,6 +78,20 @@ export function CitySelector({
       />
 
       <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2">
+        {worldwideMatches ? (
+          <button
+            type="button"
+            onClick={() => toggle(WORLDWIDE_CITY_LABEL)}
+            className={cn(
+              "rounded-full border px-2.5 py-1 text-[12px] transition-colors font-medium",
+              value.includes(WORLDWIDE_CITY_LABEL)
+                ? "border-[var(--primary-solid)] bg-[var(--primary-solid)] text-[var(--primary-solid-foreground)]"
+                : "border-[var(--pm)] bg-[var(--pl)] text-[var(--p)] hover:opacity-90"
+            )}
+          >
+            {WORLDWIDE_CITY_LABEL}
+          </button>
+        ) : null}
         {results.length > 0 ? (
           results.map((city) => {
             const selected = value.includes(city)
@@ -91,11 +111,11 @@ export function CitySelector({
               </button>
             )
           })
-        ) : (
+        ) : !worldwideMatches ? (
           <p className="px-1 py-1 text-[12px] text-[var(--text3)]">
             No encontramos ciudades con ese texto.
           </p>
-        )}
+        ) : null}
       </div>
     </div>
   )

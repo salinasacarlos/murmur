@@ -140,7 +140,7 @@ export interface CurrentUser {
 
 export const RELATION_LABELS: Record<RelationType, string> = {
   "co-founder": "Co-founder",
-  empleo: "Empleo",
+  empleo: "Contratar talento",
   colaboracion: "Colaboración",
   mentoria: "Mentoría",
   inversion: "Inversión",

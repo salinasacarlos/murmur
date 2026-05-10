@@ -9,7 +9,11 @@ import { RELATION_LABELS, type RelationType } from "@/lib/types"
 
 const RELATIONS: { id: RelationType; description: string }[] = [
   { id: "co-founder", description: "Socio para construir desde cero" },
-  { id: "empleo", description: "Empleo o contratación early-stage" },
+  {
+    id: "empleo",
+    description:
+      "Buscas contratar: incorporar a alguien a tu equipo (empleo, contrato o roles early-stage).",
+  },
   { id: "colaboracion", description: "Colaboración puntual o por proyecto" },
   { id: "mentoria", description: "Mentor o advisor con experiencia" },
   { id: "inversion", description: "Inversión ángel o de capital" },

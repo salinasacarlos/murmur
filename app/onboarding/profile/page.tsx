@@ -22,7 +22,7 @@ import {
 export default function ProfileStepPage() {
   const [bio, setBio] = React.useState("")
   const [highlight, setHighlight] = React.useState("")
-  const [area, setArea] = React.useState<FunctionalArea | null>(null)
+  const [areas, setAreas] = React.useState<FunctionalArea[]>([])
   const [experience, setExperience] = React.useState<ExperienceRange | null>(
     null
   )
@@ -48,6 +48,7 @@ export default function ProfileStepPage() {
         description="Información para el matching. Tú eliges cuándo mostrarte. Los detalles de tu proyecto u oportunidad los puedes refinar después en una búsqueda."
         back="/onboarding/relationships"
         next="/onboarding/location"
+        nextDisabled={areas.length === 0}
       >
         <Field label="Nombre" required>
           <PublicFieldNotice className="mb-1" compact />
@@ -72,15 +73,15 @@ export default function ProfileStepPage() {
           />
         </Field>
 
-        <Field label="Área funcional" required>
+        <Field label="Áreas funcionales" required hint="Elige todas las que te representen.">
           <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(AREA_LABELS) as FunctionalArea[]).map((id) => (
               <ChipChoice
                 key={id}
                 label={AREA_LABELS[id]}
-                selected={area === id}
-                onClick={() => setArea(id)}
+                selected={areas.includes(id)}
+                onClick={() => toggleArr(areas, setAreas, id)}
               />
             ))}
           </div>

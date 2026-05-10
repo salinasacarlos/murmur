@@ -65,7 +65,10 @@ export const INDUSTRIES_CATALOG = [
   "AR/VR",
 ] as const
 
+export const WORLDWIDE_CITY_LABEL = "Todo el mundo" as const
+
 export const CITIES_CATALOG = [
+  WORLDWIDE_CITY_LABEL,
   "Ciudad de México",
   "Guadalajara",
   "Monterrey",

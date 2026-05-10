@@ -39,7 +39,11 @@ export default function LocationStepPage() {
           <div className="flex-1 h-px bg-[var(--border)]" />
         </div>
 
-        <Field label="Ciudad principal" required>
+        <Field
+          label="Ciudad principal"
+          required
+          hint="Escribe o elige del listado. También puedes usar «Todo el mundo» si no aplica una ciudad fija."
+        >
           <PublicFieldNotice className="mb-1" compact />
           <Input
             placeholder="ej. Ciudad de México"
@@ -56,7 +60,7 @@ export default function LocationStepPage() {
 
         <Field
           label="Ciudades donde mi búsqueda estará activa"
-          hint="Opcional. Puedes seleccionar varias ciudades de México, Colombia, EE.UU. y LatAm."
+          hint="Opcional. Incluye «Todo el mundo» si no quieres limitar por ciudad. También puedes elegir ciudades en México, Colombia, EE.UU. y LatAm."
         >
           <PublicFieldNotice className="mb-1" compact />
           <CitySelector value={extraCities} onChange={setExtraCities} />
