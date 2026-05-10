@@ -8,13 +8,14 @@ import { Logo } from "@/components/brand/logo"
 import { Avatar } from "@/components/ui/avatar"
 import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
-import { mockCurrentUser } from "@/lib/mock-data"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
   IconCompass,
   IconSearch,
   IconUsers,
   IconMessage,
   IconUser,
+  IconLogOut,
 } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -29,6 +30,28 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const pathname = usePathname()
   const { visible, toggle } = useVisibility()
+  const { profile, user, signOut } = useCurrentUser()
+  const [signingOut, setSigningOut] = React.useState(false)
+
+  const displayName =
+    profile?.name?.trim() ||
+    (user?.user_metadata?.name as string | undefined)?.trim() ||
+    user?.email ||
+    "Tu cuenta"
+  const initials =
+    profile?.initials || displayName.slice(0, 2).toUpperCase() || "TU"
+  const photoUrl = profile?.photo_url ?? undefined
+  const planLabel = profile?.plan === "premium" ? "Premium" : "Free"
+
+  async function handleSignOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut()
+    } finally {
+      setSigningOut(false)
+    }
+  }
 
   return (
     <aside
@@ -102,19 +125,33 @@ export function Sidebar() {
         style={{ paddingBottom: "calc(12px + var(--sab))" }}
       >
         <Avatar
-          initials={mockCurrentUser.initials}
-          imageUrl={mockCurrentUser.photoUrl}
-          alt={`Foto de ${mockCurrentUser.name}`}
+          initials={initials}
+          imageUrl={photoUrl}
+          alt={`Foto de ${displayName}`}
           size="sm"
         />
         <div className="min-w-0 flex-1">
           <div className="text-[12px] font-semibold text-[var(--text)] truncate">
-            {mockCurrentUser.name}
+            {displayName}
           </div>
           <div className="text-[10px] text-[var(--text3)] truncate uppercase tracking-wider">
-            {mockCurrentUser.plan === "premium" ? "Premium" : "Free"}
+            {planLabel}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={signingOut}
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          className={cn(
+            "shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-md",
+            "text-[var(--text2)] hover:text-[var(--text)] hover:bg-[var(--bg2)]",
+            "transition-colors disabled:opacity-50"
+          )}
+        >
+          <IconLogOut size={14} />
+        </button>
       </div>
     </aside>
   )

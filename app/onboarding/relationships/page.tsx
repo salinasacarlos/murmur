@@ -27,8 +27,9 @@ export default function RelationshipsStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={2} total={6} />
+      <Stepper current={3} total={7} />
       <OnboardingCard
+        murmurStep="relationships"
         title="¿Qué tipo de conexiones buscas?"
         description="Selecciona todas las que apliquen. Puedes ajustar más tarde."
         back="/onboarding/role"

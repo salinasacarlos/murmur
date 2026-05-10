@@ -1,5 +1,9 @@
+"use client"
+
+import * as React from "react"
 import Link from "next/link"
 
+import { MurmVoice } from "@/components/murm/murm-voice"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Isotipo } from "@/components/brand/isotipo"
@@ -7,6 +11,8 @@ import { Isotipo } from "@/components/brand/isotipo"
 export default function OnboardingDonePage() {
   return (
     <Card padding="none" className="bg-[var(--bg)] p-8 text-center">
+      <MurmVoice step="done" className="mb-5 text-left" />
+
       <div className="flex justify-center mb-5">
         <div
           className="w-20 h-20 rounded-full flex items-center justify-center"

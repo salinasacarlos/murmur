@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { Field, Input, Textarea } from "@/components/ui/input"
@@ -12,8 +13,9 @@ export default function ProjectStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={4} total={6} />
+      <Stepper current={5} total={7} />
       <OnboardingCard
+        murmurStep="project"
         title="Contexto"
         description="Si tienes proyecto, cuéntanos de él. Si quieres contribuir, cuéntanos qué tipo de oportunidad buscas."
         back="/onboarding/profile"
@@ -35,12 +37,15 @@ export default function ProjectStepPage() {
         {hasProject === "yes" && (
           <div className="ds-card p-4 flex flex-col gap-3 mt-2">
             <Field label="Nombre del proyecto" required>
+              <PublicFieldNotice className="mb-1" compact />
               <Input placeholder="ej. Murmur" />
             </Field>
             <Field label="Etapa" required>
+              <PublicFieldNotice className="mb-1" compact />
               <Input placeholder="ej. Pre-seed con 3 clientes piloto" />
             </Field>
             <Field label="Qué busco">
+              <PublicFieldNotice className="mb-1" />
               <Textarea
                 placeholder="ej. Co-founder técnico que haya enviado producto a producción..."
                 rows={3}
@@ -52,9 +57,11 @@ export default function ProjectStepPage() {
         {hasProject === "no" && (
           <div className="ds-card p-4 flex flex-col gap-3 mt-2">
             <Field label="Tipo de oportunidad buscada">
+              <PublicFieldNotice className="mb-1" />
               <Input placeholder="ej. Co-founder técnico, primer empleo en startup..." />
             </Field>
             <Field label="Qué puedo aportar">
+              <PublicFieldNotice className="mb-1" />
               <Textarea
                 placeholder="ej. 8 años construyendo productos consumer..."
                 rows={3}

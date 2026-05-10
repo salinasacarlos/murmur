@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { IndustrySelector } from "@/components/ui/industry-selector"
@@ -41,18 +42,21 @@ export default function ProfileStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={3} total={6} />
+      <Stepper current={4} total={7} />
       <OnboardingCard
+        murmurStep="profile"
         title="Cuéntanos quién eres"
         description="Esta información alimenta el matching. Solo tú decides cuándo aparecer."
         back="/onboarding/relationships"
         next="/onboarding/project"
       >
         <Field label="Nombre" required>
+          <PublicFieldNotice className="mb-1" compact />
           <Input placeholder="Tu nombre completo" />
         </Field>
 
         <Field label="Título o rol actual" required>
+          <PublicFieldNotice className="mb-1" compact />
           <Input placeholder="ej. Senior Product Engineer" />
         </Field>
 
@@ -60,6 +64,7 @@ export default function ProfileStepPage() {
           label="Bio corta"
           hint={`${bio.length}/200 caracteres`}
         >
+          <PublicFieldNotice className="mb-1" />
           <Textarea
             placeholder="Una o dos líneas sobre ti..."
             value={bio}
@@ -69,6 +74,7 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Área funcional" required>
+          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(AREA_LABELS) as FunctionalArea[]).map((id) => (
               <ChipChoice
@@ -82,6 +88,7 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Años de experiencia" required>
+          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(EXPERIENCE_LABELS) as ExperienceRange[]).map((id) => (
               <ChipChoice
@@ -98,6 +105,7 @@ export default function ProfileStepPage() {
           label="Éxito o descripción breve para tu card"
           hint={`${highlight.length}/120 caracteres · Esto aparecerá en el feed`}
         >
+          <PublicFieldNotice className="mb-1" />
           <Input
             placeholder="ej. Llevé una app de 0 a 100k usuarios"
             value={highlight}
@@ -106,6 +114,7 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Disponibilidad" required>
+          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(AVAILABILITY_LABELS) as Availability[]).map((id) => (
               <ChipChoice
@@ -119,6 +128,7 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Forma de trabajar (multi)">
+          <PublicFieldNotice className="mb-1" compact />
           <div className="flex flex-wrap gap-1.5">
             {(Object.keys(WORK_STYLE_LABELS) as WorkStyle[]).map((id) => (
               <ChipChoice
@@ -132,6 +142,7 @@ export default function ProfileStepPage() {
         </Field>
 
         <Field label="Industrias de afinidad (multi)">
+          <PublicFieldNotice className="mb-1" compact />
           <IndustrySelector value={industries} onChange={setIndustries} />
         </Field>
       </OnboardingCard>

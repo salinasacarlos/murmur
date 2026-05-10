@@ -8,6 +8,7 @@ import { useTheme } from "next-themes"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { Toggle } from "@/components/ui/toggle"
 import { useVisibility } from "@/components/providers/visibility-provider"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
   IconCompass,
   IconUsers,
@@ -16,6 +17,7 @@ import {
   IconSettings,
   IconUser,
   IconChevronRight,
+  IconLogOut,
 } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -29,10 +31,23 @@ const TABS = [
 export function BottomNav() {
   const pathname = usePathname()
   const [moreOpen, setMoreOpen] = React.useState(false)
+  const [signingOut, setSigningOut] = React.useState(false)
   const { visible, toggle } = useVisibility()
+  const { signOut } = useCurrentUser()
 
   const moreActive =
     pathname === "/profile" || pathname.startsWith("/profile/")
+
+  async function handleSignOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut()
+    } finally {
+      setSigningOut(false)
+      setMoreOpen(false)
+    }
+  }
 
   return (
     <>
@@ -110,6 +125,21 @@ export function BottomNav() {
             </div>
             <IconChevronRight size={14} />
           </Link>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="ds-card p-4 flex items-center justify-between hover:border-[var(--border2)] transition-colors text-left disabled:opacity-60"
+          >
+            <div className="flex items-center gap-3">
+              <IconLogOut size={16} />
+              <span className="text-[13px] font-medium">
+                {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+              </span>
+            </div>
+            <IconChevronRight size={14} />
+          </button>
         </div>
       </Drawer>
     </>

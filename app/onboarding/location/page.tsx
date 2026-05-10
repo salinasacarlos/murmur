@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { Button } from "@/components/ui/button"
@@ -18,8 +19,9 @@ export default function LocationStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={5} total={6} />
+      <Stepper current={6} total={7} />
       <OnboardingCard
+        murmurStep="location"
         title="¿Dónde estás?"
         description="Murmur funciona mejor cuando puedes encontrarte en persona. Tu ubicación nunca se muestra exacta, solo la ciudad."
         back="/onboarding/project"
@@ -39,6 +41,7 @@ export default function LocationStepPage() {
         </div>
 
         <Field label="Ciudad principal" required>
+          <PublicFieldNotice className="mb-1" compact />
           <Input
             placeholder="ej. Ciudad de México"
             list="cities-list"
@@ -56,6 +59,7 @@ export default function LocationStepPage() {
           label="Ciudades donde mi búsqueda estará activa"
           hint="Opcional. Puedes seleccionar varias ciudades de México, Colombia, EE.UU. y LatAm."
         >
+          <PublicFieldNotice className="mb-1" compact />
           <CitySelector value={extraCities} onChange={setExtraCities} />
         </Field>
 

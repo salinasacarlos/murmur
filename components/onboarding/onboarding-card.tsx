@@ -1,13 +1,20 @@
-import * as React from "react"
+"use client"
+
 import Link from "next/link"
 
+import { MurmVoice } from "@/components/murm/murm-voice"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { IconArrowLeft } from "@/components/icons"
+import type { OnboardingMurmStep } from "@/lib/murmur-onboarding"
 
 interface OnboardingCardProps {
   title: string
   description?: string
+  /** Voz de Murm al inicio de la tarjeta */
+  murmurStep?: OnboardingMurmStep
+  /** Rama de copy (p. ej. role: founder | contributor | both) */
+  murmurBranch?: string
   children: React.ReactNode
   back?: string
   next: string
@@ -18,6 +25,8 @@ interface OnboardingCardProps {
 export function OnboardingCard({
   title,
   description,
+  murmurStep,
+  murmurBranch,
   children,
   back,
   next,
@@ -26,6 +35,13 @@ export function OnboardingCard({
 }: OnboardingCardProps) {
   return (
     <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
+      {murmurStep ? (
+        <MurmVoice
+          step={murmurStep}
+          branch={murmurBranch}
+          className="mb-5"
+        />
+      ) : null}
       <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
         {title}
       </h1>

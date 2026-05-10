@@ -12,7 +12,7 @@ import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
 import { ProfileSection } from "@/components/profile/profile-section"
-import { CITIES_CATALOG, mockCurrentUser } from "@/lib/mock-data"
+import { CITIES_CATALOG } from "@/lib/mock-data"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -26,36 +26,71 @@ import {
   type WorkStyle,
 } from "@/lib/types"
 import { useVisibility } from "@/components/providers/visibility-provider"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { deriveCurrentUser, initialsFromName } from "@/lib/current-user-mapping"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { IconEdit, IconMapPin } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 export default function ProfilePage() {
-  const [user, setUser] = React.useState<CurrentUser>(mockCurrentUser)
+  const { user: authUser, profile, refresh } = useCurrentUser()
+  const supabase = React.useMemo(() => getSupabaseBrowserClient(), [])
+
+  const initialUser = React.useMemo<CurrentUser>(
+    () =>
+      authUser
+        ? deriveCurrentUser(authUser, profile)
+        : ({} as CurrentUser),
+    [authUser, profile]
+  )
+
+  const [user, setUser] = React.useState<CurrentUser>(initialUser)
+  const lastSyncedAtRef = React.useRef<string | null>(null)
+
+  React.useEffect(() => {
+    if (!authUser) return
+    const stamp = profile?.updated_at ?? authUser.id
+    if (lastSyncedAtRef.current === stamp) return
+    lastSyncedAtRef.current = stamp
+    setUser(deriveCurrentUser(authUser, profile))
+  }, [authUser, profile])
+
   const [profileEditOpen, setProfileEditOpen] = React.useState(false)
   const [locationEditOpen, setLocationEditOpen] = React.useState(false)
   const [workPrefsEditOpen, setWorkPrefsEditOpen] = React.useState(false)
+  const [savingProfile, setSavingProfile] = React.useState(false)
+  const [savingLocation, setSavingLocation] = React.useState(false)
+  const [savingWorkPrefs, setSavingWorkPrefs] = React.useState(false)
   const [profileDraft, setProfileDraft] = React.useState({
-    name: mockCurrentUser.name,
-    photoUrl: mockCurrentUser.photoUrl,
-    role: mockCurrentUser.role,
-    bio: mockCurrentUser.bio,
-    area: mockCurrentUser.area,
-    experience: mockCurrentUser.experience,
-    availability: mockCurrentUser.availability,
+    name: initialUser.name ?? "",
+    photoUrl: initialUser.photoUrl,
+    role: initialUser.role ?? "",
+    bio: initialUser.bio ?? "",
+    area: initialUser.area,
+    experience: initialUser.experience,
+    availability: initialUser.availability,
   })
   const [locationDraft, setLocationDraft] = React.useState({
-    city: mockCurrentUser.city,
-    cities: mockCurrentUser.cities ?? [mockCurrentUser.city],
-    searchRadiusKm: mockCurrentUser.searchRadiusKm ?? 50,
+    city: initialUser.city ?? "",
+    cities: initialUser.cities ?? [],
+    searchRadiusKm: initialUser.searchRadiusKm ?? 50,
   })
   const [workPrefsDraft, setWorkPrefsDraft] = React.useState<{
     availability: Availability
     workStyle: WorkStyle[]
   }>({
-    availability: mockCurrentUser.availability,
-    workStyle: mockCurrentUser.workStyle,
+    availability: initialUser.availability,
+    workStyle: initialUser.workStyle ?? [],
   })
   const { visible, toggle } = useVisibility()
+
+  if (!authUser) {
+    return (
+      <div className="px-4 md:px-6 py-10 text-[13px] text-[var(--text2)]">
+        Cargando tu perfil...
+      </div>
+    )
+  }
 
   function openProfileEdit() {
     setProfileDraft({
@@ -70,13 +105,35 @@ export default function ProfilePage() {
     setProfileEditOpen(true)
   }
 
-  function saveProfileEdit() {
+  async function saveProfileEdit() {
+    if (!authUser || savingProfile) return
+    setSavingProfile(true)
+    const nextInitials = initialsFromName(profileDraft.name) || user.initials
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        name: profileDraft.name.trim(),
+        initials: nextInitials,
+        role: profileDraft.role.trim(),
+        bio: profileDraft.bio,
+        area: profileDraft.area,
+        experience: profileDraft.experience,
+        availability: profileDraft.availability,
+        photo_url: profileDraft.photoUrl ?? null,
+      })
+      .eq("id", authUser.id)
+    setSavingProfile(false)
+    if (error) {
+      console.error("Failed to save profile", error)
+      return
+    }
     setUser((prev) => ({
       ...prev,
       ...profileDraft,
-      initials: initialsFromName(profileDraft.name),
+      initials: nextInitials,
     }))
     setProfileEditOpen(false)
+    void refresh()
   }
 
   function openLocationEdit() {
@@ -88,7 +145,21 @@ export default function ProfilePage() {
     setLocationEditOpen(true)
   }
 
-  function saveLocationEdit() {
+  async function saveLocationEdit() {
+    if (!authUser || savingLocation) return
+    setSavingLocation(true)
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        city: locationDraft.city.trim() || null,
+        search_radius_km: locationDraft.searchRadiusKm,
+      })
+      .eq("id", authUser.id)
+    setSavingLocation(false)
+    if (error) {
+      console.error("Failed to save location", error)
+      return
+    }
     setUser((prev) => ({
       ...prev,
       city: locationDraft.city,
@@ -98,6 +169,7 @@ export default function ProfilePage() {
       searchRadiusKm: locationDraft.searchRadiusKm,
     }))
     setLocationEditOpen(false)
+    void refresh()
   }
 
   function openWorkPrefsEdit() {
@@ -117,13 +189,27 @@ export default function ProfilePage() {
     }))
   }
 
-  function saveWorkPrefsEdit() {
+  async function saveWorkPrefsEdit() {
+    if (!authUser || savingWorkPrefs) return
+    setSavingWorkPrefs(true)
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        availability: workPrefsDraft.availability,
+      })
+      .eq("id", authUser.id)
+    setSavingWorkPrefs(false)
+    if (error) {
+      console.error("Failed to save work preferences", error)
+      return
+    }
     setUser((prev) => ({
       ...prev,
       availability: workPrefsDraft.availability,
       workStyle: workPrefsDraft.workStyle,
     }))
     setWorkPrefsEditOpen(false)
+    void refresh()
   }
 
   return (
@@ -283,8 +369,9 @@ export default function ProfilePage() {
             size="lg"
             className="flex-1 justify-center"
             onClick={saveProfileEdit}
+            disabled={savingProfile}
           >
-            Guardar
+            {savingProfile ? "Guardando..." : "Guardar"}
           </Button>
         </div>
       </Drawer>
@@ -417,8 +504,9 @@ export default function ProfilePage() {
             size="lg"
             className="flex-1 justify-center"
             onClick={saveLocationEdit}
+            disabled={savingLocation}
           >
-            Guardar
+            {savingLocation ? "Guardando..." : "Guardar"}
           </Button>
         </div>
       </Drawer>
@@ -518,8 +606,9 @@ export default function ProfilePage() {
             size="lg"
             className="flex-1 justify-center"
             onClick={saveWorkPrefsEdit}
+            disabled={savingWorkPrefs}
           >
-            Guardar
+            {savingWorkPrefs ? "Guardando..." : "Guardar"}
           </Button>
         </div>
       </Drawer>
@@ -601,13 +690,3 @@ function ProfileEditChip({
   )
 }
 
-function initialsFromName(name: string) {
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("")
-
-  return initials || "CS"
-}

@@ -34,12 +34,24 @@ const ROLES = [
 export default function RoleStepPage() {
   const [selected, setSelected] = React.useState<string | null>(null)
 
+  const branch =
+    selected === "founder"
+      ? "founder"
+      : selected === "contributor"
+        ? "contributor"
+        : selected === "both"
+          ? "both"
+          : undefined
+
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={1} total={6} />
+      <Stepper current={2} total={7} />
       <OnboardingCard
+        murmurStep="role"
+        murmurBranch={branch}
         title="¿Qué te trae a Murmur?"
         description="Esto nos ayuda a personalizar tu experiencia desde el inicio. Puedes cambiar esto después."
+        back="/onboarding/event"
         next="/onboarding/relationships"
         nextDisabled={!selected}
       >

@@ -9,7 +9,8 @@ import { RadarCTA } from "@/components/feed/radar-cta"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
 import { FiltersDrawer } from "@/components/feed/filters-drawer"
 import { IconSpark, IconX } from "@/components/icons"
-import { mockProfiles, mockSearches } from "@/lib/mock-data"
+import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
+import { findEventByCode, mockProfiles, mockSearches } from "@/lib/mock-data"
 import type { EventEntry, Profile } from "@/lib/types"
 
 export default function FeedPage() {
@@ -20,8 +21,32 @@ export default function FeedPage() {
   const [eventOpen, setEventOpen] = React.useState(false)
   const [activeEvent, setActiveEvent] = React.useState<EventEntry | null>(null)
 
+  function consumePendingEvent(): EventEntry | null {
+    try {
+      const raw = localStorage.getItem(PENDING_EVENT_STORAGE_KEY)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as { code?: string }
+      const ev = parsed?.code ? findEventByCode(parsed.code) : undefined
+      return ev ?? null
+    } catch {
+      return null
+    } finally {
+      try {
+        localStorage.removeItem(PENDING_EVENT_STORAGE_KEY)
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  function handleActivateFeed() {
+    const pending = consumePendingEvent()
+    if (pending) setActiveEvent(pending)
+    setActivated(true)
+  }
+
   if (!activated) {
-    return <RadarCTA onActivate={() => setActivated(true)} />
+    return <RadarCTA onActivate={handleActivateFeed} />
   }
 
   const visibleProfiles = activeEvent
