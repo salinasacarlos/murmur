@@ -9,27 +9,39 @@ import { RadarCTA } from "@/components/feed/radar-cta"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
 import { FiltersDrawer } from "@/components/feed/filters-drawer"
 import { IconSpark, IconX } from "@/components/icons"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { fetchVisibleProfilesForFeed } from "@/lib/data/profiles"
+import { fetchSearchesForOwner } from "@/lib/data/searches"
+import { fetchEventByCode } from "@/lib/data/events"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
-import { findEventByCode, mockProfiles, mockSearches } from "@/lib/mock-data"
-import type { EventEntry, Profile } from "@/lib/types"
+import type { EventEntry, Profile, Search } from "@/lib/types"
 
 export default function FeedPage() {
+  const { user } = useCurrentUser()
   const [activated, setActivated] = React.useState(false)
   const [activeSearch, setActiveSearch] = React.useState<string>("all")
   const [selected, setSelected] = React.useState<Profile | null>(null)
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [eventOpen, setEventOpen] = React.useState(false)
   const [activeEvent, setActiveEvent] = React.useState<EventEntry | null>(null)
+  const [profiles, setProfiles] = React.useState<Profile[]>([])
+  const [searches, setSearches] = React.useState<Search[]>([])
+  const [feedLoading, setFeedLoading] = React.useState(false)
+  const [pendingEventCode, setPendingEventCode] = React.useState<string | null>(
+    null
+  )
 
-  function consumePendingEvent(): EventEntry | null {
+  function handleActivateFeed() {
+    let code: string | undefined
     try {
       const raw = localStorage.getItem(PENDING_EVENT_STORAGE_KEY)
-      if (!raw) return null
-      const parsed = JSON.parse(raw) as { code?: string }
-      const ev = parsed?.code ? findEventByCode(parsed.code) : undefined
-      return ev ?? null
+      if (raw) {
+        const parsed = JSON.parse(raw) as { code?: string }
+        code = parsed?.code
+      }
     } catch {
-      return null
+      // ignore
     } finally {
       try {
         localStorage.removeItem(PENDING_EVENT_STORAGE_KEY)
@@ -37,26 +49,65 @@ export default function FeedPage() {
         // ignore
       }
     }
-  }
 
-  function handleActivateFeed() {
-    const pending = consumePendingEvent()
-    if (pending) setActiveEvent(pending)
+    if (code) setPendingEventCode(code)
     setActivated(true)
   }
+
+  React.useEffect(() => {
+    if (!activated || !user?.id || !pendingEventCode) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const supabase = getSupabaseBrowserClient()
+        const ev = await fetchEventByCode(supabase, pendingEventCode)
+        if (!cancelled && ev) setActiveEvent(ev)
+      } finally {
+        if (!cancelled) setPendingEventCode(null)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [activated, user?.id, pendingEventCode])
+
+  React.useEffect(() => {
+    if (!activated || !user?.id) return
+    let cancelled = false
+    ;(async () => {
+      setFeedLoading(true)
+      try {
+        const supabase = getSupabaseBrowserClient()
+        const [p, s] = await Promise.all([
+          fetchVisibleProfilesForFeed(supabase, {
+            excludeUserId: user.id,
+            eventCode: activeEvent?.code ?? null,
+          }),
+          fetchSearchesForOwner(supabase, user.id),
+        ])
+        if (!cancelled) {
+          setProfiles(p)
+          setSearches(s)
+        }
+      } finally {
+        if (!cancelled) setFeedLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [activated, user?.id, activeEvent?.code])
+
+  const visibleProfiles = profiles
 
   if (!activated) {
     return <RadarCTA onActivate={handleActivateFeed} />
   }
 
-  const visibleProfiles = activeEvent
-    ? mockProfiles.filter((p) => p.eventCodes?.includes(activeEvent.code))
-    : mockProfiles
-
   return (
     <div className="flex flex-col">
       <SearchChipBar
-        searches={mockSearches}
+        searches={searches}
         activeId={activeSearch}
         onSelect={setActiveSearch}
         onOpenFilters={() => setFiltersOpen(true)}
@@ -108,7 +159,11 @@ export default function FeedPage() {
       )}
 
       <div className="px-4 md:px-6 py-5">
-        {visibleProfiles.length === 0 ? (
+        {feedLoading && visibleProfiles.length === 0 ? (
+          <p className="text-center text-[12px] text-[var(--text2)] py-16">
+            Cargando perfiles…
+          </p>
+        ) : visibleProfiles.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-16">
             <div
               className="mb-4 flex h-12 w-12 items-center justify-center rounded-full"

@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { ChatConversation } from "@/components/messages/chat-conversation"
-import { mockChats } from "@/lib/mock-data"
+import { fetchChatConversation, markChatReadRpc } from "@/lib/data/chats"
+import { getSupabaseServerClient } from "@/lib/supabase/server"
 
 interface ChatPageProps {
   params: Promise<{ id: string }>
@@ -9,8 +10,18 @@ interface ChatPageProps {
 
 export default async function ChatPage({ params }: ChatPageProps) {
   const { id } = await params
-  const chat = mockChats.find((c) => c.id === id)
+  const supabase = await getSupabaseServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/auth/login")
+
+  const chat = await fetchChatConversation(supabase, id, user.id)
   if (!chat) notFound()
 
-  return <ChatConversation chat={chat} />
+  await markChatReadRpc(supabase, id)
+
+  return (
+    <ChatConversation chatId={id} currentUserId={user.id} initialChat={chat} />
+  )
 }

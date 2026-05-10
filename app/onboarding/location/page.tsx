@@ -10,7 +10,7 @@ import { CitySelector } from "@/components/ui/city-selector"
 import { Field, Input } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { IconMapPin } from "@/components/icons"
-import { CITIES_CATALOG } from "@/lib/mock-data"
+import { CITIES_CATALOG } from "@/lib/catalogs"
 
 export default function LocationStepPage() {
   const [city, setCity] = React.useState("")
@@ -19,11 +19,11 @@ export default function LocationStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={6} total={7} />
+      <Stepper current={5} total={6} />
       <OnboardingCard
         title="¿Dónde estás?"
         description="Ciudad y radio; nunca mostramos tu ubicación exacta."
-        back="/onboarding/project"
+        back="/onboarding/profile"
         next="/onboarding/done"
       >
         <Button variant="brand" size="lg" className="justify-center">

@@ -7,7 +7,7 @@ import { Isotipo } from "@/components/brand/isotipo"
 import { IconCompass } from "@/components/icons"
 
 interface RadarCTAProps {
-  onActivate: () => void
+  onActivate: () => void | Promise<void>
 }
 
 export function RadarCTA({ onActivate }: RadarCTAProps) {
@@ -17,7 +17,7 @@ export function RadarCTA({ onActivate }: RadarCTAProps) {
     if (!searching) return
 
     const timeout = window.setTimeout(() => {
-      onActivate()
+      void Promise.resolve(onActivate())
     }, 3800)
 
     return () => window.clearTimeout(timeout)

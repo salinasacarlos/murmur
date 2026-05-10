@@ -2,28 +2,48 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Avatar } from "@/components/ui/avatar"
 import { ChatBubble } from "@/components/messages/chat-bubble"
 import { MessageComposer } from "@/components/messages/message-composer"
 import { IconArrowLeft, IconUser } from "@/components/icons"
+import { sendChatMessage } from "@/lib/data/chats"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Chat, Message } from "@/lib/types"
 
-export function ChatConversation({ chat }: { chat: Chat }) {
-  const [messages, setMessages] = React.useState<Message[]>(chat.messages)
+interface ChatConversationProps {
+  chatId: string
+  currentUserId: string
+  initialChat: Chat
+}
 
-  function handleSend(text: string) {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `m-${Date.now()}`,
-        fromMe: true,
-        text,
-        sentAt: new Date().toISOString(),
-      },
-    ])
+export function ChatConversation({
+  chatId,
+  currentUserId,
+  initialChat,
+}: ChatConversationProps) {
+  const router = useRouter()
+  const [messages, setMessages] = React.useState<Message[]>(
+    initialChat.messages
+  )
+
+  async function handleSend(text: string) {
+    const supabase = getSupabaseBrowserClient()
+    const res = await sendChatMessage(supabase, {
+      chatId,
+      senderId: currentUserId,
+      body: text,
+    })
+    if (!res.ok) {
+      console.error(res.error)
+      return
+    }
+    setMessages((prev) => [...prev, res.message])
+    router.refresh()
   }
 
+  const chat = initialChat
   const groups = groupMessages(messages)
 
   return (
@@ -82,7 +102,7 @@ export function ChatConversation({ chat }: { chat: Chat }) {
         ))}
       </div>
 
-      <MessageComposer onSend={handleSend} />
+      <MessageComposer onSend={(t) => void handleSend(t)} />
     </div>
   )
 }

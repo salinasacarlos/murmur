@@ -86,6 +86,8 @@ export interface SentConnection {
   message: string
   status: ConnectionStatus
   sentAt: string
+  /** Present when status is accepted and a chat was created */
+  chatId?: string | null
 }
 
 export interface IgnoredConnection {

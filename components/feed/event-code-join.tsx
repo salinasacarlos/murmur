@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { Field } from "@/components/ui/input"
 import { IconSpark } from "@/components/icons"
-import { findEventByCode, profilesByEventCode } from "@/lib/mock-data"
+import { countProfilesInEvent, fetchEventByCode, joinEventByCode } from "@/lib/data/events"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { EventEntry } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface EventCodeJoinProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onJoin: (event: EventEntry) => void
+  onJoin: (event: EventEntry) => void | Promise<void>
 }
 
 const CODE_MAX = 6
@@ -25,12 +26,17 @@ export function EventCodeJoin({
 }: EventCodeJoinProps) {
   const [code, setCode] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
+  const [resolved, setResolved] = React.useState<EventEntry | null>(null)
+  const [peopleCount, setPeopleCount] = React.useState(0)
+  const [resolving, setResolving] = React.useState(false)
 
   const handleOpenChange = React.useCallback(
     (next: boolean) => {
       if (!next) {
         setCode("")
         setError(null)
+        setResolved(null)
+        setPeopleCount(0)
       }
       onOpenChange(next)
     },
@@ -38,20 +44,58 @@ export function EventCodeJoin({
   )
 
   const normalized = code.trim().toUpperCase()
-  const event = normalized.length === CODE_MAX ? findEventByCode(normalized) : undefined
-  const peopleCount = event ? profilesByEventCode(event.code).length : 0
 
-  function attemptJoin() {
+  React.useEffect(() => {
+    if (!open || normalized.length !== CODE_MAX) {
+      setResolved(null)
+      setPeopleCount(0)
+      setResolving(false)
+      return
+    }
+
+    let cancelled = false
+    setResolving(true)
+    ;(async () => {
+      try {
+        const supabase = getSupabaseBrowserClient()
+        const event = await fetchEventByCode(supabase, normalized)
+        const count = event
+          ? await countProfilesInEvent(supabase, event.code)
+          : 0
+        if (!cancelled) {
+          setResolved(event)
+          setPeopleCount(count)
+        }
+      } finally {
+        if (!cancelled) setResolving(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, normalized])
+
+  async function attemptJoin() {
     if (normalized.length !== CODE_MAX) {
       setError(`El código debe tener ${CODE_MAX} caracteres.`)
       return
     }
-    const found = findEventByCode(normalized)
+    const supabase = getSupabaseBrowserClient()
+    const found = await fetchEventByCode(supabase, normalized)
     if (!found) {
       setError("No encontramos un evento con ese código.")
       return
     }
-    onJoin(found)
+
+    const joined = await joinEventByCode(supabase, found.code)
+    if (!joined.ok) {
+      setError(joined.message)
+      return
+    }
+
+    setError(null)
+    await onJoin(joined.event)
   }
 
   return (
@@ -89,7 +133,7 @@ export function EventCodeJoin({
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault()
-                attemptJoin()
+                void attemptJoin()
               }
             }}
             placeholder="EJ. BLDR26"
@@ -100,21 +144,23 @@ export function EventCodeJoin({
           />
         </Field>
 
-        {event && (
+        {resolved && (
           <div className="rounded-lg border border-[var(--pm)] bg-[var(--pl)] p-3">
             <div className="flex items-start gap-2">
               <IconSpark size={14} className="mt-0.5 text-[var(--p)]" />
               <div className="flex-1">
                 <p className="text-[13px] font-semibold text-[var(--text)]">
-                  {event.name}
+                  {resolved.name}
                 </p>
-                {event.description && (
+                {resolved.description && (
                   <p className="mt-0.5 text-[12px] text-[var(--text2)]">
-                    {event.description}
+                    {resolved.description}
                   </p>
                 )}
                 <p className="mt-1 text-[11px] text-[var(--text3)]">
-                  {peopleCount} {peopleCount === 1 ? "persona" : "personas"} con perfil compatible
+                  {resolving
+                    ? "Contando participantes…"
+                    : `${peopleCount} ${peopleCount === 1 ? "persona" : "personas"} en este evento`}
                 </p>
               </div>
             </div>
@@ -134,8 +180,8 @@ export function EventCodeJoin({
         <Button
           size="lg"
           className="flex-1 justify-center"
-          onClick={attemptJoin}
-          disabled={normalized.length !== CODE_MAX}
+          onClick={() => void attemptJoin()}
+          disabled={normalized.length !== CODE_MAX || resolving}
         >
           Unirme
         </Button>

@@ -9,12 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tag } from "@/components/ui/tag"
 import { ConnectionCardReceived } from "@/components/connections/connection-card-received"
 import { ConnectionCardSent } from "@/components/connections/connection-card-sent"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
-  chatIdForProfile,
-  mockIgnoredConnections,
-  mockReceivedConnections,
-  mockSentConnections,
-} from "@/lib/mock-data"
+  acceptConnectionRpc,
+  cancelPendingConnection,
+  fetchConnectionsBoard,
+  ignoreConnectionRpc,
+} from "@/lib/data/connections"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
   RELATION_LABELS,
   type IgnoredConnection,
@@ -24,15 +26,36 @@ import {
 
 export default function ConnectionsPage() {
   const router = useRouter()
-  const [received, setReceived] = React.useState<ReceivedConnection[]>(
-    mockReceivedConnections
-  )
-  const [sent, setSent] = React.useState<SentConnection[]>(mockSentConnections)
-  const [ignored, setIgnored] = React.useState<IgnoredConnection[]>(
-    mockIgnoredConnections
-  )
+  const { user } = useCurrentUser()
+  const [received, setReceived] = React.useState<ReceivedConnection[]>([])
+  const [sent, setSent] = React.useState<SentConnection[]>([])
+  const [ignored, setIgnored] = React.useState<IgnoredConnection[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [acceptingId, setAcceptingId] = React.useState<string | null>(null)
   const redirectTimer = React.useRef<number | null>(null)
+
+  async function reload() {
+    if (!user?.id) return
+    const supabase = getSupabaseBrowserClient()
+    const board = await fetchConnectionsBoard(supabase, user.id)
+    setReceived(board.received)
+    setSent(board.sent)
+    setIgnored(board.ignored)
+  }
+
+  React.useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      await reload()
+      if (!cancelled) setLoading(false)
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload uses current user id
+  }, [user?.id])
 
   React.useEffect(() => {
     return () => {
@@ -40,18 +63,31 @@ export default function ConnectionsPage() {
     }
   }, [])
 
-  function accept(c: ReceivedConnection) {
-    if (acceptingId) return
+  async function accept(c: ReceivedConnection) {
+    if (acceptingId || !user?.id) return
 
-    const chatId = chatIdForProfile(c.profile.id)
     setAcceptingId(c.id)
+    const supabase = getSupabaseBrowserClient()
+    const res = await acceptConnectionRpc(supabase, c.id)
+    if (!res.ok) {
+      setAcceptingId(null)
+      console.error(res.message)
+      return
+    }
+
     redirectTimer.current = window.setTimeout(() => {
       setReceived((prev) => prev.filter((x) => x.id !== c.id))
-      router.push(chatId ? `/messages/${chatId}` : "/messages")
+      router.push(res.chatId ? `/messages/${res.chatId}` : "/messages")
     }, 1100)
   }
 
-  function ignore(c: ReceivedConnection) {
+  async function ignore(c: ReceivedConnection) {
+    const supabase = getSupabaseBrowserClient()
+    const res = await ignoreConnectionRpc(supabase, c.id)
+    if (!res.ok) {
+      console.error(res.error)
+      return
+    }
     setReceived((prev) => prev.filter((x) => x.id !== c.id))
     setIgnored((prev) => [
       {
@@ -64,7 +100,14 @@ export default function ConnectionsPage() {
     ])
   }
 
-  function cancel(id: string) {
+  async function cancel(id: string) {
+    if (!user?.id) return
+    const supabase = getSupabaseBrowserClient()
+    const res = await cancelPendingConnection(supabase, id, user.id)
+    if (!res.ok) {
+      console.error(res.error)
+      return
+    }
     setSent((prev) => prev.filter((c) => c.id !== id))
   }
 
@@ -79,6 +122,11 @@ export default function ConnectionsPage() {
         </p>
       </div>
 
+      {loading ? (
+        <Card padding="default" className="text-center py-10">
+          <p className="text-[12px] text-[var(--text2)]">Cargando…</p>
+        </Card>
+      ) : (
       <Tabs defaultValue="received">
         <TabsList>
           <TabsTrigger value="received">
@@ -104,8 +152,8 @@ export default function ConnectionsPage() {
               <ConnectionCardReceived
                 key={c.id}
                 connection={c}
-                onAccept={() => accept(c)}
-                onIgnore={() => ignore(c)}
+                onAccept={() => void accept(c)}
+                onIgnore={() => void ignore(c)}
                 accepting={acceptingId === c.id}
               />
             ))
@@ -123,7 +171,7 @@ export default function ConnectionsPage() {
               <ConnectionCardSent
                 key={c.id}
                 connection={c}
-                onCancel={() => cancel(c.id)}
+                onCancel={() => void cancel(c.id)}
               />
             ))
           )}
@@ -162,6 +210,7 @@ export default function ConnectionsPage() {
           )}
         </TabsContent>
       </Tabs>
+      )}
     </div>
   )
 }

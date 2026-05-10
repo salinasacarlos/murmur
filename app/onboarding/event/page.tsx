@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Field, Input } from "@/components/ui/input"
 import { IconArrowLeft } from "@/components/icons"
+import { fetchEventByCode } from "@/lib/data/events"
 import {
   EVENT_CODE_LENGTH,
   PENDING_EVENT_STORAGE_KEY,
 } from "@/lib/murmur-onboarding"
-import { findEventByCode } from "@/lib/mock-data"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import type { EventEntry } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 type Phase = "choose" | "code"
@@ -41,16 +43,37 @@ export default function OnboardingEventPage() {
   const router = useRouter()
   const [phase, setPhase] = React.useState<Phase>("choose")
   const [code, setCode] = React.useState("")
+  const [matched, setMatched] = React.useState<EventEntry | null>(null)
+  const [checking, setChecking] = React.useState(false)
 
   const normalized = code
     .replace(/[^a-zA-Z0-9]/g, "")
     .toUpperCase()
     .slice(0, EVENT_CODE_LENGTH)
 
-  const matched =
-    normalized.length === EVENT_CODE_LENGTH
-      ? findEventByCode(normalized)
-      : undefined
+  React.useEffect(() => {
+    if (normalized.length !== EVENT_CODE_LENGTH) {
+      setMatched(null)
+      setChecking(false)
+      return
+    }
+
+    let cancelled = false
+    setChecking(true)
+    ;(async () => {
+      try {
+        const supabase = getSupabaseBrowserClient()
+        const ev = await fetchEventByCode(supabase, normalized)
+        if (!cancelled) setMatched(ev)
+      } finally {
+        if (!cancelled) setChecking(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [normalized])
 
   function goRoleWithoutEvent() {
     clearPendingEvent()
@@ -66,7 +89,7 @@ export default function OnboardingEventPage() {
   if (phase === "choose") {
     return (
       <div className="flex flex-col gap-4">
-        <Stepper current={1} total={7} />
+        <Stepper current={1} total={6} />
         <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
           <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
             ¿Viene de un evento?
@@ -110,7 +133,7 @@ export default function OnboardingEventPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={1} total={7} />
+      <Stepper current={1} total={6} />
       <Card padding="none" className="bg-[var(--bg)] p-6 md:p-8">
         <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-1.5">
           Código del evento
@@ -131,7 +154,7 @@ export default function OnboardingEventPage() {
 
         <Field
           label="Código"
-          hint={`${EVENT_CODE_LENGTH} caracteres. Prueba: BLDR26, LATAM7, MTYDEV.`}
+          hint={`${EVENT_CODE_LENGTH} caracteres alfanuméricos.`}
         >
           <Input
             value={normalized}
@@ -166,11 +189,13 @@ export default function OnboardingEventPage() {
               </p>
             ) : null}
           </div>
-        ) : normalized.length === EVENT_CODE_LENGTH ? (
+        ) : normalized.length === EVENT_CODE_LENGTH && !checking ? (
           <p className="mt-3 text-[12px] text-[var(--red)]">
             No encontramos un evento con ese código. Revisa con el organizador o
             continúa sin evento.
           </p>
+        ) : normalized.length === EVENT_CODE_LENGTH && checking ? (
+          <p className="mt-3 text-[12px] text-[var(--text2)]">Verificando…</p>
         ) : null}
 
         <div className="mt-6 flex items-center justify-between gap-3">
@@ -191,7 +216,7 @@ export default function OnboardingEventPage() {
             </Button>
             <Button
               size="lg"
-              disabled={!matched}
+              disabled={!matched || checking}
               onClick={goRoleWithEvent}
             >
               Siguiente

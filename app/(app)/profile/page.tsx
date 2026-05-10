@@ -12,7 +12,7 @@ import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
 import { ProfileSection } from "@/components/profile/profile-section"
-import { CITIES_CATALOG } from "@/lib/mock-data"
+import { CITIES_CATALOG } from "@/lib/catalogs"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,

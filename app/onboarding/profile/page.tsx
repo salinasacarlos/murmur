@@ -42,12 +42,12 @@ export default function ProfileStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={4} total={7} />
+      <Stepper current={4} total={6} />
       <OnboardingCard
         title="Cuéntanos quién eres"
-        description="Información para el matching. Tú eliges cuándo mostrarte."
+        description="Información para el matching. Tú eliges cuándo mostrarte. Los detalles de tu proyecto u oportunidad los puedes refinar después en una búsqueda."
         back="/onboarding/relationships"
-        next="/onboarding/project"
+        next="/onboarding/location"
       >
         <Field label="Nombre" required>
           <PublicFieldNotice className="mb-1" compact />

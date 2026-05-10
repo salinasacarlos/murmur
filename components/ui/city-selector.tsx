@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { CITIES_CATALOG } from "@/lib/mock-data"
+import { CITIES_CATALOG } from "@/lib/catalogs"
 import { cn } from "@/lib/utils"
 
 interface CitySelectorProps {

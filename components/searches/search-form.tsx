@@ -2,11 +2,15 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { IndustrySelector } from "@/components/ui/industry-selector"
 import { Field, Input, Textarea } from "@/components/ui/input"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { createSearch, updateSearch } from "@/lib/data/searches"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import {
   AREA_LABELS,
@@ -19,9 +23,12 @@ import {
 interface SearchFormProps {
   initial?: Search
   mode: "create" | "edit"
+  searchId?: string
 }
 
-export function SearchForm({ initial, mode }: SearchFormProps) {
+export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
+  const router = useRouter()
+  const { user } = useCurrentUser()
   const [title, setTitle] = React.useState(initial?.title ?? "")
   const [description, setDescription] = React.useState(
     initial?.description ?? ""
@@ -35,6 +42,8 @@ export function SearchForm({ initial, mode }: SearchFormProps) {
   const [industries, setIndustries] = React.useState<string[]>(
     initial?.industries ?? []
   )
+  const [saving, setSaving] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   function toggleArr<T extends string>(
     list: T[],
@@ -42,6 +51,54 @@ export function SearchForm({ initial, mode }: SearchFormProps) {
     value: T
   ) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+  }
+
+  async function save() {
+    setError(null)
+    if (!user?.id) {
+      setError("Inicia sesión para continuar.")
+      return
+    }
+    if (!title.trim() || !description.trim() || relations.length === 0) {
+      setError("Completa título, descripción y al menos un tipo de relación.")
+      return
+    }
+
+    setSaving(true)
+    try {
+      const supabase = getSupabaseBrowserClient()
+      const payload = {
+        title,
+        description,
+        relations,
+        area,
+        industryLabels: industries,
+      }
+
+      if (mode === "create") {
+        const res = await createSearch(supabase, user.id, payload)
+        if (!res.ok) {
+          setError(res.error)
+          return
+        }
+        router.push("/searches")
+        return
+      }
+
+      if (!searchId) {
+        setError("Falta el identificador de la búsqueda.")
+        return
+      }
+
+      const res = await updateSearch(supabase, searchId, user.id, payload)
+      if (!res.ok) {
+        setError(res.error ?? "No se pudo guardar")
+        return
+      }
+      router.push("/searches")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -53,6 +110,10 @@ export function SearchForm({ initial, mode }: SearchFormProps) {
         Cada búsqueda genera sus propios matches en el feed. Puedes tener
         varias activas a la vez.
       </p>
+
+      {error ? (
+        <p className="text-[12px] text-[var(--red)] mb-4">{error}</p>
+      ) : null}
 
       <div className="flex flex-col gap-4 mb-6">
         <Field label="Título descriptivo" required>
@@ -109,11 +170,13 @@ export function SearchForm({ initial, mode }: SearchFormProps) {
             Cancelar
           </Button>
         </Link>
-        <Link href="/searches">
-          <Button size="lg">
-            {mode === "create" ? "Crear búsqueda" : "Guardar cambios"}
-          </Button>
-        </Link>
+        <Button size="lg" disabled={saving} onClick={() => void save()}>
+          {saving
+            ? "Guardando…"
+            : mode === "create"
+              ? "Crear búsqueda"
+              : "Guardar cambios"}
+        </Button>
       </div>
     </Card>
   )

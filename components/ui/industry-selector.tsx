@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { INDUSTRIES_CATALOG } from "@/lib/mock-data"
+import { INDUSTRIES_CATALOG } from "@/lib/catalogs"
 import { cn } from "@/lib/utils"
 
 interface IndustrySelectorProps {

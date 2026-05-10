@@ -7,7 +7,6 @@ import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
-import { chatIdForProfile } from "@/lib/mock-data"
 import {
   RELATION_LABELS,
   type ConnectionStatus,
@@ -36,7 +35,6 @@ export function ConnectionCardSent({
   onCancel,
 }: ConnectionCardSentProps) {
   const { profile, status } = connection
-  const chatId = chatIdForProfile(profile.id)
 
   return (
     <Card padding="default" className="ds-fade-up flex flex-col gap-3">
@@ -80,7 +78,11 @@ export function ConnectionCardSent({
           </Button>
         )}
         {status === "accepted" && (
-          <Link href={chatId ? `/messages/${chatId}` : "/messages"}>
+          <Link
+            href={
+              connection.chatId ? `/messages/${connection.chatId}` : "/messages"
+            }
+          >
             <Button variant="brand" size="sm">
               Ver chat
             </Button>
