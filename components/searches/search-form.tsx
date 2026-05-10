@@ -136,7 +136,7 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
     return () => {
       cancelled = true
     }
-  }, [mode, user?.id, profile?.plan])
+  }, [mode, user?.id, profile])
 
   function toggleArr<T extends string>(
     list: T[],

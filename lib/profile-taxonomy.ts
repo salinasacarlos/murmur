@@ -667,7 +667,7 @@ function buildFromSeeds(): {
     let eOrd = 10
     const usedSlugs = new Set<string>()
     for (const label of seed.expertiseLabels) {
-      let piece = slugify(label)
+      const piece = slugify(label)
       let slug = `${seed.slug}-${piece}`
       let n = 2
       while (usedSlugs.has(slug)) {
@@ -794,7 +794,7 @@ function buildTalentDefinitions(): TalentDefinition[] {
   const out: TalentDefinition[] = []
   let ord = 10
   for (const label of TALENT_LABELS) {
-    let base = slugify(label)
+    const base = slugify(label)
     let slug = base
     let n = 2
     while (used.has(slug)) {

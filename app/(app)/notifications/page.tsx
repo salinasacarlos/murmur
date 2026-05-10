@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils"
 
 export default function NotificationsPage() {
   const router = useRouter()
-  const { user, profile } = useCurrentUser()
+  const { user } = useCurrentUser()
   const { refresh: refreshUnreadBadge } = useNotificationsUnread()
   const [items, setItems] = React.useState<AppNotification[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -36,7 +36,7 @@ export default function NotificationsPage() {
     const next = await fetchNotifications(supabase, user.id)
     setItems(next)
     await refreshUnreadBadge()
-  }, [user?.id, profile?.plan, refreshUnreadBadge])
+  }, [user?.id, refreshUnreadBadge])
 
   React.useEffect(() => {
     if (!user?.id) return

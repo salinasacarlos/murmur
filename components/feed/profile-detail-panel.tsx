@@ -100,7 +100,7 @@ export function ProfileDetailPanel({
         : (["abierto"] as RelationType[])
     setConnectRelation(opts[0] ?? "abierto")
     setSendError(null)
-  }, [profile?.id])
+  }, [profile])
 
   if (!profile) return null
 

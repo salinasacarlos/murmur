@@ -43,8 +43,9 @@ const MURM_LEADS: Record<OnboardingMurmStep, string[]> = {
 export function getMurmVoice(
   step: OnboardingMurmStep,
   seed: number,
-  _branch?: string
+  branch?: string
 ): { lead: string; aside?: string } {
+  void branch
   const variants = MURM_LEADS[step]
   const lead = variants[Math.abs(seed) % variants.length] ?? variants[0] ?? ""
   return { lead }

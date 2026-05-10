@@ -13,7 +13,7 @@ export function VisibilityDbSync() {
   React.useEffect(() => {
     if (!profile) return
     setVisible(profile.visible)
-  }, [profile?.id, profile?.visible, setVisible])
+  }, [profile, setVisible])
 
   return null
 }

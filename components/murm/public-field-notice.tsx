@@ -6,6 +6,7 @@ export interface PublicFieldNoticeProps {
 /**
  * Reservado; el aviso de visibilidad se retiró del producto.
  */
-export function PublicFieldNotice(_props: PublicFieldNoticeProps) {
+export function PublicFieldNotice(props: PublicFieldNoticeProps) {
+  void props
   return null
 }
