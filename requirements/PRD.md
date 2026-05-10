@@ -102,7 +102,7 @@ El proceso de registro captura la información necesaria para el matching desde 
 - Años de experiencia: 0-2 / 3-5 / 6-10 / 10+
 - Logro más relevante (una línea)
 - Disponibilidad: Full-time ya / Part-time explorando / En 3-6 meses
-- Industria principal (nivel 1), hasta **3 verticales** de foco (nivel 2) y hasta **5 expertise** (nivel 3) bajo esas verticales *(catálogo alineado a DB)*
+- Industria principal (nivel 1), hasta **3 verticales** de foco (nivel 2) y hasta **3 roles / expertise** (nivel 3: p. ej. PM, developer, director) bajo esas verticales *(catálogo alineado a DB)*
 - Soft skills *(hasta 5; catálogo `talent_catalog`)*
 - Forma de trabajar *(multi-select)*: Remoto, Presencial, Híbrido, Decisiones rápidas, Proceso estructurado, Async
 
@@ -140,7 +140,7 @@ Cada card muestra:
 - Área funcional + experiencia
 - Logro destacado
 - Disponibilidad
-- Industria principal, verticales (≤3) y expertise (≤5)
+- Industria principal, verticales (≤3) y roles de expertise (≤3)
 - Indicador de compatibilidad: Baja / Media / Alta
 
 **Panel de detalle**
@@ -168,7 +168,7 @@ Sección dedicada para gestionar múltiples búsquedas paralelas.
 - Título descriptivo
 - Descripción libre de lo que busca
 - Tipo de relación *(multi-select)*
-- Industria principal, verticales (≤3), expertise (≤5) y soft skills opcional
+- Industria principal, verticales (≤3), roles de expertise (≤3) y soft skills opcional
 - Estado: Activa / Pausada
 
 **Acciones:**
@@ -233,7 +233,7 @@ Pantalla de gestión del perfil propio del usuario.
 - Hero: foto, nombre, rol, bio
 - Logro destacado
 - Disponibilidad y forma de trabajar
-- Industria principal, verticales (≤3), expertise (≤5) y soft skills
+- Industria principal, verticales (≤3), roles de expertise (≤3) y soft skills
 
 **Stats:**
 - Matches recibidos

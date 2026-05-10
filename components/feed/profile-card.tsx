@@ -104,7 +104,7 @@ export function ProfileCard({
             ) : null}
           </>
         ) : (
-          <Tag variant="neutral">Sin expertise</Tag>
+          <Tag variant="neutral">Sin roles</Tag>
         )}
         {talentSlugs.slice(0, 1).map((slug) => (
           <Tag key={`talent-${slug}`} variant="neutral">

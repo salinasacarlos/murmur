@@ -5,10 +5,11 @@ import * as React from "react"
 import {
   expertiseListForIndustryVerticals,
   labelExpertiseSlug,
+  MAX_EXPERTISE_SLUGS,
 } from "@/lib/profile-taxonomy"
 import { cn } from "@/lib/utils"
 
-const MAX = 5
+const MAX = MAX_EXPERTISE_SLUGS
 
 interface ExpertiseMultiSelectProps {
   /** Industria elegida; sin industria no hay opciones filtradas. */
@@ -27,7 +28,7 @@ export function ExpertiseMultiSelect({
   value,
   onChange,
   className,
-  footerNote = `Máximo ${MAX} expertise bajo las verticales elegidas.`,
+  footerNote = `Máximo ${MAX} roles bajo las verticales elegidas.`,
 }: ExpertiseMultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
@@ -114,7 +115,7 @@ export function ExpertiseMultiSelect({
   if (options.length === 0) {
     return (
       <p className="text-[13px] text-[var(--text3)] py-2">
-        No hay expertise definido para esta combinación de verticales.
+        No hay roles definidos para esta combinación de verticales.
       </p>
     )
   }
@@ -156,8 +157,8 @@ export function ExpertiseMultiSelect({
         >
           <span>
             {value.length === 0
-              ? `Elige hasta ${MAX} expertise…`
-              : `${value.length} de ${MAX} seleccionados`}
+              ? `Elige hasta ${MAX} roles…`
+              : `${value.length} de ${MAX} roles`}
           </span>
           <span className="text-[var(--text3)]" aria-hidden>
             {open ? "▴" : "▾"}

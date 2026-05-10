@@ -6,8 +6,8 @@ export const PROFILE_FIELD_COPY = {
   industryPrincipal: "Industria principal",
   /** Verticales de foco (nivel 2) bajo la industria; hasta 3. */
   verticales: "Verticales",
-  /** Expertise fino (nivel 3) bajo las verticales; hasta 5. */
-  expertise: "Expertise",
+  /** Expertise = roles en la industria; hasta 3. */
+  expertise: "Roles / expertise",
   softSkills: "Soft skills",
 } as const
 
@@ -22,7 +22,7 @@ export const PROFILE_FIELD_HINTS = {
   verticalesFilterFeed:
     "Opcional. Coincidencia por verticales del perfil.",
   expertiseOptional:
-    "Hasta 5; depende de las verticales elegidas.",
+    "Hasta 3 roles (p. ej. PM, developer, director); depende de las verticales.",
   expertiseFilterFeed:
     "Opcional. Coincidencia por expertise del perfil.",
   softSkillsOptional:

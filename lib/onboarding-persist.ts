@@ -9,7 +9,7 @@ import {
 } from "@/lib/data/profile-mutations"
 import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
-import { resolveProfileArea } from "@/lib/profile-taxonomy"
+import { resolveProfileArea, MAX_EXPERTISE_SLUGS } from "@/lib/profile-taxonomy"
 import type {
   Availability,
   ExperienceRange,
@@ -59,7 +59,7 @@ export async function persistOnboardingProfileStep(
     input.verticalSlugs,
     3
   )
-  const expertise = input.expertiseSlugs.slice(0, 5)
+  const expertise = input.expertiseSlugs.slice(0, MAX_EXPERTISE_SLUGS)
   const talents = input.talentSlugs.slice(0, 5)
   const area = resolveProfileArea(input.primaryIndustrySlug, expertise)
 

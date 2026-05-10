@@ -24,6 +24,7 @@ import {
   labelIndustrySlug,
   labelExpertiseSlug,
   labelTalentSlug,
+  MAX_EXPERTISE_SLUGS,
   resolveHeroIndustrySlug,
   resolveProfileArea,
 } from "@/lib/profile-taxonomy"
@@ -484,7 +485,7 @@ export default function ProfilePage() {
     )
     const expertise = expertiseDraftSlugs
       .filter((s) => allowedSet.has(s))
-      .slice(0, 5)
+      .slice(0, MAX_EXPERTISE_SLUGS)
     const area = resolveProfileArea(industrySlug, expertise)
     const supabase = getSupabaseBrowserClient()
     const payload = {
@@ -1058,7 +1059,7 @@ export default function ProfilePage() {
         <DrawerHeader
           className="shrink-0"
           title="Verticales y expertise"
-          description={`${PROFILE_FIELD_COPY.industryPrincipal}: ${labelIndustrySlug(heroIndustrySlug)}. Hasta 3 verticales y 5 expertise bajo ellas.`}
+          description={`${PROFILE_FIELD_COPY.industryPrincipal}: ${labelIndustrySlug(heroIndustrySlug)}. Hasta 3 verticales y 3 roles de expertise bajo ellas.`}
         />
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex flex-col gap-3 pb-1">

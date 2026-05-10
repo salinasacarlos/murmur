@@ -77,7 +77,7 @@ export function SearchCard({
               </Tag>
             ))
           : search.primaryIndustrySlug || heroVerticals.length > 0 ? (
-              <Tag variant="neutral">Sin expertise</Tag>
+              <Tag variant="neutral">Sin roles</Tag>
             ) : null}
         {talentSlugs.map((slug) => (
           <Tag key={`talent-${slug}`} variant="neutral">

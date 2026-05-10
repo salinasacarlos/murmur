@@ -6,6 +6,7 @@ import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import {
   inferIndustryFromExpertiseSlugs,
   resolveProfileArea,
+  MAX_EXPERTISE_SLUGS,
 } from "@/lib/profile-taxonomy"
 import type { Search } from "@/lib/types"
 import {
@@ -179,7 +180,7 @@ function taxonomyRowForPayload(
   | "talent_slugs"
   | "functional_area_tags"
 > {
-  const expertise = payload.expertiseSlugs.slice(0, 5)
+  const expertise = payload.expertiseSlugs.slice(0, MAX_EXPERTISE_SLUGS)
   const talents = payload.talentSlugs.slice(0, 5)
   const industry =
     payload.primaryIndustrySlug ??
