@@ -3,6 +3,23 @@ import { fileURLToPath } from "node:url"
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
+/** Same rules as lib/supabase/public-env.ts — project root URL only. */
+function normalizeSupabaseUrl(raw) {
+  let u = String(raw).trim().replace(/\/+$/, "")
+  for (const s of [
+    "/rest/v1",
+    "/auth/v1",
+    "/storage/v1",
+    "/realtime/v1",
+    "/graphql/v1",
+  ]) {
+    if (u.endsWith(s)) {
+      u = u.slice(0, -s.length).replace(/\/+$/, "")
+    }
+  }
+  return u
+}
+
 /** First matching non-empty env (Supabase docs / templates use several names). */
 function firstNonEmpty(...values) {
   for (const v of values) {
@@ -13,9 +30,11 @@ function firstNonEmpty(...values) {
 }
 
 // Expose URL + key to the browser bundle even if only unprefixed or ANON vars exist in .env.local.
-const resolvedSupabaseUrl = firstNonEmpty(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_URL
+const resolvedSupabaseUrl = normalizeSupabaseUrl(
+  firstNonEmpty(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_URL
+  )
 )
 const resolvedSupabaseKey = firstNonEmpty(
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
