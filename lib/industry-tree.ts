@@ -78,6 +78,9 @@ export function leavesForProfileIndustry(
 /** Primera industria de perfil por sortOrder del catálogo. */
 export const DEFAULT_PROFILE_INDUSTRY_SLUG = INDUSTRIES[0]!.slug
 
+/** Nombre histórico «dominio»: mismas entradas que {@link INDUSTRIES} (tabs del selector jerárquico). */
+export const INDUSTRY_DOMAINS = INDUSTRIES
+
 /** @deprecated usar profileIndustrySlugForLeafLabel */
 export function domainSlugForLeafLabel(
   label: string

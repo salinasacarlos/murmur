@@ -37,3 +37,7 @@ next-env.d.ts
 
 # supabase cli
 supabase/.temp/
+
+# agent / mcp temp payloads (no versionar)
+.supabase_apply*.json
+.tmp_mcp*.json

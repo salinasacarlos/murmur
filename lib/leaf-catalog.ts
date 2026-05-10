@@ -1,7 +1,8 @@
 /**
  * Hojas del catálogo discover → industria de perfil. Sin deps (evita ciclos con profile-taxonomy).
  * Una sola tabla (VERTICAL_ROWS) alinea mapa y lista; ampliar aquí y en migraciones
- * `20260530120000_expand_industry_verticals.sql` + `20260602120000_expand_verticals_specialization.sql`.
+ * `20260530120000_expand_industry_verticals.sql` + `20260602120000_expand_verticals_specialization.sql`
+ * + `20260603120000_expand_verticals_batch3.sql`.
  */
 
 export interface IndustryLeaf {
@@ -67,6 +68,56 @@ const VERTICAL_ROWS = [
   {
     slug: "ratings-analisis-credito",
     label: "Ratings y análisis de crédito",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "capital-riesgo-venture-debt",
+    label: "Capital de riesgo y venture debt",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "embedded-finance-b2b",
+    label: "Embedded finance y pagos B2B",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "fx-hedging-global",
+    label: "FX, cobertura y tesorería internacional",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "planeacion-patrimonial-sucesoria",
+    label: "Planeación patrimonial y sucesoria",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "consolidacion-reporting-ifrs",
+    label: "Consolidación y reporting financiero (IFRS)",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "activos-improductivos-npl",
+    label: "NPL, activos improductivos y workout",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "custodia-valores-post-trade",
+    label: "Custodia, clearing y post‑trading",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "seguros-corporativos-pyme",
+    label: "Seguros corporativos y ramos especializados",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "core-banking-tech-proveedores",
+    label: "Core banking y plataformas financieras (proveedores)",
+    industry: "finanzas-fintech",
+  },
+  {
+    slug: "spinouts-corporate-venturing",
+    label: "Corporate venturing y spinouts financieros",
     industry: "finanzas-fintech",
   },
 
@@ -144,6 +195,56 @@ const VERTICAL_ROWS = [
     label: "Salud ocupacional y seguridad laboral",
     industry: "salud-biotech",
   },
+  {
+    slug: "atencion-primaria-comunitaria",
+    label: "Atención primaria y medicina comunitaria",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "urgencias-hospitalarias",
+    label: "Urgencias y cuidados críticos hospitalarios",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "medicina-deportiva-rehabilitacion",
+    label: "Medicina deportiva y readaptación clínica",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "genomica-terapias-avanzadas",
+    label: "Genómica, terapias avanzadas y biofarmacéutica",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "enfermeria-domiciliaria-paliativos",
+    label: "Enfermería domiciliaria y cuidados paliativos",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "salud-materno-infantil-vertical",
+    label: "Salud materno infantil y neonatología",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "optometria-salud-visual",
+    label: "Optometría y salud visual",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "patologia-clinica-especializada",
+    label: "Patología clínica y laboratorio de alta complejidad",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "logistica-suministro-hospitalario",
+    label: "Logística y suministro hospitalario (healthcare supply)",
+    industry: "salud-biotech",
+  },
+  {
+    slug: "telefarmacia-cadena-frio",
+    label: "Telefarmacia y cadena de frío farmacéutico",
+    industry: "salud-biotech",
+  },
 
   // —— Educación
   { slug: "edtech", label: "Edtech", industry: "educacion" },
@@ -212,6 +313,56 @@ const VERTICAL_ROWS = [
     label: "Campus y experiencia educativa híbrida",
     industry: "educacion",
   },
+  {
+    slug: "preescolar-primera-infancia-edu",
+    label: "Preescolar y primera infancia educativa",
+    industry: "educacion",
+  },
+  {
+    slug: "stem-robotica-maker",
+    label: "STEM, robótica y makerspaces",
+    industry: "educacion",
+  },
+  {
+    slug: "coaching-certificaciones-profesionales",
+    label: "Coaching y certificaciones profesionales reguladas",
+    industry: "educacion",
+  },
+  {
+    slug: "universidad-corporativa-academy",
+    label: "Universidad corporativa y business academy",
+    industry: "educacion",
+  },
+  {
+    slug: "editorial-educativa-contenidos",
+    label: "Editorial educativa y contenidos curriculares",
+    industry: "educacion",
+  },
+  {
+    slug: "becas-financiamiento-estudiantil",
+    label: "Becas y financiamiento estudiantil",
+    industry: "educacion",
+  },
+  {
+    slug: "internacionalizacion-educativa",
+    label: "Internacionalización y alianzas académicas",
+    industry: "educacion",
+  },
+  {
+    slug: "evaluacion-online-proctoring",
+    label: "Evaluación digital y proctoring",
+    industry: "educacion",
+  },
+  {
+    slug: "desarrollo-docente-continua",
+    label: "Desarrollo docente y formación del profesorado",
+    industry: "educacion",
+  },
+  {
+    slug: "operaciones-campus-servicios",
+    label: "Operaciones de campus y servicios estudiantiles",
+    industry: "educacion",
+  },
 
   // —— Tecnología e IA
   { slug: "saas", label: "SaaS", industry: "tecnologia-ia" },
@@ -270,6 +421,56 @@ const VERTICAL_ROWS = [
     label: "SaaS vertical especializado por industria",
     industry: "tecnologia-ia",
   },
+  {
+    slug: "api-management-integraciones",
+    label: "API management e integraciones empresariales",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "edge-computing-industrial",
+    label: "Edge computing y planta conectada",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "pentesting-red-team",
+    label: "Pentesting, red team y evaluación de seguridad",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "observabilidad-apm",
+    label: "Observabilidad, APM y confiabilidad de plataformas",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "bi-visualizacion-enterprise",
+    label: "BI, visualización y analítica enterprise",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "erp-crm-implementacion",
+    label: "Implementación ERP, CRM y partners de sistema",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "multicloud-finops",
+    label: "Multicloud, FinOps y optimización de nube",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "low-code-bpm-orquestacion",
+    label: "Low‑code, BPM y orquestación de procesos",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "automatizacion-rpa",
+    label: "Automatización RPA e hiperautomatización",
+    industry: "tecnologia-ia",
+  },
+  {
+    slug: "semiconductor-fabless-ip",
+    label: "Semiconductores, IP cores y fabless",
+    industry: "tecnologia-ia",
+  },
 
   // —— Gobierno y sector público
   { slug: "govtech", label: "GovTech", industry: "gobierno-sector-publico" },
@@ -322,6 +523,56 @@ const VERTICAL_ROWS = [
   {
     slug: "smart-cities-movilidad-urbana",
     label: "Smart cities y movilidad urbana pública",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "privacidad-datos-sector-publico",
+    label: "Protección de datos y privacidad en el sector público",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "catastro-catastral-registro",
+    label: "Catastro, registro y ordenamiento territorial",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "archivos-nacionales-documentacion",
+    label: "Archivos nacionales y gestión documental pública",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "identidad-digital-ciudadania",
+    label: "Identidad digital y trámites de ciudadanía",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "cultura-artes-politica-publica",
+    label: "Cultura, artes y políticas culturales públicas",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "ciencia-tecnologia-politica-innovacion",
+    label: "CTI, innovación pública y laboratorios de gobierno",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "adquisiciones-defensa-industrial",
+    label: "Adquisiciones de defensa e industria estratégica",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "transicion-justa-energia-publica",
+    label: "Transición energética justa (enfoque público)",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "estadistica-oficial-encuestas",
+    label: "Estadística oficial, censos y encuestas",
+    industry: "gobierno-sector-publico",
+  },
+  {
+    slug: "migracion-consular-servicios",
+    label: "Migración, consulados y servicios en frontera",
     industry: "gobierno-sector-publico",
   },
 
@@ -381,6 +632,56 @@ const VERTICAL_ROWS = [
   {
     slug: "retail-financiero-corresponsalia",
     label: "Retail financiero y corresponsalía",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "centros-comerciales-experiencia",
+    label: "Centros comerciales y experiencia de shopping",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "retail-automotriz-posventa",
+    label: "Retail automotriz y posventa",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "farmacia-parafarmacia-retail",
+    label: "Farmacia, parafarmacia y dermocosmética en retail",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "pet-care-retail",
+    label: "Pet care, alimento y accesorios para mascotas",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "hogar-muebles-decoracion",
+    label: "Hogar, muebles y decoración",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "deportes-outdoor-retail",
+    label: "Deportes, outdoor y lifestyle activo",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "optica-audio-retail",
+    label: "Óptica, audio y salud en retail",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "b2b-marketplace-mayoreo-digital",
+    label: "B2B marketplace y mayoreo digital",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "loss-prevention-seguridad-retail",
+    label: "Loss prevention y seguridad en tienda",
+    industry: "retail-comercio",
+  },
+  {
+    slug: "libreria-papeleria-cultura-retail",
+    label: "Librería, papelería y cultura en retail",
     industry: "retail-comercio",
   },
 
@@ -462,6 +763,56 @@ const VERTICAL_ROWS = [
     label: "Locación, renta de estudios y espacios",
     industry: "entretenimiento-medios",
   },
+  {
+    slug: "standup-comedy-clubes",
+    label: "Stand‑up, comedia en vivo y clubes",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "venues-conciertos-en-vivo",
+    label: "Venues, conciertos y música en vivo",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "management-artistico-booking",
+    label: "Management artístico y booking",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "sync-licencias-musica-publicidad",
+    label: "Sync, licencias musicales y publicidad",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "vfx-post-animation-studios",
+    label: "VFX, posproducción y estudios de animación",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "doblaje-locucion-audiobooks",
+    label: "Doblaje, locución y audiolibros",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "esports-franquicias-equipos",
+    label: "Franquicias y operación de equipos esports",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "experiencias-inmersivas-xr",
+    label: "Experiencias inmersivas XR y venue digital",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "film-commissions-locaciones",
+    label: "Film commissions y atracción de rodajes",
+    industry: "entretenimiento-medios",
+  },
+  {
+    slug: "distribucion-exhibicion-audiovisual",
+    label: "Distribución y exhibición audiovisual",
+    industry: "entretenimiento-medios",
+  },
 
   // —— Artes, diseño y creativo
   { slug: "arquitectura", label: "Arquitectura", industry: "artes-diseno-creativo" },
@@ -516,6 +867,56 @@ const VERTICAL_ROWS = [
     label: "Gestión de patrimonio y proyectos culturales",
     industry: "artes-diseno-creativo",
   },
+  {
+    slug: "caligrafia-tipografia-edicion",
+    label: "Caligrafía, tipografía y edición gráfica",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "curaduria-exposiciones-temporales",
+    label: "Curaduría y exposiciones temporales",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "arte-urbano-intervencion-publica",
+    label: "Arte urbano e intervención en espacio público",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "talleres-arte-comunitario",
+    label: "Talleres, residencias y arte comunitario",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "fotografia-producto-ecommerce",
+    label: "Fotografía de producto y e‑commerce visual",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "joyeria-orfebreria-contemporanea",
+    label: "Joyería y orfebrería contemporánea",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "ceramica-artistica-mesa",
+    label: "Cerámica artística y diseño de mesa",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "performance-arte-accion",
+    label: "Performance y arte de acción",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "comic-ilustrado-narrativa-grafica",
+    label: "Cómic, novela gráfica e ilustración editorial",
+    industry: "artes-diseno-creativo",
+  },
+  {
+    slug: "arte-digital-experimental",
+    label: "Arte digital experimental y nuevos medios",
+    industry: "artes-diseno-creativo",
+  },
 
   // —— Construcción e inmobiliario
   {
@@ -562,6 +963,56 @@ const VERTICAL_ROWS = [
   {
     slug: "due-diligence-tecnica-transacciones",
     label: "Due diligence técnica y transacciones",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "restauracion-patrimonio-edificado",
+    label: "Restauración de patrimonio edificado",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "infraestructura-deportiva-publica",
+    label: "Infraestructura deportiva y espacios públicos",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "vivienda-renta-servicing",
+    label: "Vivienda en renta, multifamily y servicing",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "naves-industriales-logistica",
+    label: "Naves industriales y desarrollo logístico",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "mep-climatizacion-obra",
+    label: "MEP, climatización e instalaciones en obra",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "impermeabilizacion-especialidades-obra",
+    label: "Impermeabilización y especialidades de obra",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "demolicion-reciclaje-escombro",
+    label: "Demolición selectiva y reciclaje de escombros",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "geotecnia-cimentaciones",
+    label: "Geotecnia y cimentaciones especiales",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "seguros-obra-reclamaciones",
+    label: "Seguros de obra, reclamaciones y garantías",
+    industry: "construccion-inmobiliario",
+  },
+  {
+    slug: "bim-coordinacion-vdc-obra",
+    label: "BIM, coordinación multidisciplinaria y VDC en obra",
     industry: "construccion-inmobiliario",
   },
 
@@ -630,6 +1081,56 @@ const VERTICAL_ROWS = [
     label: "Maquila, export manufacturing y nearshoring",
     industry: "manufactura-industria",
   },
+  {
+    slug: "textil-confeccion-industrial",
+    label: "Textil, confección y moda industrial",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "muebleria-madera-industrial",
+    label: "Mueblería, madera y carpintería industrial",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "vidrio-ceramica-industrial",
+    label: "Vidrio, cerámica industrial y refractarios",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "papel-carton-empaque",
+    label: "Papel, cartón y empaque sostenible",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "fundicion-forja-metalurgia",
+    label: "Fundición, forja y metalurgia",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "plastico-extrusion-inyeccion",
+    label: "Plástico, extrusión e inyección industrial",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "pinturas-recubrimientos-industriales",
+    label: "Pinturas y recubrimientos industriales",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "caucho-neumaticos-componentes",
+    label: "Caucho, neumáticos y componentes poliméricos",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "cosmetica-planta-cuidado-personal",
+    label: "Cosmética y cuidado personal en planta",
+    industry: "manufactura-industria",
+  },
+  {
+    slug: "maquinaria-equipo-industrial-servicio",
+    label: "Maquinaria, equipo industrial y servicio técnico",
+    industry: "manufactura-industria",
+  },
 
   // —— Energía y sustentabilidad
   { slug: "climate", label: "Climate", industry: "energia-sustentabilidad" },
@@ -694,6 +1195,56 @@ const VERTICAL_ROWS = [
     label: "Biodiversidad y soluciones basadas en naturaleza",
     industry: "energia-sustentabilidad",
   },
+  {
+    slug: "nuclear-servicios-combustible",
+    label: "Servicios a centrales nucleares y ciclo del combustible",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "mineria-cierre-post-mineria",
+    label: "Cierre de minas y rehabilitación post‑minería",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "eficiencia-energetica-edificaciones",
+    label: "Eficiencia energética en edificaciones",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "demanda-respuesta-grid-flexibility",
+    label: "Gestión de demanda y flexibilidad de red",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "mercado-mayorista-electrico",
+    label: "Mercado mayorista y comercialización eléctrica",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "auditorias-certificacion-energetica",
+    label: "Auditorías y certificación energética / normativa",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "agrivoltaica-energia-suelo",
+    label: "Agrivoltaica y uso dual del suelo",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "baterias-segunda-vida-reciclaje",
+    label: "Baterías, segunda vida y reciclaje de acumulación",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "compliance-ambiental-operacion",
+    label: "Compliance ambiental de operación industrial",
+    industry: "energia-sustentabilidad",
+  },
+  {
+    slug: "infraestructura-recarga-movilidad-electrica",
+    label: "Infraestructura de recarga y hubs de movilidad eléctrica",
+    industry: "energia-sustentabilidad",
+  },
 
   // —— Agro y alimentación
   { slug: "agtech", label: "Agtech", industry: "agro-alimentacion" },
@@ -751,6 +1302,56 @@ const VERTICAL_ROWS = [
   {
     slug: "cooperativas-asociaciones-rurales",
     label: "Cooperativas y asociaciones rurales",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "agricultura-regenerativa-suelo",
+    label: "Agricultura regenerativa y salud del suelo",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "riego-precision-agua",
+    label: "Riego tecnificado y gestión hídrica agrícola",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "bioinsumos-biocontrol",
+    label: "Bioinsumos, biocontrol y agricultura biológica",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "fruticultura-especializada",
+    label: "Fruticultura de especialidad y berries",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "cafe-cacao-origen",
+    label: "Café, cacao y orígenes de altitud",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "lacteos-procesamiento-rural",
+    label: "Lácteos y queserías de escala regional",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "carnicos-rastro-transformacion",
+    label: "Cárnicos, rastro y transformación local",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "food-safety-auditorias-terceros",
+    label: "Food safety y auditorías de tercera parte",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "packaging-alimentos-sostenible",
+    label: "Packaging alimentario y materiales sostenibles",
+    industry: "agro-alimentacion",
+  },
+  {
+    slug: "agricultura-invernadero-controlado",
+    label: "Agricultura protegida, invernadero y cultivo controlado",
     industry: "agro-alimentacion",
   },
 
@@ -830,6 +1431,56 @@ const VERTICAL_ROWS = [
     label: "Turismo deportivo y megaeventos",
     industry: "turismo-hospitalidad",
   },
+  {
+    slug: "guias-interpretacion-idiomas",
+    label: "Guías, interpretación e idiomas especializados",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "turismo-accesible-inclusivo",
+    label: "Turismo accesible e inclusivo",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "turismo-lgbtq-segmento",
+    label: "Turismo LGBTQ+ friendly y segmentos",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "turismo-educativo-workshops",
+    label: "Turismo educativo, workshops y residencias",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "transporte-turistico-terrestre",
+    label: "Transporte turístico terrestre y traslados",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "asistencia-viajero-insurtech",
+    label: "Asistencia al viajero y seguros turísticos",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "revenue-hotelero-herramientas",
+    label: "Revenue management y distribución hotelera",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "turismo-marino-buceo-nautico",
+    label: "Turismo marino, buceo y náutica",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "turismo-rural-comunitario",
+    label: "Turismo rural, comunitario y experiencias locales",
+    industry: "turismo-hospitalidad",
+  },
+  {
+    slug: "enoturismo-rutas-gastronomicas",
+    label: "Enoturismo, destilados y rutas gastronómicas",
+    industry: "turismo-hospitalidad",
+  },
 
   // —— Legal y consultoría
   { slug: "legaltech", label: "Legaltech", industry: "legal-consultoria" },
@@ -880,6 +1531,56 @@ const VERTICAL_ROWS = [
     label: "M&A y transacciones corporativas (advisory)",
     industry: "legal-consultoria",
   },
+  {
+    slug: "compliance-penal-empresarial",
+    label: "Compliance penal y gobierno corporativo",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "proteccion-consumidor-b2c",
+    label: "Protección al consumidor y litigio B2C",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "competencia-antitrust",
+    label: "Competencia económica y antitrust",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "privacidad-dpo-externo",
+    label: "Privacidad, DPO externo y datos",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "contratacion-saas-tech-legal",
+    label: "Contratación tecnológica, SaaS y licencias",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "laboral-sindical-colectivo",
+    label: "Laboral sindical y negociación colectiva",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "legal-inmobiliario-transaccional",
+    label: "Legal inmobiliario y transaccional",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "venture-startups-cap-table",
+    label: "Venture, startups y cap table",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "propiedad-intelectual-patentes",
+    label: "Propiedad intelectual y patentes",
+    industry: "legal-consultoria",
+  },
+  {
+    slug: "mediacion-arbitraje-comercial",
+    label: "Mediación y arbitraje comercial",
+    industry: "legal-consultoria",
+  },
 
   // —— Deporte y bienestar
   { slug: "wellness", label: "Wellness", industry: "deporte-bienestar" },
@@ -927,6 +1628,56 @@ const VERTICAL_ROWS = [
   {
     slug: "centros-rehabilitacion-deportiva",
     label: "Centros de rehabilitación y readaptación",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "padel-tenis-clubes-raqueta",
+    label: "Pádel, tenis y clubes de raqueta",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "yoga-pilates-mind-body-studios",
+    label: "Yoga, pilates y estudios mind-body",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "crossfit-hiit-boxes-funcional",
+    label: "CrossFit, HIIT y entrenamiento funcional en box",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "natacion-deportes-acuaticos-clubes",
+    label: "Natación, deportes acuáticos y clubes",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "ciclismo-running-triatlon-comunidades",
+    label: "Ciclismo, running y triatlón (comunidades y eventos)",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "artes-marciales-deportes-combate",
+    label: "Artes marciales y deportes de combate",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "deportes-invierno-montana-outdoor",
+    label: "Deportes de invierno y outdoor de montaña",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "esports-performance-comunidad",
+    label: "Esports, rendimiento y comunidad competitiva",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "spa-termal-wellness-destination",
+    label: "Spa, termalismo y wellness destination",
+    industry: "deporte-bienestar",
+  },
+  {
+    slug: "suplementos-nutricion-fitness-comercio",
+    label: "Suplementos y nutrición fitness (retail y omnicanal)",
     industry: "deporte-bienestar",
   },
 ] as const
