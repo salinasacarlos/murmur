@@ -11,6 +11,83 @@ import type {
 
 type Client = SupabaseClient<Database>
 
+/** Estado de conexión con otro perfil (vista Descubrir / tarjeta). */
+export type PeerConnectionHint =
+  | { state: "none" }
+  | {
+      state: "connected"
+      connectionId: string
+      chatId: string | null
+    }
+  | { state: "request_sent"; connectionId: string }
+  | { state: "request_received"; connectionId: string }
+
+/**
+ * Mapa peerProfileId → hint para el usuario actual (todas las filas relevantes en connections).
+ */
+export async function fetchPeerConnectionHints(
+  supabase: Client,
+  me: string
+): Promise<Map<string, PeerConnectionHint>> {
+  const { data: conns, error } = await supabase
+    .from("connections")
+    .select("id, sender_id, receiver_id, status")
+    .or(`sender_id.eq.${me},receiver_id.eq.${me}`)
+
+  if (error || !conns?.length) return new Map()
+
+  const byPeer = new Map<
+    string,
+    { id: string; sender_id: string; receiver_id: string; status: string }[]
+  >()
+  for (const c of conns) {
+    const peer = c.sender_id === me ? c.receiver_id : c.sender_id
+    const list = byPeer.get(peer) ?? []
+    list.push(c)
+    byPeer.set(peer, list)
+  }
+
+  const result = new Map<string, PeerConnectionHint>()
+  const acceptedConnIds: string[] = []
+
+  for (const [peer, rows] of byPeer) {
+    const accepted = rows.find((r) => r.status === "accepted")
+    if (accepted) {
+      acceptedConnIds.push(accepted.id)
+      result.set(peer, {
+        state: "connected",
+        connectionId: accepted.id,
+        chatId: null,
+      })
+      continue
+    }
+    const pending = rows.find((r) => r.status === "pending")
+    if (pending) {
+      const outgoing = pending.sender_id === me
+      result.set(
+        peer,
+        outgoing
+          ? { state: "request_sent", connectionId: pending.id }
+          : { state: "request_received", connectionId: pending.id }
+      )
+    }
+  }
+
+  if (acceptedConnIds.length) {
+    const chatMap = await fetchChatIdsByConnectionIds(supabase, acceptedConnIds)
+    for (const [peer, hint] of [...result.entries()]) {
+      if (hint.state === "connected") {
+        result.set(peer, {
+          ...hint,
+          chatId: chatMap.get(hint.connectionId) ?? null,
+        })
+      }
+    }
+  }
+
+  return result
+}
+
 export interface ConnectionsBoard {
   received: ReceivedConnection[]
   sent: SentConnection[]

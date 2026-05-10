@@ -36,7 +36,12 @@ export function MessageComposer({ onSend }: MessageComposerProps) {
 
   return (
     <div
-      className="relative z-10 shrink-0 border-t-[0.5px] border-[var(--border)] bg-[var(--bg)] px-3 py-3 flex items-end gap-2 touch-manipulation"
+      className={cn(
+        "shrink-0 border-t-[0.5px] border-[var(--border)] bg-[var(--bg)] px-3 py-3 flex items-end gap-2 touch-manipulation",
+        /* Móvil: fijo respecto al viewport, inmediatamente encima del bottom nav (z-50). */
+        "max-md:fixed max-md:left-0 max-md:right-0 max-md:z-40 max-md:bottom-[calc(var(--mobile-nav-h)+var(--sab))]",
+        "md:relative md:z-10 md:left-auto md:right-auto md:bottom-auto"
+      )}
       style={{ paddingBottom: "calc(12px + var(--sab))" }}
     >
       <textarea

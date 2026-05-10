@@ -1,10 +1,13 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 
 import { Avatar } from "@/components/ui/avatar"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
+import type { PeerConnectionHint } from "@/lib/data/connections"
 import {
   AREA_LABELS,
   AVAILABILITY_LABELS,
@@ -21,13 +24,19 @@ import {
   labelTalentSlug,
 } from "@/lib/profile-taxonomy"
 import { IconMapPin } from "@/components/icons"
+import { cn } from "@/lib/utils"
 
 interface ProfileCardProps {
   profile: Profile
   onClick?: () => void
+  connectionHint?: PeerConnectionHint
 }
 
-export function ProfileCard({ profile, onClick }: ProfileCardProps) {
+export function ProfileCard({
+  profile,
+  onClick,
+  connectionHint = { state: "none" },
+}: ProfileCardProps) {
   const heroIndustrySlug =
     profile.primaryIndustrySlug ??
     inferIndustryFromExpertiseSlugs(
@@ -138,7 +147,77 @@ export function ProfileCard({ profile, onClick }: ProfileCardProps) {
         <IconMapPin size={12} />
         <span>{profile.city}</span>
       </div>
+
+      <ProfileCardConnectionRow hint={connectionHint} onOpenProfile={() => onClick?.()} />
     </Card>
+  )
+}
+
+function ProfileCardConnectionRow({
+  hint,
+  onOpenProfile,
+}: {
+  hint: PeerConnectionHint
+  onOpenProfile: () => void
+}) {
+  return (
+    <div
+      className="mt-2 flex w-full gap-2"
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
+      {hint.state === "none" ? (
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          className="flex-1 min-h-[40px] touch-manipulation"
+          onClick={() => onOpenProfile()}
+        >
+          Conectar
+        </Button>
+      ) : hint.state === "connected" ? (
+        hint.chatId ? (
+          <Link
+            href={`/messages/${hint.chatId}`}
+            className={cn(
+              buttonVariants({ variant: "primary", size: "sm" }),
+              "flex-1 min-h-[40px] justify-center no-underline touch-manipulation"
+            )}
+          >
+            Ir al chat
+          </Link>
+        ) : (
+          <span
+            className={cn(
+              buttonVariants({ variant: "secondary", size: "sm" }),
+              "flex-1 min-h-[40px] inline-flex items-center justify-center text-[var(--text2)]"
+            )}
+          >
+            Conectado
+          </span>
+        )
+      ) : hint.state === "request_sent" ? (
+        <span
+          className={cn(
+            buttonVariants({ variant: "secondary", size: "sm" }),
+            "flex-1 min-h-[40px] inline-flex items-center justify-center cursor-default text-[var(--text3)]"
+          )}
+        >
+          Solicitud enviada
+        </span>
+      ) : (
+        <Link
+          href="/connections?tab=received"
+          className={cn(
+            buttonVariants({ variant: "brand", size: "sm" }),
+            "flex-1 min-h-[40px] justify-center no-underline touch-manipulation"
+          )}
+        >
+          Ver solicitud
+        </Link>
+      )}
+    </div>
   )
 }
 

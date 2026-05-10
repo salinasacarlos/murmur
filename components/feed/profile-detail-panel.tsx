@@ -1,15 +1,16 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import { Avatar } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Drawer, DrawerHeader, SidePanel } from "@/components/ui/drawer"
 import { Tag } from "@/components/ui/tag"
 import { Textarea } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
-import { sendConnectionRequest } from "@/lib/data/connections"
+import { sendConnectionRequest, type PeerConnectionHint } from "@/lib/data/connections"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import {
@@ -42,12 +43,17 @@ interface ProfileDetailPanelProps {
   profile: Profile | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Desde Descubrir: evita ofrecer conectar de nuevo si ya hay vínculo. */
+  connectionHint?: PeerConnectionHint
+  onConnectionsChanged?: () => void
 }
 
 export function ProfileDetailPanel({
   profile,
   open,
   onOpenChange,
+  connectionHint = { state: "none" },
+  onConnectionsChanged,
 }: ProfileDetailPanelProps) {
   const router = useRouter()
   const { user: authUser } = useCurrentUser()
@@ -249,17 +255,56 @@ export function ProfileDetailPanel({
             >
               Cerrar
             </Button>
-            <Button
-              size="lg"
-              className="flex-1 justify-center"
-              disabled={isSelf || !authUser?.id}
-              onClick={() => {
-                setSendError(null)
-                setConnectOpen(true)
-              }}
-            >
-              Conectar
-            </Button>
+            {connectionHint.state === "none" ? (
+              <Button
+                size="lg"
+                className="flex-1 justify-center"
+                disabled={isSelf || !authUser?.id}
+                onClick={() => {
+                  setSendError(null)
+                  setConnectOpen(true)
+                }}
+              >
+                Conectar
+              </Button>
+            ) : connectionHint.state === "connected" ? (
+              connectionHint.chatId ? (
+                <Link
+                  href={`/messages/${connectionHint.chatId}`}
+                  className={cn(
+                    buttonVariants({ variant: "primary", size: "lg" }),
+                    "flex-1 justify-center no-underline"
+                  )}
+                  onClick={() => onOpenChange(false)}
+                >
+                  Ir al chat
+                </Link>
+              ) : (
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="flex-1 justify-center"
+                  disabled
+                >
+                  Conectado
+                </Button>
+              )
+            ) : connectionHint.state === "request_sent" ? (
+              <Button size="lg" className="flex-1 justify-center" disabled>
+                Solicitud enviada
+              </Button>
+            ) : (
+              <Link
+                href="/connections?tab=received"
+                className={cn(
+                  buttonVariants({ variant: "primary", size: "lg" }),
+                  "flex-1 justify-center no-underline"
+                )}
+                onClick={() => onOpenChange(false)}
+              >
+                Ver solicitud
+              </Link>
+            )}
           </div>
         </div>
       </SidePanel>
@@ -356,6 +401,7 @@ export function ProfileDetailPanel({
                 }
                 setConnectOpen(false)
                 onOpenChange(false)
+                onConnectionsChanged?.()
                 router.push("/connections?tab=sent")
               })()
             }}

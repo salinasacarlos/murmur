@@ -11,9 +11,12 @@ import { RadarCTA } from "@/components/feed/radar-cta"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
 import { FiltersDrawer } from "@/components/feed/filters-drawer"
 import { IconSpark, IconX } from "@/components/icons"
+import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
+import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/connections"
 import { profileMatchesDiscoverFilters } from "@/lib/feed-filters"
 import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Profile, Search } from "@/lib/types"
 
 /** Alinea tarjeta de búsqueda activa con criterios del perfil. */
@@ -46,6 +49,24 @@ function profileMatchesSearchChip(p: Profile, s: Search): boolean {
 function FeedPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useCurrentUser()
+  const userId = user?.id ?? null
+
+  const [peerHints, setPeerHints] = React.useState<
+    Map<string, PeerConnectionHint>
+  >(() => new Map())
+
+  const loadPeerHints = React.useCallback(async () => {
+    if (!userId) return
+    const supabase = getSupabaseBrowserClient()
+    const hints = await fetchPeerConnectionHints(supabase, userId)
+    setPeerHints(hints)
+  }, [userId])
+
+  React.useEffect(() => {
+    void loadPeerHints()
+  }, [loadPeerHints])
+
   const {
     activated,
     activateFeed,
@@ -189,6 +210,7 @@ function FeedPageContent() {
               <ProfileCard
                 key={p.id}
                 profile={p}
+                connectionHint={peerHints.get(p.id) ?? { state: "none" }}
                 onClick={() => setSelected(p)}
               />
             ))}
@@ -199,6 +221,12 @@ function FeedPageContent() {
       <ProfileDetailPanel
         profile={selected}
         open={selected !== null}
+        connectionHint={
+          selected
+            ? (peerHints.get(selected.id) ?? { state: "none" })
+            : { state: "none" }
+        }
+        onConnectionsChanged={() => void loadPeerHints()}
         onOpenChange={(open) => {
           if (!open) setSelected(null)
         }}

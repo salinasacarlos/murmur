@@ -47,7 +47,7 @@ export function ChatConversation({
   const groups = groupMessages(messages)
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[var(--bg)]">
+    <div className="flex min-h-0 flex-1 flex-col bg-[var(--bg)]">
       <header
         className="flex items-center gap-3 px-4 py-3 border-b-[0.5px] border-[var(--border)] sticky top-0 bg-[var(--bg)] z-10"
       >
@@ -82,7 +82,9 @@ export function ChatConversation({
         </Link>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+      <div
+        className="flex-1 overflow-y-auto px-4 pt-4 flex flex-col gap-4 max-md:pb-[calc(7rem+var(--sab))] md:py-4"
+      >
         {groups.map((group, gi) => (
           <div key={gi} className="flex flex-col gap-1">
             <div className="text-[10px] uppercase tracking-[0.07em] font-semibold text-[var(--text3)] text-center mb-1">
