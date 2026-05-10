@@ -34,7 +34,6 @@ import { cn } from "@/lib/utils"
 
 export default function ProfilePage() {
   const { user: authUser, profile, refresh } = useCurrentUser()
-  const supabase = React.useMemo(() => getSupabaseBrowserClient(), [])
 
   const initialUser = React.useMemo<CurrentUser>(
     () =>
@@ -109,6 +108,7 @@ export default function ProfilePage() {
     if (!authUser || savingProfile) return
     setSavingProfile(true)
     const nextInitials = initialsFromName(profileDraft.name) || user.initials
+    const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -148,6 +148,7 @@ export default function ProfilePage() {
   async function saveLocationEdit() {
     if (!authUser || savingLocation) return
     setSavingLocation(true)
+    const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -192,6 +193,7 @@ export default function ProfilePage() {
   async function saveWorkPrefsEdit() {
     if (!authUser || savingWorkPrefs) return
     setSavingWorkPrefs(true)
+    const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
       .from("profiles")
       .update({

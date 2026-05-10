@@ -10,7 +10,6 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = React.useMemo(() => getSupabaseBrowserClient(), [])
 
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -23,6 +22,7 @@ export function LoginForm() {
     setSubmitting(true)
     setError(null)
 
+    const supabase = getSupabaseBrowserClient()
     const { data, error: signInError } = await supabase.auth.signInWithPassword(
       {
         email: email.trim(),

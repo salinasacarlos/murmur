@@ -7,6 +7,9 @@ import { Topbar } from "@/components/layout/topbar"
 import { CurrentUserProvider } from "@/components/providers/current-user-provider"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
+// Session + Supabase live in cookies; avoid static prerender (build fails without env).
+export const dynamic = "force-dynamic"
+
 export default async function AppLayout({
   children,
 }: {

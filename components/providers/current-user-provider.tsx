@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 
-import type { User } from "@supabase/supabase-js"
+import type { SupabaseClient, User } from "@supabase/supabase-js"
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/database.types"
@@ -34,7 +34,10 @@ export function CurrentUserProvider({
   children,
 }: CurrentUserProviderProps) {
   const router = useRouter()
-  const supabase = React.useMemo(() => getSupabaseBrowserClient(), [])
+  const supabase = React.useMemo<SupabaseClient<Database> | null>(() => {
+    if (typeof window === "undefined") return null
+    return getSupabaseBrowserClient()
+  }, [])
 
   const [user, setUser] = React.useState<User | null>(initialUser)
   const [profile, setProfile] = React.useState<ProfileRow | null>(
@@ -44,6 +47,7 @@ export function CurrentUserProvider({
 
   const loadProfile = React.useCallback(
     async (uid: string) => {
+      if (!supabase) return null
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -59,6 +63,7 @@ export function CurrentUserProvider({
   )
 
   const refresh = React.useCallback(async () => {
+    if (!supabase) return
     setLoading(true)
     try {
       const {
@@ -77,6 +82,7 @@ export function CurrentUserProvider({
   }, [loadProfile, supabase])
 
   React.useEffect(() => {
+    if (!supabase) return
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -95,6 +101,7 @@ export function CurrentUserProvider({
   }, [loadProfile, router, supabase])
 
   const signOut = React.useCallback(async () => {
+    if (!supabase) return
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)

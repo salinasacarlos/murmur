@@ -11,7 +11,6 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export default function SignupPage() {
   const router = useRouter()
-  const supabase = React.useMemo(() => getSupabaseBrowserClient(), [])
 
   const [name, setName] = React.useState("")
   const [email, setEmail] = React.useState("")
@@ -33,6 +32,7 @@ export default function SignupPage() {
       return
     }
 
+    const supabase = getSupabaseBrowserClient()
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
