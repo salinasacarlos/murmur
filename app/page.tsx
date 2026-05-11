@@ -15,16 +15,6 @@ import {
   formatPremiumWeeklyLabel,
   getSupportEmail,
 } from "@/lib/product-config"
-import {
-  PRIVACY_DISCLAIMER,
-  PRIVACY_LAST_UPDATED,
-  PRIVACY_SECTIONS,
-} from "@/lib/privacy-generic-content"
-import {
-  TERMS_DISCLAIMER,
-  TERMS_LAST_UPDATED,
-  TERMS_SECTIONS,
-} from "@/lib/terms-generic-content"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -52,12 +42,6 @@ export default function LandingPage() {
             </a>
             <a href="#precios" className="hover:text-[var(--text)] transition-colors">
               Precios
-            </a>
-            <a href="#privacidad" className="hover:text-[var(--text)] transition-colors">
-              Privacidad
-            </a>
-            <a href="#terminos" className="hover:text-[var(--text)] transition-colors">
-              Términos
             </a>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
@@ -351,98 +335,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section
-          id="privacidad"
-          className="px-4 md:px-8 py-16 md:py-24 scroll-mt-[72px] border-t-[0.5px] border-[var(--border)] bg-[var(--bg)]"
-        >
-          <div className="max-w-3xl mx-auto">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
-              Legal
-            </p>
-            <h2
-              className="font-extrabold tracking-[-0.5px] mb-2 text-[var(--text)]"
-              style={{
-                fontSize: "clamp(22px, 4vw, 32px)",
-                lineHeight: 1.15,
-              }}
-            >
-              Aviso de privacidad
-            </h2>
-            <p className="text-[12px] text-[var(--text3)] mb-10">
-              Actualizado el {PRIVACY_LAST_UPDATED}
-            </p>
-            <div className="space-y-8 text-[13px] text-[var(--text2)] leading-relaxed">
-              {PRIVACY_SECTIONS.map((s) => (
-                <div key={s.id}>
-                  <h3 className="text-[15px] font-bold text-[var(--text)] mb-2">
-                    {s.title}
-                  </h3>
-                  {s.paragraphs.map((p, i) => (
-                    <p key={`${s.id}-${i}`} className="mb-3 last:mb-0">
-                      {p}
-                    </p>
-                  ))}
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-[var(--text3)] mt-10 pt-10 border-t-[0.5px] border-[var(--border)] leading-relaxed">
-              {PRIVACY_DISCLAIMER}{" "}
-              <Link
-                href="/privacy"
-                className="text-[var(--p)] underline-offset-2 hover:underline"
-              >
-                Abrir solo esta página
-              </Link>
-            </p>
-          </div>
-        </section>
-
-        <section
-          id="terminos"
-          className="px-4 md:px-8 py-16 md:py-24 scroll-mt-[72px] border-t-[0.5px] border-[var(--border)] bg-[var(--bg2)]"
-        >
-          <div className="max-w-3xl mx-auto">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
-              Legal
-            </p>
-            <h2
-              className="font-extrabold tracking-[-0.5px] mb-2 text-[var(--text)]"
-              style={{
-                fontSize: "clamp(22px, 4vw, 32px)",
-                lineHeight: 1.15,
-              }}
-            >
-              Términos y condiciones
-            </h2>
-            <p className="text-[12px] text-[var(--text3)] mb-10">
-              Actualizado el {TERMS_LAST_UPDATED}
-            </p>
-            <div className="space-y-8 text-[13px] text-[var(--text2)] leading-relaxed">
-              {TERMS_SECTIONS.map((s) => (
-                <div key={s.id}>
-                  <h3 className="text-[15px] font-bold text-[var(--text)] mb-2">
-                    {s.title}
-                  </h3>
-                  {s.paragraphs.map((p, i) => (
-                    <p key={`${s.id}-${i}`} className="mb-3 last:mb-0">
-                      {p}
-                    </p>
-                  ))}
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-[var(--text3)] mt-10 pt-10 border-t-[0.5px] border-[var(--border)] leading-relaxed">
-              {TERMS_DISCLAIMER}{" "}
-              <Link
-                href="/terms"
-                className="text-[var(--p)] underline-offset-2 hover:underline"
-              >
-                Abrir solo esta página
-              </Link>
-            </p>
-          </div>
-        </section>
-
         {/* Cierre */}
         <section className="px-4 md:px-8 py-16 md:py-20">
           <div className="max-w-6xl mx-auto">
@@ -514,12 +406,12 @@ export default function LandingPage() {
             <a href="#precios" className={footerLink}>
               Precios
             </a>
-            <a href="#privacidad" className={footerLink}>
+            <Link href="/privacy" className={footerLink}>
               Privacidad
-            </a>
-            <a href="#terminos" className={footerLink}>
+            </Link>
+            <Link href="/terms" className={footerLink}>
               Términos
-            </a>
+            </Link>
             <a href={`mailto:${getSupportEmail()}`} className={footerLink}>
               Contacto
             </a>

@@ -37,15 +37,9 @@ export default function TermsPage() {
         <p className="text-[11px] text-[var(--text3)] mt-10 pt-10 border-t-[0.5px] border-[var(--border)] leading-relaxed">
           {TERMS_DISCLAIMER}
         </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-8">
           <Link href="/" className={buttonVariants({ variant: "secondary" })}>
             Volver al inicio
-          </Link>
-          <Link
-            href="/#terminos"
-            className={buttonVariants({ variant: "ghost" })}
-          >
-            Ver en landing
           </Link>
         </div>
       </div>
