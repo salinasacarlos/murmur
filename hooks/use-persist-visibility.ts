@@ -11,7 +11,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
  * Usar en sidebar, topbar y bottom-nav; la página de perfil tiene su propio flujo con más refrescos.
  */
 export function usePersistVisibility() {
-  const { user, refresh } = useCurrentUser()
+  const { user, refresh, mergeProfile } = useCurrentUser()
   const { visible, setVisible } = useVisibility()
   const [saving, setSaving] = React.useState(false)
 
@@ -29,13 +29,14 @@ export function usePersistVisibility() {
           console.error("Failed to save visibility", error)
           return
         }
+        mergeProfile({ visible: next })
         setVisible(next)
         await refresh()
       } finally {
         setSaving(false)
       }
     },
-    [user, refresh, setVisible]
+    [user, refresh, mergeProfile, setVisible]
   )
 
   return { visible, persistVisibility, saving }

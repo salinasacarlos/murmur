@@ -74,7 +74,7 @@ import { cn } from "@/lib/utils"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 
 export default function ProfilePage() {
-  const { user: authUser, profile, refresh } = useCurrentUser()
+  const { user: authUser, profile, refresh, mergeProfile } = useCurrentUser()
   const { visible, setVisible } = useVisibility()
 
   const [enrichedProfile, setEnrichedProfile] = React.useState<Profile | null>(
@@ -751,6 +751,7 @@ export default function ProfilePage() {
       console.error("Failed to save visibility", error)
       return
     }
+    mergeProfile({ visible: next })
     setVisible(next)
     void afterSuccessfulSave()
   }

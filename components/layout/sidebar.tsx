@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation"
 import { Logo } from "@/components/brand/logo"
 import { Avatar } from "@/components/ui/avatar"
 import { Toggle } from "@/components/ui/toggle"
-import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import { isPremiumPlan } from "@/lib/plan-limits"
 import {
   NotificationUnreadDot,
@@ -36,7 +36,8 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { visible, toggle } = useVisibility()
+  const { visible, persistVisibility, saving: savingVisibility } =
+    usePersistVisibility()
   const { profile, user, signOut } = useCurrentUser()
   const { hasUnread } = useNotificationsUnread()
   const [signingOut, setSigningOut] = React.useState(false)
@@ -76,16 +77,16 @@ export function Sidebar() {
         </Link>
 
         <div
+          role="group"
+          aria-label={`Visibilidad: ${visible ? "apareces en búsquedas" : "oculto"}`}
           className={cn(
             "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg",
             "border border-[var(--border)] bg-[var(--bg2)]",
             "text-[12px] hover:border-[var(--border2)] transition-colors"
           )}
         >
-          <button
-            type="button"
-            onClick={toggle}
-            className="flex items-center gap-2 flex-1 min-w-0 rounded-md border-0 bg-transparent p-0 text-left cursor-pointer"
+          <div
+            className="flex items-center gap-2 flex-1 min-w-0 text-left"
           >
             <span
               className={cn(
@@ -96,10 +97,11 @@ export function Sidebar() {
             <span className="font-medium text-[var(--text)]">
               {visible ? "Visible" : "Oculto"}
             </span>
-          </button>
+          </div>
           <Toggle
             checked={visible}
-            onCheckedChange={() => toggle()}
+            onCheckedChange={(next) => void persistVisibility(next)}
+            disabled={savingVisibility}
             label="Cambiar visibilidad"
           />
         </div>

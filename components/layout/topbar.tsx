@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 
 import { Logo } from "@/components/brand/logo"
 import { Toggle } from "@/components/ui/toggle"
-import { useVisibility } from "@/components/providers/visibility-provider"
+import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import {
   NotificationUnreadDot,
   useNotificationsUnread,
@@ -33,7 +33,8 @@ function getTitle(pathname: string) {
 
 export function Topbar() {
   const pathname = usePathname()
-  const { visible, toggle } = useVisibility()
+  const { visible, persistVisibility, saving: savingVisibility } =
+    usePersistVisibility()
   const { hasUnread } = useNotificationsUnread()
   const title = getTitle(pathname)
 
@@ -90,6 +91,8 @@ export function Topbar() {
             <Logo size="sm" />
           </Link>
           <div
+            role="group"
+            aria-label={`Visibilidad: ${visible ? "apareces en búsquedas" : "oculto"}`}
             className={cn(
               "flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] border",
               visible
@@ -97,10 +100,8 @@ export function Topbar() {
                 : "border-[var(--border)] bg-[var(--bg2)] text-[var(--text2)]"
             )}
           >
-            <button
-              type="button"
-              onClick={toggle}
-              className="flex flex-1 min-w-0 items-center gap-2 rounded-full border-0 bg-transparent p-0 font-inherit text-inherit cursor-pointer"
+            <span
+              className="flex flex-1 min-w-0 items-center gap-2 font-inherit text-inherit"
             >
               <span
                 className={cn(
@@ -109,10 +110,11 @@ export function Topbar() {
                 )}
               />
               {visible ? "Visible" : "Oculto"}
-            </button>
+            </span>
             <Toggle
               checked={visible}
-              onCheckedChange={() => toggle()}
+              onCheckedChange={(next) => void persistVisibility(next)}
+              disabled={savingVisibility}
               label="Cambiar visibilidad"
             />
           </div>

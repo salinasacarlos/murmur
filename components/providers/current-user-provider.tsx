@@ -15,6 +15,8 @@ interface CurrentUserContextValue {
   profile: ProfileRow | null
   loading: boolean
   refresh: () => Promise<void>
+  /** Actualiza campos del perfil en cliente (p. ej. tras guardar visibilidad) sin esperar refetch. */
+  mergeProfile: (partial: Partial<ProfileRow>) => void
   signOut: () => Promise<void>
 }
 
@@ -81,6 +83,10 @@ export function CurrentUserProvider({
     }
   }, [loadProfile, supabase])
 
+  const mergeProfile = React.useCallback((partial: Partial<ProfileRow>) => {
+    setProfile((p) => (p ? { ...p, ...partial } : null))
+  }, [])
+
   React.useEffect(() => {
     if (!supabase) return
     const {
@@ -110,8 +116,8 @@ export function CurrentUserProvider({
   }, [router, supabase])
 
   const value = React.useMemo(
-    () => ({ user, profile, loading, refresh, signOut }),
-    [user, profile, loading, refresh, signOut]
+    () => ({ user, profile, loading, refresh, mergeProfile, signOut }),
+    [user, profile, loading, refresh, mergeProfile, signOut]
   )
 
   return (
