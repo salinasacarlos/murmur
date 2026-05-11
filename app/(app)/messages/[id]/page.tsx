@@ -22,6 +22,11 @@ export default async function ChatPage({ params }: ChatPageProps) {
   await markChatReadRpc(supabase, id)
 
   return (
-    <ChatConversation chatId={id} currentUserId={user.id} initialChat={chat} />
+    <ChatConversation
+      key={id}
+      chatId={id}
+      currentUserId={user.id}
+      initialChat={chat}
+    />
   )
 }

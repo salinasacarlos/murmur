@@ -2,13 +2,13 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 
 import { Avatar } from "@/components/ui/avatar"
 import { ChatBubble } from "@/components/messages/chat-bubble"
 import { MessageComposer } from "@/components/messages/message-composer"
 import { IconArrowLeft, IconUser } from "@/components/icons"
 import { sendChatMessage } from "@/lib/data/chats"
+import { useChatMessagesRealtime } from "@/hooks/use-chat-messages-realtime"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Chat, Message } from "@/lib/types"
 
@@ -23,10 +23,25 @@ export function ChatConversation({
   currentUserId,
   initialChat,
 }: ChatConversationProps) {
-  const router = useRouter()
   const [messages, setMessages] = React.useState<Message[]>(
     initialChat.messages
   )
+
+  const appendIfNew = React.useCallback((msg: Message) => {
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev
+      return [...prev, msg]
+    })
+  }, [])
+
+  useChatMessagesRealtime(chatId, currentUserId, appendIfNew)
+
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  React.useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTop = el.scrollHeight
+  }, [messages.length])
 
   async function handleSend(text: string) {
     const supabase = getSupabaseBrowserClient()
@@ -39,8 +54,7 @@ export function ChatConversation({
       console.error(res.error)
       return
     }
-    setMessages((prev) => [...prev, res.message])
-    router.refresh()
+    appendIfNew(res.message)
   }
 
   const chat = initialChat
@@ -83,6 +97,7 @@ export function ChatConversation({
       </header>
 
       <div
+        ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 pt-4 flex flex-col gap-4 max-md:pb-[calc(7rem+var(--sab))] md:py-4"
       >
         {groups.map((group, gi) => (

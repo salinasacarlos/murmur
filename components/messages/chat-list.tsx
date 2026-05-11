@@ -8,33 +8,111 @@ import { Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { fetchChatsForProfile } from "@/lib/data/chats"
+import { mapMessageRow } from "@/lib/data/mappers"
+import type { Database } from "@/lib/database.types"
+import { buildMessagesInboxFilter } from "@/hooks/use-chat-messages-realtime"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Chat } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
+type MessagesRow = Database["public"]["Tables"]["messages"]["Row"]
+
 export function ChatList({ className }: { className?: string }) {
   const pathname = usePathname()
+  const pathnameRef = React.useRef(pathname)
+  pathnameRef.current = pathname
+
   const { user } = useCurrentUser()
   const [query, setQuery] = React.useState("")
   const [chats, setChats] = React.useState<Chat[]>([])
   const [loading, setLoading] = React.useState(true)
+
+  const loadChats = React.useCallback(async () => {
+    if (!user?.id) return
+    const supabase = getSupabaseBrowserClient()
+    const list = await fetchChatsForProfile(supabase, user.id)
+    setChats(list)
+  }, [user?.id])
+
+  const loadChatsRef = React.useRef(loadChats)
+  loadChatsRef.current = loadChats
 
   React.useEffect(() => {
     if (!user?.id) return
     let cancelled = false
     ;(async () => {
       setLoading(true)
-      const supabase = getSupabaseBrowserClient()
-      const list = await fetchChatsForProfile(supabase, user.id)
-      if (!cancelled) {
-        setChats(list)
-        setLoading(false)
-      }
+      await loadChats()
+      if (!cancelled) setLoading(false)
     })()
     return () => {
       cancelled = true
     }
-  }, [user?.id])
+  }, [user?.id, loadChats])
+
+  const chatIdsKey = React.useMemo(
+    () =>
+      [...chats]
+        .map((c) => c.id)
+        .sort()
+        .join(","),
+    [chats]
+  )
+
+  React.useEffect(() => {
+    if (!user?.id || loading || chats.length === 0) return
+
+    const filter = buildMessagesInboxFilter(chats.map((c) => c.id))
+    if (!filter) return
+
+    const supabase = getSupabaseBrowserClient()
+    const channel = supabase
+      .channel(`inbox:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter,
+        },
+        (payload) => {
+          const row = payload.new as MessagesRow
+          if (!row?.id) return
+          const preview = mapMessageRow(row, user.id)
+          const chatId = row.chat_id
+          const path = pathnameRef.current
+          const viewingThisChat =
+            path === `/messages/${chatId}` ||
+            path.startsWith(`/messages/${chatId}/`)
+
+          setChats((prev) => {
+            const idx = prev.findIndex((c) => c.id === chatId)
+            if (idx === -1) {
+              void loadChatsRef.current()
+              return prev
+            }
+            const next = [...prev]
+            const c = next[idx]
+            const fromPeer = row.sender_id !== user.id
+            const bumpUnread = fromPeer && !viewingThisChat
+            const updated: Chat = {
+              ...c,
+              messages: [preview],
+              unread: bumpUnread ? c.unread + 1 : c.unread,
+            }
+            next.splice(idx, 1)
+            next.unshift(updated)
+            return next
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [user?.id, loading, chatIdsKey, chats.length])
 
   const filtered = chats.filter((c) =>
     c.profile.name.toLowerCase().includes(query.toLowerCase())
