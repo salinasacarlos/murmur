@@ -57,14 +57,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login?error=oauth", request.url))
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("onboarding_completed")
     .eq("id", user.id)
     .maybeSingle()
 
-  const destination =
-    profile?.onboarding_completed === true ? nextPath : "/onboarding"
+  // Sin fila, error de lectura o onboarding pendiente → siempre al flujo de onboarding
+  // (p. ej. registro con Google). No confiar solo en nextPath.
+  const onboardingDone =
+    !profileError && profile?.onboarding_completed === true
+  const destination = onboardingDone ? nextPath : "/onboarding"
 
   const response = NextResponse.redirect(new URL(destination, request.url))
 

@@ -35,6 +35,11 @@ export default async function AppLayout({
     .eq("id", user.id)
     .maybeSingle()
 
+  const onboardingDone = profile?.onboarding_completed === true
+  if (!profile || !onboardingDone) {
+    redirect("/onboarding")
+  }
+
   return (
     <CurrentUserProvider initialUser={user} initialProfile={profile}>
       <NotificationsUnreadProvider>
