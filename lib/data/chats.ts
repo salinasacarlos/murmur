@@ -2,10 +2,45 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
 import { mapMessageRow } from "@/lib/data/mappers"
-import { fetchProfileById } from "@/lib/data/profiles"
-import type { Chat, Message, Profile } from "@/lib/types"
+import { fetchProfileById, fetchProfilesByIds } from "@/lib/data/profiles"
+import type { Chat, Message } from "@/lib/types"
 
 type Client = SupabaseClient<Database>
+
+/** Último mensaje por chat: RPC en una query tras migración; fallback N+1 si aún no está desplegada. */
+async function fetchLastMessagePreviewByChatId(
+  supabase: Client,
+  chatIds: string[],
+  profileId: string
+): Promise<Map<string, Message>> {
+  const out = new Map<string, Message>()
+  if (!chatIds.length) return out
+
+  const { data: rows, error } = await supabase.rpc("last_messages_for_chats", {
+    p_chat_ids: chatIds,
+  })
+
+  if (!error) {
+    for (const row of rows ?? []) {
+      out.set(row.chat_id, mapMessageRow(row, profileId))
+    }
+    return out
+  }
+
+  await Promise.all(
+    chatIds.map(async (cid) => {
+      const { data: lastMsg } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("chat_id", cid)
+        .order("sent_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (lastMsg) out.set(cid, mapMessageRow(lastMsg, profileId))
+    })
+  )
+  return out
+}
 
 export async function fetchChatsForProfile(
   supabase: Client,
@@ -46,13 +81,10 @@ export async function fetchChatsForProfile(
   }
 
   const otherIds = [...new Set(otherIdByChat.values())]
-  const profiles = new Map<string, Profile>()
-  await Promise.all(
-    otherIds.map(async (oid) => {
-      const p = await fetchProfileById(supabase, oid)
-      if (p) profiles.set(oid, p)
-    })
-  )
+  const [profiles, lastByChatId] = await Promise.all([
+    fetchProfilesByIds(supabase, otherIds),
+    fetchLastMessagePreviewByChatId(supabase, chatIds, profileId),
+  ])
 
   const result: Chat[] = []
 
@@ -62,17 +94,8 @@ export async function fetchChatsForProfile(
     const profile = profiles.get(otherId)
     if (!profile) continue
 
-    const { data: lastMsg } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("chat_id", chat.id)
-      .order("sent_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    const messages: Message[] = lastMsg
-      ? [mapMessageRow(lastMsg, profileId)]
-      : []
+    const lastPreview = lastByChatId.get(chat.id)
+    const messages: Message[] = lastPreview ? [lastPreview] : []
 
     result.push({
       id: chat.id,

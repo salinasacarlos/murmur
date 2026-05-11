@@ -873,6 +873,10 @@ export type Database = {
         }
       }
       leave_event: { Args: { p_code: string }; Returns: undefined }
+      last_messages_for_chats: {
+        Args: { p_chat_ids: string[] }
+        Returns: Database["public"]["Tables"]["messages"]["Row"][]
+      }
       mark_chat_read: { Args: { p_chat_id: string }; Returns: undefined }
       ensure_digest_notifications: {
         Args: Record<string, never>
