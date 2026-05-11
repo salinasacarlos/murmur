@@ -16,12 +16,17 @@ import { isPremiumPlan } from "@/lib/plan-limits"
 export function UpgradeClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { profile } = useCurrentUser()
+  const { profile, loading: profileLoading, refresh } = useCurrentUser()
   const [loading, setLoading] = React.useState<"week" | "year" | null>(null)
   const [error, setError] = React.useState<string | null>(null)
 
   const success = searchParams.get("success") === "1"
   const canceled = searchParams.get("canceled") === "1"
+
+  React.useEffect(() => {
+    if (!success) return
+    void refresh()
+  }, [success, refresh])
 
   async function startCheckout(interval: "week" | "year") {
     setError(null)
@@ -30,15 +35,24 @@ export function UpgradeClient() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ interval }),
       })
-      const data = (await res.json()) as { url?: string; error?: string }
+
+      let data: { url?: string; error?: string }
+      try {
+        data = (await res.json()) as { url?: string; error?: string }
+      } catch {
+        setError("El servidor no devolvió JSON válido. Revisa tu conexión o inténtalo más tarde.")
+        return
+      }
+
       if (!res.ok) {
         setError(data.error ?? "No se pudo iniciar el pago.")
         return
       }
       if (data.url) {
-        window.location.href = data.url
+        window.location.assign(data.url)
         return
       }
       setError("Respuesta inválida del servidor.")
@@ -47,6 +61,14 @@ export function UpgradeClient() {
     } finally {
       setLoading(null)
     }
+  }
+
+  if (profileLoading && !profile) {
+    return (
+      <div className="px-4 md:px-6 py-10 max-w-lg mx-auto">
+        <p className="text-[13px] text-[var(--text2)]">Cargando tu cuenta…</p>
+      </div>
+    )
   }
 
   if (profile && isPremiumPlan(profile.plan)) {
@@ -60,7 +82,10 @@ export function UpgradeClient() {
           </p>
           <Link
             href="/feed"
-            className={buttonVariants({ variant: "secondary", className: "w-full" })}
+            className={buttonVariants({
+              variant: "secondary",
+              className: "w-full justify-center",
+            })}
           >
             Volver al feed
           </Link>
@@ -68,6 +93,8 @@ export function UpgradeClient() {
       </div>
     )
   }
+
+  const showCheckoutOptions = !success
 
   return (
     <div className="px-4 md:px-6 py-10 max-w-lg mx-auto">
@@ -88,12 +115,34 @@ export function UpgradeClient() {
             Pago recibido
           </p>
           <p className="text-[13px] text-[var(--text2)] mb-4">
-            Stripe confirmó tu suscripción. Si tu plan no se actualiza en unos
-            segundos, refresca la página.
+            Stripe confirmó el checkout. Tu plan puede tardar unos segundos en
+            actualizarse. Si sigues viendo Free, pulsa actualizar.
           </p>
-          <Button className="w-full" onClick={() => router.replace("/upgrade")}>
-            Continuar
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              className="w-full"
+              disabled={profileLoading}
+              onClick={() => {
+                void refresh().then(() => router.refresh())
+              }}
+            >
+              {profileLoading ? "Actualizando…" : "Actualizar mi plan"}
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => router.replace("/feed")}
+            >
+              Ir al feed
+            </Button>
+            <button
+              type="button"
+              className="text-[11px] text-[var(--text3)] hover:text-[var(--text2)] underline-offset-2 hover:underline text-center pt-1"
+              onClick={() => router.replace("/upgrade")}
+            >
+              Elegir plan de nuevo
+            </button>
+          </div>
         </Card>
       ) : null}
 
@@ -114,34 +163,42 @@ export function UpgradeClient() {
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-3">
-        <Button
-          size="lg"
-          className="w-full justify-center"
-          disabled={loading !== null}
-          onClick={() => void startCheckout("week")}
-        >
-          {loading === "week"
-            ? "Abriendo Stripe…"
-            : `${formatPremiumWeeklyLabel()} / semana`}
-        </Button>
-        <Button
-          size="lg"
-          variant="secondary"
-          className="w-full justify-center"
-          disabled={loading !== null}
-          onClick={() => void startCheckout("year")}
-        >
-          {loading === "year"
-            ? "Abriendo Stripe…"
-            : `${formatPremiumAnnualLabel()} / año`}
-        </Button>
-      </div>
+      {showCheckoutOptions ? (
+        <div className="flex flex-col gap-3">
+          <Button
+            size="lg"
+            className="w-full justify-center"
+            disabled={loading !== null}
+            onClick={() => void startCheckout("week")}
+          >
+            {loading === "week"
+              ? "Abriendo Stripe…"
+              : `${formatPremiumWeeklyLabel()} / semana`}
+          </Button>
+          <Button
+            size="lg"
+            variant="secondary"
+            className="w-full justify-center"
+            disabled={loading !== null}
+            onClick={() => void startCheckout("year")}
+          >
+            {loading === "year"
+              ? "Abriendo Stripe…"
+              : `${formatPremiumAnnualLabel()} / año`}
+          </Button>
+        </div>
+      ) : null}
 
-      <p className="text-[11px] text-[var(--text3)] mt-6 leading-relaxed">
-        Pagos procesados por Stripe. Al suscribirte aceptas los términos del
-        servicio de pago.
-      </p>
+      {showCheckoutOptions ? (
+        <p className="text-[11px] text-[var(--text3)] mt-6 leading-relaxed">
+          Pagos procesados por Stripe. Al suscribirte aceptas las condiciones
+          del proveedor de pago y los{" "}
+          <Link href="/terms" className="text-[var(--p)] underline-offset-2 hover:underline">
+            términos
+          </Link>{" "}
+          de Murmur.
+        </p>
+      ) : null}
     </div>
   )
 }

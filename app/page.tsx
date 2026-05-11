@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Logo } from "@/components/brand/logo"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
 import {
@@ -15,6 +15,16 @@ import {
   formatPremiumWeeklyLabel,
   getSupportEmail,
 } from "@/lib/product-config"
+import {
+  PRIVACY_DISCLAIMER,
+  PRIVACY_LAST_UPDATED,
+  PRIVACY_SECTIONS,
+} from "@/lib/privacy-generic-content"
+import {
+  TERMS_DISCLAIMER,
+  TERMS_LAST_UPDATED,
+  TERMS_SECTIONS,
+} from "@/lib/terms-generic-content"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -42,6 +52,12 @@ export default function LandingPage() {
             </a>
             <a href="#precios" className="hover:text-[var(--text)] transition-colors">
               Precios
+            </a>
+            <a href="#privacidad" className="hover:text-[var(--text)] transition-colors">
+              Privacidad
+            </a>
+            <a href="#terminos" className="hover:text-[var(--text)] transition-colors">
+              Términos
             </a>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
@@ -335,24 +351,152 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section
+          id="privacidad"
+          className="px-4 md:px-8 py-16 md:py-24 scroll-mt-[72px] border-t-[0.5px] border-[var(--border)] bg-[var(--bg)]"
+        >
+          <div className="max-w-3xl mx-auto">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
+              Legal
+            </p>
+            <h2
+              className="font-extrabold tracking-[-0.5px] mb-2 text-[var(--text)]"
+              style={{
+                fontSize: "clamp(22px, 4vw, 32px)",
+                lineHeight: 1.15,
+              }}
+            >
+              Aviso de privacidad
+            </h2>
+            <p className="text-[12px] text-[var(--text3)] mb-10">
+              Actualizado el {PRIVACY_LAST_UPDATED}
+            </p>
+            <div className="space-y-8 text-[13px] text-[var(--text2)] leading-relaxed">
+              {PRIVACY_SECTIONS.map((s) => (
+                <div key={s.id}>
+                  <h3 className="text-[15px] font-bold text-[var(--text)] mb-2">
+                    {s.title}
+                  </h3>
+                  {s.paragraphs.map((p, i) => (
+                    <p key={`${s.id}-${i}`} className="mb-3 last:mb-0">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-[var(--text3)] mt-10 pt-10 border-t-[0.5px] border-[var(--border)] leading-relaxed">
+              {PRIVACY_DISCLAIMER}{" "}
+              <Link
+                href="/privacy"
+                className="text-[var(--p)] underline-offset-2 hover:underline"
+              >
+                Abrir solo esta página
+              </Link>
+            </p>
+          </div>
+        </section>
+
+        <section
+          id="terminos"
+          className="px-4 md:px-8 py-16 md:py-24 scroll-mt-[72px] border-t-[0.5px] border-[var(--border)] bg-[var(--bg2)]"
+        >
+          <div className="max-w-3xl mx-auto">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
+              Legal
+            </p>
+            <h2
+              className="font-extrabold tracking-[-0.5px] mb-2 text-[var(--text)]"
+              style={{
+                fontSize: "clamp(22px, 4vw, 32px)",
+                lineHeight: 1.15,
+              }}
+            >
+              Términos y condiciones
+            </h2>
+            <p className="text-[12px] text-[var(--text3)] mb-10">
+              Actualizado el {TERMS_LAST_UPDATED}
+            </p>
+            <div className="space-y-8 text-[13px] text-[var(--text2)] leading-relaxed">
+              {TERMS_SECTIONS.map((s) => (
+                <div key={s.id}>
+                  <h3 className="text-[15px] font-bold text-[var(--text)] mb-2">
+                    {s.title}
+                  </h3>
+                  {s.paragraphs.map((p, i) => (
+                    <p key={`${s.id}-${i}`} className="mb-3 last:mb-0">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-[var(--text3)] mt-10 pt-10 border-t-[0.5px] border-[var(--border)] leading-relaxed">
+              {TERMS_DISCLAIMER}{" "}
+              <Link
+                href="/terms"
+                className="text-[var(--p)] underline-offset-2 hover:underline"
+              >
+                Abrir solo esta página
+              </Link>
+            </p>
+          </div>
+        </section>
+
         {/* Cierre */}
         <section className="px-4 md:px-8 py-16 md:py-20">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2
-              className="font-extrabold tracking-[-1px] mb-3"
-              style={{ fontSize: "clamp(28px, 5vw, 42px)", lineHeight: 1.1 }}
-            >
-              Encuentra a los tuyos.
-            </h2>
-            <p className="text-[15px] text-[var(--text2)] mb-8">
-              Co-founders, talento, mentores e inversionistas. Murmur los une.
-            </p>
-            <Link href="/auth/signup">
-              <Button size="lg">Encontrar a mi partna →</Button>
-            </Link>
-            <p className="text-[11px] text-[var(--text3)] uppercase tracking-[0.06em] font-semibold mt-6">
-              Gratis · sin tarjeta · 3 minutos de onboarding
-            </p>
+          <div className="max-w-6xl mx-auto">
+            <div className="relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-[#050508] px-8 py-10 md:px-12 md:py-12 lg:py-14 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-24 -left-28 h-[min(320px,70vw)] w-[min(320px,70vw)] rounded-full bg-[var(--g)] opacity-[0.28] blur-[90px]"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -top-28 -right-20 h-[min(300px,65vw)] w-[min(300px,65vw)] rounded-full bg-[var(--p)] opacity-[0.22] blur-[85px]"
+              />
+              <svg
+                aria-hidden
+                className="pointer-events-none absolute right-6 top-6 w-24 opacity-[0.12] text-white md:right-10 md:top-8 md:w-28"
+                viewBox="0 0 120 80"
+                fill="none"
+              >
+                <path
+                  d="M85 38c-8-12-22-18-35-12 12-6 26-2 35 8 4-8 12-14 22-16-10 2-17 8-22 16zM92 52c-10-8-24-10-36-4 14-4 28 0 36 10 3-6 9-10 16-12-7 2-12 6-16 12zM98 22c-6-9-16-14-26-10 9-5 20-2 26 6 3-6 8-10 14-11-6 1-11 5-14 11z"
+                  fill="currentColor"
+                />
+              </svg>
+              <div className="relative z-[1] flex flex-col items-center gap-8 text-center md:gap-10">
+                <div className="max-w-xl mx-auto">
+                  <h2
+                    className="font-extrabold tracking-[-1px] text-white mb-3"
+                    style={{
+                      fontSize: "clamp(26px, 4.5vw, 40px)",
+                      lineHeight: 1.12,
+                    }}
+                  >
+                    Encuentra a los tuyos.
+                  </h2>
+                  <p className="text-[15px] leading-relaxed text-white/60">
+                    Co-founders, talento, mentores e inversionistas. Murmur los une.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center gap-4 w-full sm:w-auto">
+                  <Link
+                    href="/auth/signup"
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "lg" }),
+                      "w-full justify-center rounded-full border-0 bg-white text-[#0a0a0f] px-8 py-3 text-[14px] font-semibold shadow-lg shadow-black/30 hover:bg-neutral-100 hover:text-[#0a0a0f] focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050508] sm:w-auto"
+                    )}
+                  >
+                    Encontrar a los mios
+                  </Link>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45 text-center">
+                    Gratis · sin tarjeta · 3 minutos de onboarding
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -370,12 +514,12 @@ export default function LandingPage() {
             <a href="#precios" className={footerLink}>
               Precios
             </a>
-            <Link href="/privacy" className={footerLink}>
+            <a href="#privacidad" className={footerLink}>
               Privacidad
-            </Link>
-            <Link href="/terms" className={footerLink}>
+            </a>
+            <a href="#terminos" className={footerLink}>
               Términos
-            </Link>
+            </a>
             <a href={`mailto:${getSupportEmail()}`} className={footerLink}>
               Contacto
             </a>

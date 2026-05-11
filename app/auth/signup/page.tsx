@@ -159,7 +159,15 @@ export default function SignupPage() {
         </Button>
 
         <p className="text-[10px] text-[var(--text3)] text-center mt-1 leading-relaxed">
-          Al continuar aceptas los Términos y la Política de privacidad.
+          Al continuar aceptas los{" "}
+          <Link href="/terms" className="text-[var(--p)] underline-offset-2 hover:underline">
+            Términos
+          </Link>{" "}
+          y el{" "}
+          <Link href="/privacy" className="text-[var(--p)] underline-offset-2 hover:underline">
+            Aviso de privacidad
+          </Link>
+          .
         </p>
       </form>
 
