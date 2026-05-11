@@ -1,8 +1,8 @@
 # Murmur — Product Requirements Document
 
-**Versión:** 1.0  
-**Fecha:** Abril 2026  
-**Estado:** Draft
+**Versión:** 1.1  
+**Última revisión:** Mayo 2026  
+**Estado:** Documento vivo — las secciones 1–11 siguen siendo la referencia de producto; la **§12** describe qué está construido hoy en el código frente a ese alcance. Usar la §12 para planificar iteraciones futuras.
 
 ---
 
@@ -78,9 +78,8 @@ Una red donde las conexiones tienen contexto y propósito. Sabes exactamente por
 El proceso de registro captura la información necesaria para el matching desde el primer momento.
 
 **Paso 1 — Registro**
-- Email + contraseña, Google OAuth, LinkedIn OAuth
-- Validación de email en tiempo real
-- Indicador de fortaleza de contraseña
+- Email + contraseña; **Google OAuth** (flujo Supabase + `/auth/callback`); *LinkedIn OAuth previsto aquí pero aún no implementado.*
+- Validación básica en cliente (p. ej. longitud mínima de contraseña); *validación de email “en vivo” y medidor de fortaleza pueden ampliarse.*
 
 **Paso 2 — Rol inicial**
 - ¿Tienes un proyecto? (Tengo proyecto / Quiero contribuir / Las dos)
@@ -146,7 +145,7 @@ Cada card muestra:
 **Panel de detalle**
 - Slide desde la derecha (desktop: panel lateral; mobile: pantalla completa)
 - Perfil completo + bio + workStyle
-- Botón de conectar con mensaje pre-generado por IA
+- Botón de conectar con **mensaje pre-rellenado por plantilla** (heurística a partir del perfil; editable antes de enviar). *No hay modelo de IA generativa en este flujo hoy.*
 - El mensaje es editable antes de enviar
 
 **Filtros**
@@ -347,8 +346,8 @@ Cada búsqueda genera sus propios matches
 - **Sin mensajes en frío a desconocidos** — solo puedes chatear con conexiones aceptadas
 - **Sin notificaciones intrusivas** — el usuario controla cuándo está disponible
 - **Privacidad por default** — oculto hasta que el usuario decide activarse
-- **Moderación** — sistema de reporte de perfiles inapropiados desde el chat
-- **Solo web por ahora** — PWA instalable, sin App Store en V1
+- **Moderación** — *reporte desde el chat / flujo de moderación pendiente de diseño e implementación.*
+- **Solo web por ahora** — app web responsive y `viewport` adaptado a móvil; *manifest / PWA instalable no consolidado como entregable V1.*
 
 ---
 
@@ -359,6 +358,59 @@ Cada búsqueda genera sus propios matches
 - No es Tinder para founders — no hay swipe ni match instantáneo sin contexto
 - No es una herramienta de gestión de proyectos
 - No reemplaza el proceso de due diligence entre founders — facilita el primer contacto
+
+---
+
+## 12. Estado de implementación (snapshot mayo 2026)
+
+Esta sección describe **lo que ya existe en el repositorio / producción** respecto a las especificaciones anteriores. Sirve como línea base para priorizar el backlog; las secciones 1–11 pueden seguir aspirando a más alcance del aquí listado como “hecho”.
+
+### 12.1 Construido y operativo (alineado al PRD)
+
+| Área | Qué cubre hoy |
+|------|----------------|
+| **Auth** | Registro e inicio de sesión con **email y contraseña**; **Google** (`signInWithOAuth`, ruta `app/auth/callback/route.ts`). Perfil `public.profiles` creado vía trigger en `auth.users`. |
+| **Gating onboarding** | Sin `onboarding_completed`, el usuario **no entra** al layout de la app (`app/(app)/layout.tsx`): siempre redirige a `/onboarding`. El callback OAuth aplica la misma lógica antes de enviar a `/feed`. |
+| **Onboarding** | Flujo multipaso: intro (`/onboarding`), evento (código), rol (proyecto / contribuir / ambos), relaciones buscadas, perfil (taxonomía industria–verticales–expertise, talent/soft skills, etc.), **ubicación con geolocalización + geocodificado inverso** y ciudades/radio (`app/onboarding/location`), pantalla de cierre (`/onboarding/done`). |
+| **Landing** | Home público; secciones legales **Términos** y **Aviso de privacidad** (contenido en `lib/terms-generic-content.ts`, `lib/privacy-generic-content.ts`) en página y rutas `/terms`, `/privacy`. Enlaces legales en signup. |
+| **Feed / Descubrir** | Activación tipo radar, selector de búsquedas, cards, panel lateral/detalle, filtros (con límites **Free vs Premium** en cliente), **modo evento** (código activo + RPC de perfiles por evento). |
+| **Búsquedas** | CRUD de búsquedas, estados activa/pausada, límites **Free** (una activa) vs **Premium**. |
+| **Conexiones** | Envío, pendiente/aceptada/rechazada, integración con límites Free; notificaciones en BD para solicitudes. |
+| **Mensajes** | Chat solo entre usuarios con conexión aceptada; UI lista + conversación. |
+| **Perfil** | Edición enriquecida, stats en vivo, completitud; visibilidad global sincronizada con BD. |
+| **Visibilidad** | Oculto por defecto; toggle para mostrarse en descubrimiento; persiste en `profiles.visible`. |
+| **Monetización** | **Stripe Checkout** (`/upgrade`), API checkout + **webhook** que actualiza `profiles.plan`; límites y precios referenciados en `lib/plan-limits.ts`, `lib/product-config.ts` y este documento (§7). |
+| **Middleware** | Rutas de app protegidas por sesión Supabase; páginas de login/signup redirigen si ya hay sesión. |
+
+### 12.2 Diferencias notables respecto al texto original del PRD
+
+- **LinkedIn OAuth** — no implementado; solo Google además de email/contraseña.
+- **Mensaje de conexión “IA”** — hoy es **plantilla automática** (`generateMessage` u equivalente), editable por el usuario; no hay integración LLM.
+- **Moderación / reportes** — mencionado en §10; **sin UI ni backend de reporte** dedicado en el código revisado.
+- **PWA** — experiencia web móvil sí; **sin manifest / instalación PWA** como entregable explícito.
+- **Branding OAuth** — la pantalla de Google puede seguir mostrando el dominio `*.supabase.co` salvo **dominio personalizado** en Supabase (comercial) y ajustes en Google Cloud consent screen.
+
+### 12.3 Backlog sugerido (próximas ampliaciones)
+
+Priorizar según eventos, crecimiento o riesgo:
+
+1. **LinkedIn OAuth** (o más proveedores) si reduce fricción de registro.
+2. **Reportar usuario / contenido** y política operativa de moderación.
+3. **PWA** (manifest, iconos, offline mínimo) si se busca install en móvil.
+4. **Mensaje de conexión con IA** (opcional, con coste y políticas claras).
+5. **Validación y UX de registro**: email en vivo, medidor de contraseña, recuperación de cuenta.
+6. **Dominio custom Supabase** + consent screen Google para marca uniforme en OAuth.
+7. Cualquier ampliación **explícita** de métricas (§8) vía analítica producto.
+
+### 12.4 Referencias rápidas en código
+
+- Límites y mensajes Free: `lib/plan-limits.ts`
+- Precios MXN y soporte: `lib/product-config.ts`
+- OAuth Google (UI): `components/auth/google-auth-button.tsx`
+- Callback sesión: `app/auth/callback/route.ts`
+- Onboarding persistencia / bandera `onboarding_completed`: `lib/onboarding-persist.ts`
+- Webhook: `app/api/webhooks/stripe/route.ts`
+- Variables de entorno ejemplo: `.env.local.example`
 
 ---
 
