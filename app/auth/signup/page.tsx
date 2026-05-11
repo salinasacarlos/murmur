@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+import { AuthDivider, GoogleAuthButton } from "@/components/auth/google-auth-button"
 import { Button } from "@/components/ui/button"
 import { Field, Input, PasswordInput } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -102,6 +103,9 @@ export default function SignupPage() {
       <p className="text-[13px] text-[var(--text2)] mb-6">
         Empieza a construir con las personas correctas.
       </p>
+
+      <GoogleAuthButton onError={(message) => setError(message)} />
+      <AuthDivider />
 
       <form className="flex flex-col gap-3" onSubmit={handleSubmit} noValidate>
         <Field label="Nombre">
