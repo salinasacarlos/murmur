@@ -203,8 +203,10 @@ export function SearchForm({ initial, mode, searchId }: SearchFormProps) {
         {mode === "create" ? "Nueva búsqueda" : "Editar búsqueda"}
       </h1>
       <p className="text-[13px] text-[var(--text2)] mb-6 leading-relaxed">
-        Cada búsqueda genera sus propios matches en el feed. Puedes tener
-        varias activas a la vez.
+        Cada búsqueda genera sus propios matches en el feed.
+        {profile && isPremiumPlan(profile.plan)
+          ? " En Premium puedes mantener varias búsquedas activas en paralelo."
+          : " En el plan Free solo una búsqueda activa a la vez; pausa la actual o pasa a Premium para varias."}
       </p>
 
       {error ? (

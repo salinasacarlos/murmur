@@ -91,10 +91,12 @@ export default function SearchesPage() {
     })
   }
 
-  const freeBlocksNewSearch =
-    !!profile &&
-    !isPremiumPlan(profile.plan) &&
-    searches.some((s) => s.status === "active")
+  const hasActiveSearch = searches.some((s) => s.status === "active")
+  const premium = isPremiumPlan(profile?.plan)
+  /** Free: no abrir otra activa si ya hay una; mientras carga la lista, no habilitar hasta saber. */
+  const canCreateNewSearch = premium || !hasActiveSearch
+  const disableNewSearchButton =
+    (!premium && loading) || !canCreateNewSearch
 
   return (
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full">
@@ -109,8 +111,16 @@ export default function SearchesPage() {
               : "Plan Free: una búsqueda activa a la vez. Pausa una para activar otra o pasa a Premium para varias activas."}
           </p>
         </div>
-        {freeBlocksNewSearch ? (
-          <Button size="md" disabled title={MSG_FREE_SEARCH_LIMIT}>
+        {disableNewSearchButton ? (
+          <Button
+            size="md"
+            disabled
+            title={
+              !premium && loading
+                ? "Cargando tus búsquedas…"
+                : MSG_FREE_SEARCH_LIMIT
+            }
+          >
             <IconPlus size={14} />
             Nueva
           </Button>
@@ -140,12 +150,19 @@ export default function SearchesPage() {
           <p className="text-[12px] text-[var(--text2)] mb-4">
             Crea una para empezar a recibir matches.
           </p>
-          <Link href="/searches/new">
-            <Button size="md">
+          {canCreateNewSearch ? (
+            <Link href="/searches/new">
+              <Button size="md">
+                <IconPlus size={14} />
+                Crear búsqueda
+              </Button>
+            </Link>
+          ) : (
+            <Button size="md" disabled title={MSG_FREE_SEARCH_LIMIT}>
               <IconPlus size={14} />
               Crear búsqueda
             </Button>
-          </Link>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-3">

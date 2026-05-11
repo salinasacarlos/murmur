@@ -7,7 +7,7 @@ import { useTheme } from "next-themes"
 
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { Toggle } from "@/components/ui/toggle"
-import { useVisibility } from "@/components/providers/visibility-provider"
+import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
   NotificationUnreadDot,
@@ -24,6 +24,7 @@ import {
   IconLogOut,
   IconBell,
 } from "@/components/icons"
+import { isPremiumPlan } from "@/lib/plan-limits"
 import { cn } from "@/lib/utils"
 
 const TABS = [
@@ -37,8 +38,9 @@ export function BottomNav() {
   const pathname = usePathname()
   const [moreOpen, setMoreOpen] = React.useState(false)
   const [signingOut, setSigningOut] = React.useState(false)
-  const { visible, toggle } = useVisibility()
-  const { signOut } = useCurrentUser()
+  const { visible, persistVisibility, saving: savingVisibility } =
+    usePersistVisibility()
+  const { signOut, profile } = useCurrentUser()
   const { hasUnread } = useNotificationsUnread()
 
   const moreActive =
@@ -113,12 +115,31 @@ export function BottomNav() {
             </div>
             <Toggle
               checked={visible}
-              onCheckedChange={() => toggle()}
+              onCheckedChange={(next) => void persistVisibility(next)}
+              disabled={savingVisibility}
               label="Cambiar visibilidad"
             />
           </div>
 
           <ThemeModeSetting />
+
+          {!isPremiumPlan(profile?.plan) ? (
+            <Link
+              href="/upgrade"
+              onClick={() => setMoreOpen(false)}
+              className="ds-card p-4 flex items-center justify-between hover:border-[var(--border2)] transition-colors border-[var(--pm)] bg-[var(--pl)]/40"
+            >
+              <div>
+                <div className="text-[13px] font-semibold text-[var(--p)]">
+                  Pasar a Premium
+                </div>
+                <div className="text-[12px] text-[var(--text2)] mt-0.5">
+                  Más búsquedas activas, ciudades y filtros completos
+                </div>
+              </div>
+              <IconChevronRight size={14} className="text-[var(--p)]" />
+            </Link>
+          ) : null}
 
           <Link
             href="/notifications"
