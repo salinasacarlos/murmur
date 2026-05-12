@@ -38,12 +38,17 @@ function GoogleGlyph({ className }: { className?: string }) {
 type GoogleAuthButtonProps = {
   /** Ruta interna post-login si el onboarding ya está completo (ej. `next` del query). */
   nextPath?: string | null
+  /** Código canónico MRM-XXXXXXXX en metadata de usuario nuevo (invite_code). */
+  inviteCode?: string | null
+  disabled?: boolean
   className?: string
   onError?: (message: string) => void
 }
 
 export function GoogleAuthButton({
   nextPath,
+  inviteCode,
+  disabled = false,
   className,
   onError,
 }: GoogleAuthButtonProps) {
@@ -65,7 +70,12 @@ export function GoogleAuthButton({
       const redirectTo = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo },
+        options: {
+          redirectTo,
+          ...(inviteCode
+            ? { data: { invite_code: inviteCode } }
+            : {}),
+        },
       })
       if (error) {
         onError?.(error.message)
@@ -87,7 +97,7 @@ export function GoogleAuthButton({
       variant="secondary"
       size="lg"
       className={cn("w-full justify-center gap-2.5 border-[var(--border)]", className)}
-      disabled={busy}
+      disabled={busy || disabled}
       onClick={() => void handleGoogle()}
     >
       <GoogleGlyph />

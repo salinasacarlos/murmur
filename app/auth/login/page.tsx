@@ -24,6 +24,9 @@ export default function LoginPage() {
         <Link href="/auth/signup" className="text-[var(--p)] font-semibold">
           Crear cuenta
         </Link>
+        <span className="block mt-1 text-[var(--text3)] text-[11px] font-normal">
+          Necesitas un código de invitación.
+        </span>
       </p>
     </Card>
   )

@@ -11,6 +11,7 @@ import { Field, Input, Textarea } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
+import { MyInvitationsSection } from "@/components/profile/my-invitations-section"
 import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
 import { VerticalMultiSelect } from "@/components/ui/vertical-multi-select"
@@ -840,6 +841,8 @@ export default function ProfilePage() {
           </div>
         </Card>
       ) : null}
+
+      {authUser?.id ? <MyInvitationsSection userId={authUser.id} /> : null}
 
       <Card padding="default" className="ds-fade-up flex flex-col md:flex-row md:items-start gap-4">
         <Avatar

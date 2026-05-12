@@ -50,7 +50,7 @@ export default function LandingPage() {
                 Iniciar sesión
               </Button>
             </Link>
-            <Link href="/auth/signup">
+            <Link href="/auth/signup" title="Requiere código de invitación">
               <Button size="md">Únete gratis</Button>
             </Link>
           </div>
@@ -91,6 +91,10 @@ export default function LandingPage() {
                   </Button>
                 </a>
               </div>
+              <p className="text-[11px] text-[var(--text3)] mt-3 max-w-lg leading-snug">
+                El registro es solo con código de invitación. Si ya tienes uno, úsalo al
+                crear tu cuenta.
+              </p>
             </div>
             <HeroMockup />
           </div>
@@ -280,11 +284,14 @@ export default function LandingPage() {
                   <PricingLi>Chat con tus conexiones</PricingLi>
                   <PricingLi>Sin alertas de alta compatibilidad</PricingLi>
                 </ul>
-                <Link href="/auth/signup" className="block">
+                <Link href="/auth/signup" className="block" title="Requiere código de invitación">
                   <Button variant="secondary" size="lg" className="w-full justify-center">
                     Empezar gratis
                   </Button>
                 </Link>
+                <p className="text-[10px] text-[var(--text3)] text-center mt-2">
+                  Solo con invitación.
+                </p>
               </Card>
               <Card
                 padding="page"
@@ -384,7 +391,7 @@ export default function LandingPage() {
                     Encontrar a los mios
                   </Link>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45 text-center">
-                    Gratis · sin tarjeta · 3 minutos de onboarding
+                    Gratis · sin tarjeta · requiere invitación
                   </p>
                 </div>
               </div>

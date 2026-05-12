@@ -274,6 +274,54 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          invitee_id: string | null
+          inviter_id: string | null
+          is_master: boolean
+          status: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          invitee_id?: string | null
+          inviter_id?: string | null
+          is_master?: boolean
+          status?: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          invitee_id?: string | null
+          inviter_id?: string | null
+          is_master?: boolean
+          status?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expertise_catalog: {
         Row: {
           industry_slug: string
@@ -627,6 +675,7 @@ export type Database = {
           primary_industry_slug: string | null
           role: string
           search_radius_km: number
+          signup_invite_code: string | null
           stats_connections: number
           stats_matches: number
           stats_messages: number
@@ -660,6 +709,7 @@ export type Database = {
           primary_industry_slug?: string | null
           role?: string
           search_radius_km?: number
+          signup_invite_code?: string | null
           stats_connections?: number
           stats_matches?: number
           stats_messages?: number
@@ -693,6 +743,7 @@ export type Database = {
           primary_industry_slug?: string | null
           role?: string
           search_radius_km?: number
+          signup_invite_code?: string | null
           stats_connections?: number
           stats_matches?: number
           stats_messages?: number
@@ -887,6 +938,10 @@ export type Database = {
         Returns: undefined
       }
       touch_profile_activity: { Args: Record<string, never>; Returns: undefined }
+      preview_invitation: {
+        Args: { p_code: string }
+        Returns: Json
+      }
       profiles_by_event_code: {
         Args: { p_code: string }
         Returns: {
