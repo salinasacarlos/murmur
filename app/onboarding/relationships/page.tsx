@@ -25,7 +25,7 @@ const RELATIONS: { id: RelationType; description: string }[] = [
   {
     id: "colaboracion",
     description:
-      "Te va bien un encargo definido, un sprint compartido o apoyo sin vínculo fijo de largo plazo.",
+      "Te va bien un encargo definido, un proyecto acotado en el tiempo o apoyo sin vínculo de largo plazo.",
   },
   {
     id: "mentoria",

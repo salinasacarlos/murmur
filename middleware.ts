@@ -7,6 +7,7 @@ import type { Database } from "@/lib/database.types"
 import { getSupabasePublicEnv } from "@/lib/supabase/public-env"
 
 const PROTECTED_PREFIXES = [
+  "/admin",
   "/feed",
   "/searches",
   "/connections",

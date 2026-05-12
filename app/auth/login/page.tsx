@@ -12,7 +12,7 @@ export default function LoginPage() {
         Bienvenido de vuelta
       </h1>
       <p className="text-[13px] text-[var(--text2)] mb-6">
-        Continúa construyendo con la gente correcta.
+        Vuelve a conectar con la gente adecuada para lo que haces.
       </p>
 
       <React.Suspense fallback={null}>

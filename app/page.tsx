@@ -76,8 +76,11 @@ export default function LandingPage() {
                 correctas.
               </h1>
               <p className="text-[15px] md:text-[16px] text-[var(--text2)] leading-relaxed max-w-lg mb-8">
-                La plataforma que te ayuda a encontrar a quien necesitas. Socios, talento,
-                mentores, inversionistas y hasta amigos.
+                Murmur te acerca a socios, talento, mentores e inversionistas que encajan
+                con lo que haces.{" "}
+                <span className="text-[var(--text)] font-medium">
+                  Para los que crean en serio.
+                </span>
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/auth/signup">
@@ -92,8 +95,14 @@ export default function LandingPage() {
                 </a>
               </div>
               <p className="text-[11px] text-[var(--text3)] mt-3 max-w-lg leading-snug">
-                El registro es solo con código de invitación. Si ya tienes uno, úsalo al
-                crear tu cuenta.
+                Solo con código de invitación. ¿Sin código?{" "}
+                <Link
+                  href="/auth/request-access"
+                  className="text-[var(--p)] font-semibold underline-offset-2 hover:underline"
+                >
+                  Postula
+                </Link>
+                {" — te avisamos por correo."}
               </p>
             </div>
             <HeroMockup />

@@ -80,7 +80,8 @@ export default function ProjectStepPage() {
   let description =
     "Cuéntanos qué oportunidad buscas y qué puedes aportar."
   if (hasProject) {
-    description = "Cuéntanos de tu proyecto y qué buscas en murmur."
+    description =
+      "Cuéntanos tu proyecto o iniciativa y qué buscas en Murmur."
   } else if (isInvestor) {
     description =
       "Indica si inviertes activamente, puedes ayudar a conseguir capital o no estás invirtiendo por ahora."
@@ -128,7 +129,7 @@ export default function ProjectStepPage() {
             <Field label="Nombre del proyecto">
               <PublicFieldNotice className="mb-1" compact />
               <Input
-                placeholder="ej. Murmur"
+                placeholder="ej. tu iniciativa o marca"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
               />
@@ -156,7 +157,7 @@ export default function ProjectStepPage() {
             <Field label="Qué busco">
               <PublicFieldNotice className="mb-1" />
               <Textarea
-                placeholder="ej. Co-founder técnico que haya enviado producto a producción..."
+                placeholder="ej. Socio/a con experiencia en operaciones, alguien con red comercial o en tu sector…"
                 rows={3}
                 value={projectSeek}
                 onChange={(e) => setProjectSeek(e.target.value)}
@@ -194,7 +195,7 @@ export default function ProjectStepPage() {
             <Field label="Tipo de oportunidad buscada">
               <PublicFieldNotice className="mb-1" />
               <Input
-                placeholder="ej. Co-founder técnico, primer empleo en startup..."
+                placeholder="ej. Socio/a comercial, primer empleo clave, colaboración por proyecto…"
                 value={opportunitySeek}
                 onChange={(e) => setOpportunitySeek(e.target.value)}
               />
@@ -202,7 +203,7 @@ export default function ProjectStepPage() {
             <Field label="Qué puedo aportar">
               <PublicFieldNotice className="mb-1" />
               <Textarea
-                placeholder="ej. 8 años construyendo productos consumer..."
+                placeholder="ej. Años liderando equipos en ventas, educación, operaciones o en tu campo…"
                 rows={3}
                 value={contributorPitch}
                 onChange={(e) => setContributorPitch(e.target.value)}

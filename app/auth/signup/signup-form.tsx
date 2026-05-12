@@ -244,6 +244,18 @@ export function SignupForm() {
             </div>
           ) : null)}
 
+        {!inviteValid && !previewLoading ? (
+          <p className="text-[12px] text-[var(--text2)] text-center leading-snug -mt-1 mb-1">
+            ¿No tienes código?{" "}
+            <Link
+              href="/auth/request-access"
+              className="text-[var(--p)] font-semibold"
+            >
+              Solicitar acceso
+            </Link>
+          </p>
+        ) : null}
+
         <Field label="Nombre">
           <Input
             type="text"

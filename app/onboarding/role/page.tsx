@@ -18,7 +18,7 @@ const ROLES = [
     id: "founder",
     title: "Tengo proyecto",
     description:
-      "Estoy construyendo algo y busco co-founders, talento o advisors.",
+      "Lidero un proyecto o negocio y busco socios, talento o asesoría.",
     icon: <IconBriefcase size={18} />,
   },
   {
@@ -39,7 +39,7 @@ const ROLES = [
     id: "both",
     title: "Las dos",
     description:
-      "Tengo proyecto y también estoy abierto a sumarme a otros equipos.",
+      "Tengo proyecto propio y también me interesa sumarme a otros equipos.",
     icon: <IconHeart size={18} />,
   },
 ] as const

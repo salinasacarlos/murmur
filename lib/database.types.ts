@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          building_description: string
+          email: string
+          full_name: string
+          id: string
+          issued_invitation_id: string | null
+          project_stage: Database["public"]["Enums"]["project_stage"]
+          proof_url: string
+          reviewed_at: string | null
+          status: string
+          submitted_at: string
+        }
+        Insert: {
+          building_description: string
+          email: string
+          full_name: string
+          id?: string
+          issued_invitation_id?: string | null
+          project_stage: Database["public"]["Enums"]["project_stage"]
+          proof_url: string
+          reviewed_at?: string | null
+          status?: string
+          submitted_at?: string
+        }
+        Update: {
+          building_description?: string
+          email?: string
+          full_name?: string
+          id?: string
+          issued_invitation_id?: string | null
+          project_stage?: Database["public"]["Enums"]["project_stage"]
+          proof_url?: string
+          reviewed_at?: string | null
+          status?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_requests_issued_invitation_id_fkey"
+            columns: ["issued_invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_participants: {
         Row: {
           chat_id: string
@@ -668,6 +715,7 @@ export type Database = {
           investor_activity:
             | Database["public"]["Enums"]["investor_activity"]
             | null
+          is_murmur_admin: boolean
           last_active_at: string
           name: string
           notifications_enabled: boolean
@@ -716,6 +764,7 @@ export type Database = {
           investor_activity?:
             | Database["public"]["Enums"]["investor_activity"]
             | null
+          is_murmur_admin?: boolean
           last_active_at?: string
           name?: string
           notifications_enabled?: boolean
@@ -763,6 +812,7 @@ export type Database = {
           investor_activity?:
             | Database["public"]["Enums"]["investor_activity"]
             | null
+          is_murmur_admin?: boolean
           last_active_at?: string
           name?: string
           notifications_enabled?: boolean
@@ -886,6 +936,14 @@ export type Database = {
           chat_id: string
           connection_id: string
         }[]
+      }
+      access_request_queue_position: {
+        Args: { p_request_id: string }
+        Returns: number
+      }
+      approve_access_request: {
+        Args: { p_inviter_id: string; p_request_id: string }
+        Returns: string
       }
       decline_project_invite: {
         Args: { p_invite_id: string }

@@ -1197,7 +1197,7 @@ export default function ProfilePage() {
                   funFact: e.target.value.slice(0, 500),
                 }))
               }
-              placeholder="Ej. Colecciono vinilos de jazz coreano, o hice un Ironman antes de meterme al mundo startup…"
+              placeholder="Ej. Colecciono vinilos de jazz coreano, o completé una carrera benéfica que me marcó…"
             />
             <p className="text-[11px] text-[var(--text3)] mt-1">
               {profileDraft.funFact.length}/500 caracteres
@@ -1573,7 +1573,7 @@ export default function ProfilePage() {
             <Input
               value={achievementDraft}
               onChange={(e) => setAchievementDraft(e.target.value)}
-              placeholder="Ej. Llevé el producto de 0 a 100k usuarios..."
+              placeholder="Ej. Organicé la apertura de nuevas sedes y el equipo creció de forma sostenida…"
             />
           </Field>
         </div>
@@ -1639,7 +1639,7 @@ export default function ProfilePage() {
                 <Input
                   value={projectNameDraft}
                   onChange={(e) => setProjectNameDraft(e.target.value)}
-                  placeholder="ej. Murmur"
+                  placeholder="ej. tu iniciativa o marca"
                 />
               </Field>
               <Field label="Etapa del proyecto" required>
@@ -1669,7 +1669,7 @@ export default function ProfilePage() {
                   rows={3}
                   value={projectSeekDraft}
                   onChange={(e) => setProjectSeekDraft(e.target.value)}
-                  placeholder="ej. Co-founder técnico…"
+                  placeholder="ej. Socio/a con experiencia en operaciones o en tu sector…"
                 />
               </Field>
             </>
@@ -1702,7 +1702,7 @@ export default function ProfilePage() {
                 <Input
                   value={opportunitySeekDraft}
                   onChange={(e) => setOpportunitySeekDraft(e.target.value)}
-                  placeholder="ej. Co-founder técnico, primer empleo…"
+                  placeholder="ej. Socio/a comercial, primer empleo clave, colaboración puntual…"
                 />
               </Field>
               <Field label="Qué puedo aportar">

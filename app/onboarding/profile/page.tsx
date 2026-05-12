@@ -63,7 +63,7 @@ export default function ProfileStepPage() {
       <Stepper current={3} total={5} />
       <OnboardingCard
         title="Cuéntanos quién eres"
-        description="Datos básicos e industria con verticales y expertise para empezar a matchear."
+        description="Datos básicos, industria y expertise para empezar a conectar con perfiles afines."
         back="/onboarding/relationships"
         next="/onboarding/project"
         nextDisabled={
@@ -110,7 +110,7 @@ export default function ProfileStepPage() {
 
         <Field label="Título o rol actual" required>
           <Input
-            placeholder="ej. Senior Product Engineer"
+            placeholder="ej. Directora de operaciones en una pyme"
             value={jobTitle}
             onChange={(e) => setJobTitle(e.target.value)}
           />
@@ -188,7 +188,7 @@ export default function ProfileStepPage() {
           hint={`${highlight.length}/120`}
         >
           <Input
-            placeholder="ej. Llevé una app de 0 a 100k usuarios"
+            placeholder="ej. Organicé la expansión a varias ciudades y el equipo duplicó ingresos"
             value={highlight}
             onChange={(e) => setHighlight(e.target.value.slice(0, 120))}
           />
