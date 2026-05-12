@@ -15,7 +15,6 @@ export default function ProjectStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={5} total={7} />
       <OnboardingCard
-        murmurStep="project"
         title="Contexto"
         description="Si tienes proyecto, cuéntanos de él. Si quieres contribuir, cuéntanos qué tipo de oportunidad buscas."
         back="/onboarding/profile"
