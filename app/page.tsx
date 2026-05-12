@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
 export const metadata: Metadata = {
   title: "Murmur — La red para builders",
   description:
-    "La red donde los builders encuentran co-founders, talento, mentores e inversionistas.",
+    "La plataforma que te ayuda a encontrar a quien necesitas. Socios, talento, mentores, inversionistas y hasta amigos.",
 }
 
 const footerLink = "text-[12px] text-[var(--text2)] hover:text-[var(--p)] transition-colors"
@@ -76,8 +76,8 @@ export default function LandingPage() {
                 correctas.
               </h1>
               <p className="text-[15px] md:text-[16px] text-[var(--text2)] leading-relaxed max-w-lg mb-8">
-                La red donde los builders encuentran co-founders, talento, mentores e
-                inversionistas.
+                La plataforma que te ayuda a encontrar a quien necesitas. Socios, talento,
+                mentores, inversionistas y hasta amigos.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/auth/signup">
