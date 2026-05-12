@@ -5,7 +5,13 @@ import * as React from "react"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { OptionCard } from "@/components/ui/option-card"
-import { IconBriefcase, IconHeart, IconSpark } from "@/components/icons"
+import { IconBriefcase, IconBuilding, IconHeart, IconSpark } from "@/components/icons"
+import {
+  persistOnboardingIntent,
+  requireUserId,
+} from "@/lib/onboarding-persist"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import type { OnboardingIntent } from "@/lib/types"
 
 const ROLES = [
   {
@@ -23,6 +29,13 @@ const ROLES = [
     icon: <IconSpark size={18} />,
   },
   {
+    id: "investor",
+    title: "Soy inversionista",
+    description:
+      "Invierto, conecto capital con equipos o exploro sin invertir por ahora.",
+    icon: <IconBuilding size={18} />,
+  },
+  {
     id: "both",
     title: "Las dos",
     description:
@@ -36,13 +49,28 @@ export default function RoleStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={2} total={6} />
+      <Stepper current={1} total={5} />
       <OnboardingCard
         title="¿Qué te trae a murmur?"
-        description="Si tienes un proyecto o buscas unirte a uno selecciona la opción que más te empata."
-        back="/onboarding/event"
+        description="Elige la opción que mejor describe por qué estás en murmur."
+        back="/onboarding"
         next="/onboarding/relationships"
         nextDisabled={!selected}
+        onBeforeNext={async () => {
+          if (!selected) return false
+          const supabase = getSupabaseBrowserClient()
+          const uid = await requireUserId(supabase)
+          if (!uid) return false
+          const r = await persistOnboardingIntent(
+            supabase,
+            uid,
+            selected as OnboardingIntent
+          )
+          if (!r.ok) {
+            console.error(r.error)
+            return false
+          }
+        }}
       >
         {ROLES.map((role) => (
           <OptionCard

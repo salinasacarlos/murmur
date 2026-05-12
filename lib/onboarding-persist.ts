@@ -14,9 +14,13 @@ import {
   MAX_TALENT_SLUGS,
 } from "@/lib/product-config"
 import { resolveProfileArea, MAX_EXPERTISE_SLUGS } from "@/lib/profile-taxonomy"
+import { userHasProjectIntent } from "@/lib/profile-project-guard"
 import type {
   Availability,
   ExperienceRange,
+  InvestorActivity,
+  OnboardingIntent,
+  ProjectStage,
   RelationType,
   WorkStyle,
 } from "@/lib/types"
@@ -36,6 +40,80 @@ export async function persistOnboardingRelationships(
   relations: RelationType[]
 ): Promise<{ ok: boolean; error?: string }> {
   return replaceProfileRelationsLooking(supabase, userId, relations)
+}
+
+export async function persistOnboardingIntent(
+  supabase: Client,
+  userId: string,
+  intent: OnboardingIntent
+): Promise<{ ok: boolean; error?: string }> {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ onboarding_intent: intent })
+    .eq("id", userId)
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+/** Paso contexto: proyecto, contribuir o inversionista (después del perfil base). */
+export async function persistOnboardingProjectContext(
+  supabase: Client,
+  userId: string,
+  input: {
+    intent: OnboardingIntent
+    projectName: string
+    projectStage: ProjectStage | null
+    projectSeekSummary: string
+    opportunitySeekSummary: string
+    contributorPitch: string
+    investorActivity: InvestorActivity | null
+  }
+): Promise<{ ok: boolean; error?: string }> {
+  const hasProject = userHasProjectIntent(input.intent)
+  const isInvestor = input.intent === "investor"
+
+  if (hasProject && !input.projectStage) {
+    return { ok: false, error: "Elige la etapa de tu proyecto." }
+  }
+  if (isInvestor && !input.investorActivity) {
+    return { ok: false, error: "Indica tu situación como inversionista." }
+  }
+
+  const payload = hasProject
+    ? {
+        project_name: input.projectName.trim() || null,
+        project_stage: input.projectStage!,
+        project_seek_summary: input.projectSeekSummary.trim() || null,
+        opportunity_seek_summary: null,
+        contributor_pitch: null,
+        investor_activity: null,
+      }
+    : isInvestor
+      ? {
+          project_name: null,
+          project_stage: null,
+          project_seek_summary: null,
+          opportunity_seek_summary: null,
+          contributor_pitch: null,
+          investor_activity: input.investorActivity!,
+        }
+      : {
+          project_name: null,
+          project_stage: null,
+          project_seek_summary: null,
+          opportunity_seek_summary: input.opportunitySeekSummary.trim() || null,
+          contributor_pitch: input.contributorPitch.trim() || null,
+          investor_activity: null,
+        }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(payload)
+    .eq("id", userId)
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
 }
 
 export async function persistOnboardingProfileStep(

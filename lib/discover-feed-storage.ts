@@ -53,6 +53,8 @@ export function readFeedFilters(userId: string): DiscoverFeedFilters {
       city: typeof p.city === "string" ? p.city : base.city,
       availability: p.availability ?? base.availability,
       relation: p.relation ?? base.relation,
+      projectStage: p.projectStage ?? base.projectStage,
+      investorActivity: p.investorActivity ?? base.investorActivity,
       primaryIndustrySlug: p.primaryIndustrySlug ?? base.primaryIndustrySlug,
       verticalSlugs: Array.isArray(p.verticalSlugs)
         ? (p.verticalSlugs as string[])

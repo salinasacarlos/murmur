@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
@@ -14,6 +15,7 @@ import {
   persistOnboardingLocationFinish,
   requireUserId,
 } from "@/lib/onboarding-persist"
+import { userHasProjectIntent, userIsInvestor } from "@/lib/profile-project-guard"
 import { reverseGeocodeClient } from "@/lib/reverse-geocode"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
@@ -23,6 +25,7 @@ const GEO_POSITION_UNAVAILABLE = 2
 const GEO_TIMEOUT = 3
 
 export default function LocationStepPage() {
+  const router = useRouter()
   const [city, setCity] = React.useState("")
   const [extraCities, setExtraCities] = React.useState<string[]>([])
   const [radius, setRadius] = React.useState(50)
@@ -88,17 +91,36 @@ export default function LocationStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={5} total={6} />
+      <Stepper current={5} total={5} />
       <OnboardingCard
         title="¿Dónde estás?"
         description="Ciudad y radio; nunca mostramos tu ubicación exacta."
-        back="/onboarding/profile"
+        back="/onboarding/project"
         next="/onboarding/done"
         nextDisabled={!city.trim()}
         onBeforeNext={async () => {
           const supabase = getSupabaseBrowserClient()
           const uid = await requireUserId(supabase)
           if (!uid) return false
+          const { data: row } = await supabase
+            .from("profiles")
+            .select("onboarding_intent, project_stage, investor_activity")
+            .eq("id", uid)
+            .maybeSingle()
+          if (
+            userHasProjectIntent(row?.onboarding_intent) &&
+            !row?.project_stage
+          ) {
+            router.replace("/onboarding/project")
+            return false
+          }
+          if (
+            userIsInvestor(row?.onboarding_intent) &&
+            !row?.investor_activity
+          ) {
+            router.replace("/onboarding/project")
+            return false
+          }
           const r = await persistOnboardingLocationFinish(supabase, uid, {
             primaryCity: city,
             activeCities: extraCities,

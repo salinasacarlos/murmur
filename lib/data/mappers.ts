@@ -88,6 +88,13 @@ export function mapProfileJoinRow(row: ProfileJoinRow): Profile {
     compatibility: (row.compatibility ?? "media") as Compatibility,
     online: row.online,
     eventCodes: eventCodes.length > 0 ? eventCodes : undefined,
+    onboardingIntent: row.onboarding_intent ?? undefined,
+    projectStage: row.project_stage ?? undefined,
+    projectName: row.project_name ?? undefined,
+    projectSeekSummary: row.project_seek_summary ?? undefined,
+    opportunitySeekSummary: row.opportunity_seek_summary ?? undefined,
+    contributorPitch: row.contributor_pitch ?? undefined,
+    investorActivity: row.investor_activity ?? undefined,
   }
 }
 

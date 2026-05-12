@@ -665,14 +665,27 @@ export type Database = {
           fun_fact: string
           id: string
           initials: string
+          investor_activity:
+            | Database["public"]["Enums"]["investor_activity"]
+            | null
           last_active_at: string
           name: string
           notifications_enabled: boolean
           onboarding_completed: boolean
+          onboarding_intent:
+            | Database["public"]["Enums"]["onboarding_intent"]
+            | null
           online: boolean
+          opportunity_seek_summary: string | null
           photo_url: string | null
           plan: Database["public"]["Enums"]["user_plan"]
           primary_industry_slug: string | null
+          project_name: string | null
+          project_seek_summary: string | null
+          project_stage:
+            | Database["public"]["Enums"]["project_stage"]
+            | null
+          contributor_pitch: string | null
           role: string
           search_radius_km: number
           signup_invite_code: string | null
@@ -691,6 +704,7 @@ export type Database = {
           bio?: string
           city?: string | null
           compatibility?: Database["public"]["Enums"]["compatibility"] | null
+          contributor_pitch?: string | null
           created_at?: string
           email: string
           experience?: Database["public"]["Enums"]["experience_range"] | null
@@ -699,14 +713,26 @@ export type Database = {
           fun_fact?: string
           id: string
           initials?: string
+          investor_activity?:
+            | Database["public"]["Enums"]["investor_activity"]
+            | null
           last_active_at?: string
           name?: string
           notifications_enabled?: boolean
           onboarding_completed?: boolean
+          onboarding_intent?:
+            | Database["public"]["Enums"]["onboarding_intent"]
+            | null
           online?: boolean
+          opportunity_seek_summary?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["user_plan"]
           primary_industry_slug?: string | null
+          project_name?: string | null
+          project_seek_summary?: string | null
+          project_stage?:
+            | Database["public"]["Enums"]["project_stage"]
+            | null
           role?: string
           search_radius_km?: number
           signup_invite_code?: string | null
@@ -725,6 +751,7 @@ export type Database = {
           bio?: string
           city?: string | null
           compatibility?: Database["public"]["Enums"]["compatibility"] | null
+          contributor_pitch?: string | null
           created_at?: string
           email?: string
           experience?: Database["public"]["Enums"]["experience_range"] | null
@@ -733,14 +760,26 @@ export type Database = {
           fun_fact?: string
           id?: string
           initials?: string
+          investor_activity?:
+            | Database["public"]["Enums"]["investor_activity"]
+            | null
           last_active_at?: string
           name?: string
           notifications_enabled?: boolean
           onboarding_completed?: boolean
+          onboarding_intent?:
+            | Database["public"]["Enums"]["onboarding_intent"]
+            | null
           online?: boolean
+          opportunity_seek_summary?: string | null
           photo_url?: string | null
           plan?: Database["public"]["Enums"]["user_plan"]
           primary_industry_slug?: string | null
+          project_name?: string | null
+          project_seek_summary?: string | null
+          project_stage?:
+            | Database["public"]["Enums"]["project_stage"]
+            | null
           role?: string
           search_radius_km?: number
           signup_invite_code?: string | null
@@ -1001,6 +1040,10 @@ export type Database = {
         | "negocio"
         | "operaciones"
         | "ciencia"
+      investor_activity:
+        | "actively_investing"
+        | "can_help_source"
+        | "not_investing_now"
       notification_kind:
         | "connection_request"
         | "connection_accepted"
@@ -1010,7 +1053,15 @@ export type Database = {
         | "project_invite"
         | "profile_incomplete"
         | "inactivity_nudge"
+      onboarding_intent: "founder" | "contributor" | "both" | "investor"
       project_invite_status: "pending" | "declined"
+      project_stage:
+        | "idea"
+        | "validando"
+        | "construyendo"
+        | "en_manos_de_personas"
+        | "generando_ingresos"
+        | "creciendo"
       relation_type:
         | "co-founder"
         | "empleo"
@@ -1165,6 +1216,11 @@ export const Constants = {
         "operaciones",
         "ciencia",
       ],
+      investor_activity: [
+        "actively_investing",
+        "can_help_source",
+        "not_investing_now",
+      ],
       notification_kind: [
         "connection_request",
         "connection_accepted",
@@ -1174,6 +1230,16 @@ export const Constants = {
         "project_invite",
         "profile_incomplete",
         "inactivity_nudge",
+      ],
+      onboarding_intent: ["founder", "contributor", "both", "investor"],
+      project_invite_status: ["pending", "declined"],
+      project_stage: [
+        "idea",
+        "validando",
+        "construyendo",
+        "en_manos_de_personas",
+        "generando_ingresos",
+        "creciendo",
       ],
       relation_type: [
         "co-founder",

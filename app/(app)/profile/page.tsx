@@ -39,12 +39,16 @@ import {
 import {
   AVAILABILITY_LABELS,
   EXPERIENCE_LABELS,
+  ONBOARDING_INTENT_LABELS,
   RELATION_LABELS,
   WORK_STYLE_LABELS,
   type Availability,
   type CurrentUser,
   type ExperienceRange,
+  type InvestorActivity,
+  type OnboardingIntent,
   type Profile,
+  type ProjectStage,
   type RelationType,
   type WorkStyle,
 } from "@/lib/types"
@@ -72,6 +76,19 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { IconX } from "@/components/icons"
 import { cn } from "@/lib/utils"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
+import {
+  profileSaveBlockedMessage,
+  userHasProjectIntent,
+  userIsInvestor,
+} from "@/lib/profile-project-guard"
+import {
+  INVESTOR_ACTIVITY_OPTIONS,
+  labelInvestorActivityShort,
+} from "@/lib/investor-activity"
+import {
+  PROJECT_STAGE_OPTIONS,
+  labelProjectStageShort,
+} from "@/lib/project-stage"
 
 export default function ProfilePage() {
   const { user: authUser, profile, refresh, mergeProfile } = useCurrentUser()
@@ -154,6 +171,20 @@ export default function ProfilePage() {
           : merged.talentSlugs,
       funFact:
         typeof profile.fun_fact === "string" ? profile.fun_fact : merged.funFact,
+      onboardingIntent:
+        profile.onboarding_intent ?? merged.onboardingIntent ?? null,
+      projectStage: profile.project_stage ?? merged.projectStage ?? null,
+      projectName: profile.project_name ?? merged.projectName ?? null,
+      projectSeekSummary:
+        profile.project_seek_summary ?? merged.projectSeekSummary ?? null,
+      opportunitySeekSummary:
+        profile.opportunity_seek_summary ??
+        merged.opportunitySeekSummary ??
+        null,
+      contributorPitch:
+        profile.contributor_pitch ?? merged.contributorPitch ?? null,
+      investorActivity:
+        profile.investor_activity ?? merged.investorActivity ?? null,
     }
     return fromSession
   }, [authUser, profile, enrichedProfile])
@@ -224,6 +255,28 @@ export default function ProfilePage() {
   const [relationsDraft, setRelationsDraft] = React.useState<RelationType[]>(
     []
   )
+
+  const [contextEditOpen, setContextEditOpen] = React.useState(false)
+  const [savingContext, setSavingContext] = React.useState(false)
+  const [contextFormError, setContextFormError] = React.useState<string | null>(
+    null
+  )
+  const [saveBarrierMessage, setSaveBarrierMessage] = React.useState<
+    string | null
+  >(null)
+  const [intentDraft, setIntentDraft] = React.useState<OnboardingIntent | "">(
+    ""
+  )
+  const [projectNameDraft, setProjectNameDraft] = React.useState("")
+  const [projectStageDraft, setProjectStageDraft] = React.useState<
+    ProjectStage | ""
+  >("")
+  const [projectSeekDraft, setProjectSeekDraft] = React.useState("")
+  const [opportunitySeekDraft, setOpportunitySeekDraft] = React.useState("")
+  const [contributorPitchDraft, setContributorPitchDraft] = React.useState("")
+  const [investorActivityDraft, setInvestorActivityDraft] = React.useState<
+    InvestorActivity | ""
+  >("")
 
   const completeness = React.useMemo(() => {
     if (!profileUser) {
@@ -326,6 +379,19 @@ export default function ProfilePage() {
     setTalentsEditOpen(true)
   }
 
+  function openContextEdit() {
+    if (!profileUser) return
+    setContextFormError(null)
+    setIntentDraft(profileUser.onboardingIntent ?? "")
+    setProjectNameDraft(profileUser.projectName ?? "")
+    setProjectStageDraft(profileUser.projectStage ?? "")
+    setProjectSeekDraft(profileUser.projectSeekSummary ?? "")
+    setOpportunitySeekDraft(profileUser.opportunitySeekSummary ?? "")
+    setContributorPitchDraft(profileUser.contributorPitch ?? "")
+    setInvestorActivityDraft(profileUser.investorActivity ?? "")
+    setContextEditOpen(true)
+  }
+
   function openCompletenessItem(item: ProfileCompletenessItem) {
     switch (item.id) {
       case "name":
@@ -353,6 +419,11 @@ export default function ProfilePage() {
       case "relations":
         setRelationsEditOpen(true)
         break
+      case "onboarding_intent":
+      case "project_stage":
+      case "investor_activity":
+        openContextEdit()
+        break
       case "city":
       case "radius":
         setLocationEditOpen(true)
@@ -362,8 +433,80 @@ export default function ProfilePage() {
     }
   }
 
+  async function saveContextEdit() {
+    if (!authUser || savingContext || !profile) return
+    if (!intentDraft) {
+      setContextFormError("Elige tu rol en murmur.")
+      return
+    }
+    const intent = intentDraft as OnboardingIntent
+    const hasProj = userHasProjectIntent(intent)
+    const isInv = userIsInvestor(intent)
+    if (hasProj && !projectStageDraft) {
+      setContextFormError("Elige la etapa de tu proyecto.")
+      return
+    }
+    if (isInv && !investorActivityDraft) {
+      setContextFormError("Indica tu situación como inversionista.")
+      return
+    }
+    setSavingContext(true)
+    setContextFormError(null)
+    const supabase = getSupabaseBrowserClient()
+    const patch = hasProj
+      ? {
+          onboarding_intent: intent,
+          project_name: projectNameDraft.trim() || null,
+          project_stage: projectStageDraft as ProjectStage,
+          project_seek_summary: projectSeekDraft.trim() || null,
+          opportunity_seek_summary: null,
+          contributor_pitch: null,
+          investor_activity: null,
+        }
+      : isInv
+        ? {
+            onboarding_intent: intent,
+            project_name: null,
+            project_stage: null,
+            project_seek_summary: null,
+            opportunity_seek_summary: null,
+            contributor_pitch: null,
+            investor_activity: investorActivityDraft as InvestorActivity,
+          }
+        : {
+            onboarding_intent: intent,
+            project_name: null,
+            project_stage: null,
+            project_seek_summary: null,
+            opportunity_seek_summary: opportunitySeekDraft.trim() || null,
+            contributor_pitch: contributorPitchDraft.trim() || null,
+            investor_activity: null,
+          }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update(patch)
+      .eq("id", authUser.id)
+    setSavingContext(false)
+    if (error) {
+      console.error("Failed to save context", error)
+      setContextFormError("No se pudo guardar. Reintenta.")
+      return
+    }
+    mergeProfile(patch)
+    setContextEditOpen(false)
+    setSaveBarrierMessage(null)
+    void afterSuccessfulSave()
+  }
+
   async function saveProfileEdit() {
     if (!authUser || savingProfile || !profileUser) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingProfile(true)
     const nextInitials =
       initialsFromName(profileDraft.name) || profileUser.initials
@@ -399,6 +542,12 @@ export default function ProfilePage() {
 
   async function saveIndustryEdit() {
     if (!authUser || savingIndustry || !profileUser) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingIndustry(true)
     const nextSlug =
       industryDraft ?? defaultIndustryForFunctionalArea(profileUser.area)
@@ -470,6 +619,12 @@ export default function ProfilePage() {
 
   async function saveExpertiseEdit() {
     if (!authUser || savingExpertiseTax || !profileUser) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingExpertiseTax(true)
     const industrySlug = resolveHeroIndustrySlug({
       primaryIndustrySlug: profileUser.primaryIndustrySlug,
@@ -534,6 +689,12 @@ export default function ProfilePage() {
 
   async function saveTalentsEdit() {
     if (!authUser || savingTalentsTax || !profileUser) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingTalentsTax(true)
     const talents = talentsDraftSlugs.slice(0, MAX_TALENT_SLUGS)
     const supabase = getSupabaseBrowserClient()
@@ -576,6 +737,12 @@ export default function ProfilePage() {
 
   async function saveLocationEdit() {
     if (!authUser || !profileUser || savingLocation) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingLocation(true)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
@@ -629,6 +796,12 @@ export default function ProfilePage() {
 
   async function saveWorkPrefsEdit() {
     if (!authUser || savingWorkPrefs) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingWorkPrefs(true)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
@@ -664,6 +837,12 @@ export default function ProfilePage() {
 
   async function saveAchievementEdit() {
     if (!authUser || savingAchievement) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingAchievement(true)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
@@ -689,6 +868,12 @@ export default function ProfilePage() {
 
   async function saveExperienceEdit() {
     if (!authUser || savingExperience || !profileUser) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingExperience(true)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
@@ -722,6 +907,12 @@ export default function ProfilePage() {
 
   async function saveRelationsEdit() {
     if (!authUser || savingRelations) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingRelations(true)
     const supabase = getSupabaseBrowserClient()
     const j = await replaceProfileRelationsLooking(
@@ -740,6 +931,12 @@ export default function ProfilePage() {
 
   async function persistVisibility(next: boolean) {
     if (!authUser || savingVisibility) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
     setSavingVisibility(true)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase
@@ -788,6 +985,24 @@ export default function ProfilePage() {
           Mi perfil
         </h2>
       </div>
+
+      {saveBarrierMessage ? (
+        <Card
+          padding="default"
+          className="ds-fade-up border-[var(--border)] border-[color-mix(in_oklab,var(--amber)_35%,var(--border))] bg-[color-mix(in_oklab,var(--amber)_8%,var(--bg))]"
+        >
+          <p className="text-[13px] text-[var(--text)] leading-relaxed mb-3">
+            {saveBarrierMessage}
+          </p>
+          <Button
+            size="lg"
+            className="w-full justify-center"
+            onClick={openContextEdit}
+          >
+            Ir a proyecto y contexto
+          </Button>
+        </Card>
+      ) : null}
 
       {showOnboardingCard ? (
         <Card padding="default" className="ds-fade-up relative flex flex-col gap-3">
@@ -1221,6 +1436,77 @@ export default function ProfilePage() {
 
       <Card padding="default" className="ds-fade-up flex flex-col gap-3">
         <div>
+          <h3 className="ds-label-uppercase">Proyecto y contexto</h3>
+          <p className="text-[12px] text-[var(--text2)] mt-1">
+            Founders eligen etapa de proyecto; inversionistas cómo participan con
+            capital; si buscas unirte a un equipo, describe la oportunidad.
+          </p>
+        </div>
+        {!user.onboardingIntent ? (
+          <ProfileValueRow
+            label="Tu rol y contexto"
+            value="Sin definir — elige proyecto, contribuir o invertir"
+            onEdit={openContextEdit}
+          />
+        ) : (
+          <>
+            <ProfileValueRow
+              label="Tu rol en murmur"
+              value={ONBOARDING_INTENT_LABELS[user.onboardingIntent]}
+              onEdit={openContextEdit}
+            />
+            {userHasProjectIntent(user.onboardingIntent) ? (
+              <>
+                <ProfileValueRow
+                  label="Etapa del proyecto"
+                  value={
+                    user.projectStage
+                      ? labelProjectStageShort(user.projectStage)
+                      : "Sin definir (obligatorio)"
+                  }
+                  onEdit={openContextEdit}
+                />
+                <ProfileValueRow
+                  label="Nombre del proyecto"
+                  value={user.projectName?.trim() || "—"}
+                  onEdit={openContextEdit}
+                />
+                <ProfileValueRow
+                  label="Qué buscas"
+                  value={user.projectSeekSummary?.trim() || "—"}
+                  onEdit={openContextEdit}
+                />
+              </>
+            ) : userIsInvestor(user.onboardingIntent) ? (
+              <ProfileValueRow
+                label="Situación como inversionista"
+                value={
+                  user.investorActivity
+                    ? labelInvestorActivityShort(user.investorActivity)
+                    : "Sin definir (obligatorio)"
+                }
+                onEdit={openContextEdit}
+              />
+            ) : (
+              <>
+                <ProfileValueRow
+                  label="Oportunidad buscada"
+                  value={user.opportunitySeekSummary?.trim() || "—"}
+                  onEdit={openContextEdit}
+                />
+                <ProfileValueRow
+                  label="Qué puedes aportar"
+                  value={user.contributorPitch?.trim() || "—"}
+                  onEdit={openContextEdit}
+                />
+              </>
+            )}
+          </>
+        )}
+      </Card>
+
+      <Card padding="default" className="ds-fade-up flex flex-col gap-3">
+        <div>
           <h3 className="ds-label-uppercase">Profesional</h3>
           <p className="text-[12px] text-[var(--text2)] mt-1">
             {PROFILE_FIELD_COPY.industryPrincipal}, {PROFILE_FIELD_COPY.verticales.toLowerCase()}, {PROFILE_FIELD_COPY.expertise.toLowerCase()}, años de experiencia y{" "}
@@ -1307,6 +1593,151 @@ export default function ProfilePage() {
             disabled={savingAchievement}
           >
             {savingAchievement ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </Drawer>
+
+      <Drawer
+        open={contextEditOpen}
+        onOpenChange={setContextEditOpen}
+        ariaLabel="Editar proyecto y contexto"
+      >
+        <DrawerHeader
+          title="Proyecto y contexto"
+          description="Si tienes proyecto, la etapa es obligatoria. Como inversionista, indica si inviertes activamente, conectas capital o no por ahora."
+        />
+        <div className="flex flex-col gap-3 mb-4">
+          <Field label="¿Qué te trae a murmur?" required>
+            <select
+              className={cn(
+                "ds-input",
+                !intentDraft ? "text-[var(--text3)]" : ""
+              )}
+              value={intentDraft}
+              onChange={(e) =>
+                setIntentDraft(
+                  (e.target.value || "") as OnboardingIntent | ""
+                )
+              }
+              aria-required
+            >
+              <option value="">Elige una opción…</option>
+              {(
+                Object.keys(ONBOARDING_INTENT_LABELS) as OnboardingIntent[]
+              ).map((id) => (
+                <option key={id} value={id}>
+                  {ONBOARDING_INTENT_LABELS[id]}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          {intentDraft &&
+          userHasProjectIntent(intentDraft as OnboardingIntent) ? (
+            <>
+              <Field label="Nombre del proyecto">
+                <Input
+                  value={projectNameDraft}
+                  onChange={(e) => setProjectNameDraft(e.target.value)}
+                  placeholder="ej. Murmur"
+                />
+              </Field>
+              <Field label="Etapa del proyecto" required>
+                <select
+                  className={cn(
+                    "ds-input",
+                    !projectStageDraft ? "text-[var(--text3)]" : ""
+                  )}
+                  value={projectStageDraft}
+                  onChange={(e) =>
+                    setProjectStageDraft(
+                      (e.target.value || "") as ProjectStage | ""
+                    )
+                  }
+                  aria-required
+                >
+                  <option value="">Elige una etapa…</option>
+                  {PROJECT_STAGE_OPTIONS.map((opt) => (
+                    <option key={opt.slug} value={opt.slug}>
+                      {opt.title} — {opt.description}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Qué busco">
+                <Textarea
+                  rows={3}
+                  value={projectSeekDraft}
+                  onChange={(e) => setProjectSeekDraft(e.target.value)}
+                  placeholder="ej. Co-founder técnico…"
+                />
+              </Field>
+            </>
+          ) : intentDraft === "investor" ? (
+            <Field label="Situación como inversionista" required>
+              <select
+                className={cn(
+                  "ds-input",
+                  !investorActivityDraft ? "text-[var(--text3)]" : ""
+                )}
+                value={investorActivityDraft}
+                onChange={(e) =>
+                  setInvestorActivityDraft(
+                    (e.target.value || "") as InvestorActivity | ""
+                  )
+                }
+                aria-required
+              >
+                <option value="">Elige una opción…</option>
+                {INVESTOR_ACTIVITY_OPTIONS.map((opt) => (
+                  <option key={opt.slug} value={opt.slug}>
+                    {opt.title} — {opt.description}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          ) : intentDraft === "contributor" ? (
+            <>
+              <Field label="Tipo de oportunidad buscada">
+                <Input
+                  value={opportunitySeekDraft}
+                  onChange={(e) => setOpportunitySeekDraft(e.target.value)}
+                  placeholder="ej. Co-founder técnico, primer empleo…"
+                />
+              </Field>
+              <Field label="Qué puedo aportar">
+                <Textarea
+                  rows={3}
+                  value={contributorPitchDraft}
+                  onChange={(e) => setContributorPitchDraft(e.target.value)}
+                  placeholder="ej. Años de experiencia en…"
+                />
+              </Field>
+            </>
+          ) : null}
+
+          {contextFormError ? (
+            <p className="text-[12px] text-red-600 dark:text-red-400">
+              {contextFormError}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => setContextEditOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="flex-1 justify-center"
+            onClick={() => void saveContextEdit()}
+            disabled={savingContext}
+          >
+            {savingContext ? "Guardando..." : "Guardar"}
           </Button>
         </div>
       </Drawer>

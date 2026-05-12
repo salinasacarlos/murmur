@@ -8,7 +8,6 @@ export const MURM_SESSION_SEED_KEY = "murmur:murm-session-seed"
 
 export type OnboardingMurmStep =
   | "intro"
-  | "event"
   | "role"
   | "relationships"
   | "profile"
@@ -18,9 +17,6 @@ export type OnboardingMurmStep =
 const MURM_LEADS: Record<OnboardingMurmStep, string[]> = {
   intro: [
     "Cuando termines, tu perfil quedará listo para que decidas cuándo mostrarte.",
-  ],
-  event: [
-    "Si vienes de un evento, el código ancla tu feed. Si no, puedes saltarlo.",
   ],
   role: [
     "Una elección aquí orienta el matching; puedes detallar proyecto u oportunidad en tus búsquedas.",

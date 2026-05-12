@@ -52,7 +52,7 @@ export default function RelationshipsStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={3} total={6} />
+      <Stepper current={2} total={5} />
       <OnboardingCard
         title="¿Qué tipo de conexiones buscas?"
         description="Elige las que apliquen. Podrás ajustarlo luego."

@@ -1,11 +1,21 @@
 import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
-import type { Availability, Profile, RelationType } from "@/lib/types"
+import type {
+  Availability,
+  InvestorActivity,
+  Profile,
+  ProjectStage,
+  RelationType,
+} from "@/lib/types"
 
 /** Filtros del feed «Descubrir» (client-side). */
 export interface DiscoverFeedFilters {
   city: string
   availability: Availability | null
   relation: RelationType | null
+  /** Etapa del proyecto (perfiles con proyecto). null = sin filtrar. */
+  projectStage: ProjectStage | null
+  /** Actividad declarada del inversionista; null = sin filtrar. */
+  investorActivity: InvestorActivity | null
   /** Industria principal (catálogo profile-taxonomy); null = sin filtrar. */
   primaryIndustrySlug: string | null
   /** Verticales (nivel 2); vacío = sin filtrar. */
@@ -21,6 +31,8 @@ export function emptyDiscoverFeedFilters(): DiscoverFeedFilters {
     city: "",
     availability: null,
     relation: null,
+    projectStage: null,
+    investorActivity: null,
     primaryIndustrySlug: null,
     verticalSlugs: [],
     expertiseSlugs: [],
@@ -52,6 +64,19 @@ export function profileMatchesDiscoverFilters(
   if (f.availability && p.availability !== f.availability) return false
 
   if (f.relation && !p.relationsLooking.includes(f.relation)) return false
+
+  if (f.projectStage) {
+    if (p.projectStage !== f.projectStage) return false
+  }
+
+  if (f.investorActivity) {
+    if (
+      p.onboardingIntent !== "investor" ||
+      p.investorActivity !== f.investorActivity
+    ) {
+      return false
+    }
+  }
 
   if (f.primaryIndustrySlug) {
     if (heroIndustryForProfile(p) !== f.primaryIndustrySlug) return false

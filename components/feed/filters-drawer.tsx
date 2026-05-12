@@ -13,6 +13,8 @@ import {
   emptyDiscoverFeedFilters,
   type DiscoverFeedFilters,
 } from "@/lib/feed-filters"
+import { PROJECT_STAGE_OPTIONS } from "@/lib/project-stage"
+import { INVESTOR_ACTIVITY_OPTIONS } from "@/lib/investor-activity"
 import {
   PROFILE_FIELD_COPY,
   PROFILE_FIELD_HINTS,
@@ -22,6 +24,8 @@ import {
   AVAILABILITY_LABELS,
   RELATION_LABELS,
   type Availability,
+  type InvestorActivity,
+  type ProjectStage,
   type RelationType,
 } from "@/lib/types"
 
@@ -106,6 +110,54 @@ export function FiltersDrawer({
                   onFiltersChange({
                     ...filters,
                     relation: filters.relation === id ? null : id,
+                  })
+                }
+              />
+            ))}
+          </div>
+        </Field>
+
+        <Field
+          label="Etapa del proyecto"
+          hint="Solo aplica a perfiles que declaran tener proyecto. Encuentra founders en la etapa que te interesa."
+        >
+          <div className="flex flex-wrap gap-1.5">
+            {PROJECT_STAGE_OPTIONS.map((opt) => (
+              <FilterChip
+                key={opt.slug}
+                label={opt.title}
+                selected={filters.projectStage === opt.slug}
+                onClick={() =>
+                  onFiltersChange({
+                    ...filters,
+                    projectStage:
+                      filters.projectStage === opt.slug
+                        ? null
+                        : (opt.slug as ProjectStage),
+                  })
+                }
+              />
+            ))}
+          </div>
+        </Field>
+
+        <Field
+          label="Inversionista"
+          hint="Perfiles con rol inversionista. Filtra por si invierten activo, conectan capital o no por ahora."
+        >
+          <div className="flex flex-wrap gap-1.5">
+            {INVESTOR_ACTIVITY_OPTIONS.map((opt) => (
+              <FilterChip
+                key={opt.slug}
+                label={opt.title}
+                selected={filters.investorActivity === opt.slug}
+                onClick={() =>
+                  onFiltersChange({
+                    ...filters,
+                    investorActivity:
+                      filters.investorActivity === opt.slug
+                        ? null
+                        : (opt.slug as InvestorActivity),
                   })
                 }
               />

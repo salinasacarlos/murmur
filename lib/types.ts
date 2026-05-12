@@ -27,6 +27,26 @@ export type WorkStyle =
 
 export type Compatibility = "alta" | "media" | "baja"
 
+export type OnboardingIntent =
+  | "founder"
+  | "contributor"
+  | "both"
+  | "investor"
+
+/** Situación declarada del inversionista (obligatorio si intent === investor). */
+export type InvestorActivity =
+  | "actively_investing"
+  | "can_help_source"
+  | "not_investing_now"
+
+export type ProjectStage =
+  | "idea"
+  | "validando"
+  | "construyendo"
+  | "en_manos_de_personas"
+  | "generando_ingresos"
+  | "creciendo"
+
 export interface Profile {
   id: string
   name: string
@@ -53,6 +73,13 @@ export interface Profile {
   compatibility: Compatibility
   online?: boolean
   eventCodes?: string[]
+  onboardingIntent?: OnboardingIntent | null
+  projectStage?: ProjectStage | null
+  projectName?: string | null
+  projectSeekSummary?: string | null
+  opportunitySeekSummary?: string | null
+  contributorPitch?: string | null
+  investorActivity?: InvestorActivity | null
 }
 
 export interface EventEntry {
@@ -155,6 +182,13 @@ export interface CurrentUser {
     connections: number
     messages: number
   }
+  onboardingIntent?: OnboardingIntent | null
+  projectStage?: ProjectStage | null
+  projectName?: string | null
+  projectSeekSummary?: string | null
+  opportunitySeekSummary?: string | null
+  contributorPitch?: string | null
+  investorActivity?: InvestorActivity | null
 }
 
 export const RELATION_LABELS: Record<RelationType, string> = {
@@ -164,6 +198,13 @@ export const RELATION_LABELS: Record<RelationType, string> = {
   mentoria: "Mentoría",
   inversion: "Inversión",
   abierto: "Abierto a explorar",
+}
+
+export const ONBOARDING_INTENT_LABELS: Record<OnboardingIntent, string> = {
+  founder: "Tengo proyecto",
+  contributor: "Quiero contribuir",
+  both: "Tengo proyecto y también contribuir",
+  investor: "Soy inversionista",
 }
 
 export const AREA_LABELS: Record<FunctionalArea, string> = {

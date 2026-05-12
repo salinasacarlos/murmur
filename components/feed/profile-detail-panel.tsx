@@ -41,6 +41,10 @@ import {
 } from "@/lib/profile-taxonomy"
 import { labelProfileVerticalSlug } from "@/lib/industry-tree"
 import {
+  labelProjectStageLong,
+} from "@/lib/project-stage"
+import { labelInvestorActivityLong } from "@/lib/investor-activity"
+import {
   IconMapPin,
   IconBriefcase,
   IconClock,
@@ -214,6 +218,66 @@ export function ProfileDetailPanel({
                 </p>
               </div>
             </Section>
+
+            {profile.projectStage ||
+            (profile.projectName && profile.projectName.trim()) ||
+            (profile.projectSeekSummary && profile.projectSeekSummary.trim()) ? (
+              <Section title="Proyecto">
+                {profile.projectName?.trim() ? (
+                  <p className="text-[13px] font-semibold text-[var(--text)] mb-1">
+                    {profile.projectName.trim()}
+                  </p>
+                ) : null}
+                {profile.projectStage ? (
+                  <p className="text-[13px] text-[var(--text)] leading-relaxed mb-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)] block mb-1">
+                      Etapa
+                    </span>
+                    {labelProjectStageLong(profile.projectStage)}
+                  </p>
+                ) : null}
+                {profile.projectSeekSummary?.trim() ? (
+                  <p className="text-[13px] text-[var(--text2)] leading-relaxed whitespace-pre-wrap">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)] block mb-1">
+                      Qué busca
+                    </span>
+                    {profile.projectSeekSummary.trim()}
+                  </p>
+                ) : null}
+              </Section>
+            ) : null}
+
+            {profile.onboardingIntent === "investor" &&
+            profile.investorActivity ? (
+              <Section title="Inversión">
+                <p className="text-[13px] text-[var(--text)] leading-relaxed">
+                  {labelInvestorActivityLong(profile.investorActivity)}
+                </p>
+              </Section>
+            ) : null}
+
+            {(profile.opportunitySeekSummary?.trim() ||
+              profile.contributorPitch?.trim()) &&
+            !profile.projectStage ? (
+              <Section title="Oportunidad y aporte">
+                {profile.opportunitySeekSummary?.trim() ? (
+                  <p className="text-[13px] text-[var(--text)] leading-relaxed whitespace-pre-wrap mb-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)] block mb-1">
+                      Busca
+                    </span>
+                    {profile.opportunitySeekSummary.trim()}
+                  </p>
+                ) : null}
+                {profile.contributorPitch?.trim() ? (
+                  <p className="text-[13px] text-[var(--text2)] leading-relaxed whitespace-pre-wrap">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)] block mb-1">
+                      Puede aportar
+                    </span>
+                    {profile.contributorPitch.trim()}
+                  </p>
+                ) : null}
+              </Section>
+            ) : null}
 
             <Section title="Sobre su trabajo">
               <div className="flex flex-col gap-2.5">

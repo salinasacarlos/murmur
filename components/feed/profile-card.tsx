@@ -22,6 +22,8 @@ import {
   labelTalentSlug,
   resolveHeroIndustrySlug,
 } from "@/lib/profile-taxonomy"
+import { labelProjectStageShort } from "@/lib/project-stage"
+import { labelInvestorActivityShort } from "@/lib/investor-activity"
 import { IconMapPin } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -116,6 +118,15 @@ export function ProfileCard({
         ) : null}
         <Tag variant="neutral">{EXPERIENCE_LABELS[profile.experience]}</Tag>
         <Tag variant="success">{AVAILABILITY_LABELS[profile.availability]}</Tag>
+        {profile.projectStage ? (
+          <Tag variant="brand">{labelProjectStageShort(profile.projectStage)}</Tag>
+        ) : null}
+        {profile.onboardingIntent === "investor" &&
+        profile.investorActivity ? (
+          <Tag variant="brand">
+            {labelInvestorActivityShort(profile.investorActivity)}
+          </Tag>
+        ) : null}
       </div>
 
       <div className="rounded-lg border border-[var(--border)] bg-[var(--bg2)]/60 px-3 py-2">

@@ -1,5 +1,9 @@
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import type { Compatibility, CurrentUser, Profile } from "@/lib/types"
+import {
+  userHasProjectIntent,
+  userIsInvestor,
+} from "@/lib/profile-project-guard"
 
 export type ProfileCompletenessSection =
   | "identity"
@@ -49,6 +53,13 @@ export function profileFromCurrentUserForCompleteness(
     relationsLooking: user.relationsLooking,
     compatibility,
     eventCodes: user.eventCodes,
+    onboardingIntent: user.onboardingIntent,
+    projectStage: user.projectStage,
+    projectName: user.projectName,
+    projectSeekSummary: user.projectSeekSummary,
+    opportunitySeekSummary: user.opportunitySeekSummary,
+    contributorPitch: user.contributorPitch,
+    investorActivity: user.investorActivity,
   }
 }
 
@@ -133,6 +144,28 @@ export function computeProfileCompleteness(
       id: "relations",
       label: "Tipos de relación",
       ok: profile.relationsLooking.length > 0,
+      section: "interests",
+    },
+    {
+      id: "onboarding_intent",
+      label: "Tu rol en murmur (proyecto, contribuir o invertir)",
+      ok: Boolean(profile.onboardingIntent),
+      section: "interests",
+    },
+    {
+      id: "project_stage",
+      label: "Etapa del proyecto",
+      ok:
+        !userHasProjectIntent(profile.onboardingIntent) ||
+        Boolean(profile.projectStage),
+      section: "interests",
+    },
+    {
+      id: "investor_activity",
+      label: "Situación como inversionista",
+      ok:
+        !userIsInvestor(profile.onboardingIntent) ||
+        Boolean(profile.investorActivity),
       section: "interests",
     },
     {

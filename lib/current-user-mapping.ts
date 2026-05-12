@@ -71,6 +71,13 @@ export function deriveCurrentUser(
       connections: profile?.stats_connections ?? 0,
       messages: profile?.stats_messages ?? 0,
     },
+    onboardingIntent: profile?.onboarding_intent ?? null,
+    projectStage: profile?.project_stage ?? null,
+    projectName: profile?.project_name ?? null,
+    projectSeekSummary: profile?.project_seek_summary ?? null,
+    opportunitySeekSummary: profile?.opportunity_seek_summary ?? null,
+    contributorPitch: profile?.contributor_pitch ?? null,
+    investorActivity: profile?.investor_activity ?? null,
   }
 }
 
@@ -107,6 +114,20 @@ export function mergeEnrichedIntoCurrentUser(
           : base.cities,
     relationsLooking: enriched.relationsLooking,
     eventCodes: enriched.eventCodes,
+    onboardingIntent:
+      enriched.onboardingIntent ?? base.onboardingIntent ?? null,
+    projectStage: enriched.projectStage ?? base.projectStage ?? null,
+    projectName: enriched.projectName ?? base.projectName ?? null,
+    projectSeekSummary:
+      enriched.projectSeekSummary ?? base.projectSeekSummary ?? null,
+    opportunitySeekSummary:
+      enriched.opportunitySeekSummary ??
+      base.opportunitySeekSummary ??
+      null,
+    contributorPitch:
+      enriched.contributorPitch ?? base.contributorPitch ?? null,
+    investorActivity:
+      enriched.investorActivity ?? base.investorActivity ?? null,
   }
 }
 

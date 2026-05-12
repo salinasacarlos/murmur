@@ -60,12 +60,12 @@ export default function ProfileStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={4} total={6} />
+      <Stepper current={3} total={5} />
       <OnboardingCard
         title="Cuéntanos quién eres"
         description="Datos básicos e industria con verticales y expertise para empezar a matchear."
         back="/onboarding/relationships"
-        next="/onboarding/location"
+        next="/onboarding/project"
         nextDisabled={
           !primaryIndustrySlug ||
           verticalSlugs.length === 0 ||
