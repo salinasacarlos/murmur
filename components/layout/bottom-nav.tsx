@@ -19,6 +19,7 @@ import {
   IconMessage,
   IconSearch,
   IconSettings,
+  IconSpark,
   IconUser,
   IconChevronRight,
   IconLogOut,
@@ -44,7 +45,9 @@ export function BottomNav() {
   const { hasUnread } = useNotificationsUnread()
 
   const moreActive =
-    pathname === "/profile" || pathname.startsWith("/profile/")
+    pathname === "/profile" ||
+    pathname.startsWith("/profile/") ||
+    pathname === "/invitations"
 
   async function handleSignOut() {
     if (signingOut) return
@@ -155,6 +158,18 @@ export function BottomNav() {
                 />
               </span>
               <span className="text-[13px] font-medium">Notificaciones</span>
+            </div>
+            <IconChevronRight size={14} />
+          </Link>
+
+          <Link
+            href="/invitations"
+            onClick={() => setMoreOpen(false)}
+            className="ds-card p-4 flex items-center justify-between hover:border-[var(--border2)] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <IconSpark size={16} />
+              <span className="text-[13px] font-medium">Mis invitaciones</span>
             </div>
             <IconChevronRight size={14} />
           </Link>

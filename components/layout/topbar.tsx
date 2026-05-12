@@ -21,6 +21,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/connections": "Conexiones",
   "/messages": "Mensajes",
   "/profile": "Mi perfil",
+  "/invitations": "Mis invitaciones",
   "/notifications": "Notificaciones",
 }
 

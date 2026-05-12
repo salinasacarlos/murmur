@@ -19,6 +19,7 @@ import {
   IconSearch,
   IconUsers,
   IconMessage,
+  IconSpark,
   IconUser,
   IconLogOut,
   IconBell,
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { href: "/connections", label: "Conexiones", icon: IconUsers },
   { href: "/messages", label: "Mensajes", icon: IconMessage },
   { href: "/notifications", label: "Notificaciones", icon: IconBell },
+  { href: "/invitations", label: "Mis invitaciones", icon: IconSpark },
   { href: "/profile", label: "Mi perfil", icon: IconUser },
 ] as const
 

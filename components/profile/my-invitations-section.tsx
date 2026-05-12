@@ -24,7 +24,13 @@ type InvitationRow = {
   invitee: InviteeRow | null
 }
 
-export function MyInvitationsSection({ userId }: { userId: string }) {
+export function MyInvitationsSection({
+  userId,
+  embedInPage = false,
+}: {
+  userId: string
+  embedInPage?: boolean
+}) {
   const [rows, setRows] = React.useState<InvitationRow[] | null>(null)
   const [copiedId, setCopiedId] = React.useState<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
@@ -99,10 +105,13 @@ export function MyInvitationsSection({ userId }: { userId: string }) {
   if (rows.length === 0) {
     return (
       <Card padding="default" className="ds-fade-up">
-        <h3 className="ds-label-uppercase mb-2">Mis invitaciones</h3>
+        {!embedInPage ? (
+          <h3 className="ds-label-uppercase mb-2">Mis invitaciones</h3>
+        ) : null}
         <p className="text-[13px] text-[var(--text2)] leading-relaxed">
-          Cuando completes el onboarding recibirás 5 códigos para invitar a otras
-          personas a Murmur.
+          {embedInPage
+            ? "Aún no hay códigos en tu cuenta. Si ya completaste el onboarding, espera unos segundos y actualiza; si sigue igual, escríbenos."
+            : "Cuando completes el onboarding recibirás 5 códigos para invitar a otras personas a Murmur."}
         </p>
       </Card>
     )
@@ -110,12 +119,14 @@ export function MyInvitationsSection({ userId }: { userId: string }) {
 
   return (
     <Card padding="default" className="ds-fade-up flex flex-col gap-3">
-      <div>
-        <h3 className="ds-label-uppercase mb-1">Mis invitaciones</h3>
-        <p className="text-[12px] text-[var(--text2)]">
-          Comparte tu enlace. Cada código solo puede usarse una vez.
-        </p>
-      </div>
+      {!embedInPage ? (
+        <div>
+          <h3 className="ds-label-uppercase mb-1">Mis invitaciones</h3>
+          <p className="text-[12px] text-[var(--text2)]">
+            Comparte tu enlace. Cada código solo puede usarse una vez.
+          </p>
+        </div>
+      ) : null}
 
       {error ? (
         <p className="text-[12px] text-[var(--red)]" role="alert">
