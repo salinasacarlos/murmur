@@ -1,6 +1,6 @@
 # Murmur — Product Requirements Document
 
-**Versión:** 1.1  
+**Versión:** 1.2  
 **Última revisión:** Mayo 2026  
 **Estado:** Documento vivo — las secciones 1–11 siguen siendo la referencia de producto; la **§12** describe qué está construido hoy en el código frente a ese alcance. Usar la §12 para planificar iteraciones futuras.
 
@@ -12,7 +12,7 @@
 
 > *"Construye con las personas correctas."*
 
-La red donde los builders encuentran co-founders, talento, mentores e inversionistas.
+La propuesta pública de valor (landing + metadescripción) resume: *la plataforma que ayuda a encontrar a quien necesitas* — socios, talento, mentores, inversionistas y más — sin depender solo del networking casual.
 
 ---
 
@@ -43,6 +43,16 @@ Murmur es para **cualquier persona que construya algo** — no solo founders con
 
 ### Lo que tienen en común
 Todos tienen **intención de construir** — ya sea con su propio proyecto o contribuyendo al de alguien más.
+
+### Diversidad de contextos (producto y datos)
+
+Murmur está pensado para **builders y expertos en múltiples mundos**, no solo tecnología clásica:
+
+- **Quince industrias principales** en catálogo (nivel 1), cada una mapeada a un **área funcional** de matching (técnico, producto, negocio, operaciones, ciencia): desde tecnología e IA, salud y biotech, educación y fintech, hasta agro, retail, energía, gobierno, legal, deporte y bienestar, etc.
+- **Verticales de foco** (nivel 2): decenas de especializaciones por sector (p. ej. fintech, insurtech, salud digital), cargadas en BD (`industry_verticals`) y alineadas al árbol de negocio.
+- **Roles de expertise** (nivel 3): carreras concretas por vertical (p. ej. director médico, PM de salud digital, staff engineer, regulatory affairs), con límites de selección en perfil y búsquedas para mantener foco.
+- **Tipos de relación** (co-founder, empleo, colaboración, mentoría, inversión, abierto) y el split **tengo proyecto / quiero contribuir** permiten representar trayectorias muy distintas en un mismo producto.
+- **Talento blando** (`talent_catalog`) complementa lo duro de industria/expertise para refinar compatibilidad y filtros Premium.
 
 ---
 
@@ -97,17 +107,22 @@ El proceso de registro captura la información necesaria para el matching desde 
 - Nombre y foto
 - Título o rol actual
 - Bio corta (máx. 200 caracteres)
-- Área funcional: Técnico/Ing., Producto, Negocio/Growth, Operaciones, Ciencia/Experto
+- Dato curioso opcional (texto libre ampliado)
+- **Taxonomía de negocio en tres niveles** (sincronizada con Postgres y seeds en código):
+  - **Una industria principal** (catálogo de **15 sectores**: tecnología e IA, salud y biotech, educación, finanzas y fintech, entretenimiento y medios, artes y creativo, construcción e inmobiliario, manufactura, agro y alimentación, gobierno, turismo y hospitalidad, energía y sustentabilidad, retail, legal y consultoría, deporte y bienestar, etc.)
+  - Hasta **3 verticales** de foco bajo esa industria (nivel 2; opciones dependen del árbol `industry_verticals` / `leaf-catalog`)
+  - Hasta **3 roles de expertise** bajo las verticales elegidas (nivel 3; `expertise_catalog` + `profile-taxonomy` / `industry-expertise-role-seeds`)
+- El **área funcional** usada en matching (técnico, producto, negocio, operaciones, ciencia) se **deriva** del mapa `maps_to` de industria/verticales/expertise — el usuario no elige un dropdown duplicado de “área” en el paso actual del onboarding.
 - Años de experiencia: 0-2 / 3-5 / 6-10 / 10+
-- Logro más relevante (una línea)
+- Éxito o línea destacada para la card (límite acotado en UI)
 - Disponibilidad: Full-time ya / Part-time explorando / En 3-6 meses
-- Industria principal (nivel 1), hasta **3 verticales** de foco (nivel 2) y hasta **3 roles / expertise** (nivel 3: p. ej. PM, developer, director) bajo esas verticales *(catálogo alineado a DB)*
 - Soft skills *(hasta 5; catálogo `talent_catalog`)*
-- Forma de trabajar *(multi-select)*: Remoto, Presencial, Híbrido, Decisiones rápidas, Proceso estructurado, Async
+- Forma de trabajar *(multi-select)*: Remoto, Presencial, Híbrido, Proceso estructurado, Async *(el chip “decisiones rápidas” puede excluirse en onboarding según producto)*
 
 **Paso 5 — Contexto del proyecto o búsqueda**
 - *Si tiene proyecto:* nombre, etapa, descripción de qué busca
 - *Si quiere contribuir:* tipo de oportunidad buscada, qué puede aportar
+- *Implementación:* existe página **`/onboarding/project`** con UI de opciones y campos; **la secuencia actual del onboarding** puede enlazar directamente de perfil a ubicación — integrar este paso en el flujo y persistencia es trabajo de producto pendiente cuando se active contexto de proyecto en Supabase.
 
 **Paso 6 — Ubicación**
 - Detección automática por GPS (con permiso del usuario)
@@ -371,18 +386,20 @@ Esta sección describe **lo que ya existe en el repositorio / producción** resp
 |------|----------------|
 | **Auth** | Registro e inicio de sesión con **email y contraseña**; **Google** (`signInWithOAuth`, ruta `app/auth/callback/route.ts`). Perfil `public.profiles` creado vía trigger en `auth.users`. |
 | **Gating onboarding** | Sin `onboarding_completed`, el usuario **no entra** al layout de la app (`app/(app)/layout.tsx`): siempre redirige a `/onboarding`. El callback OAuth aplica la misma lógica antes de enviar a `/feed`. |
-| **Onboarding** | Flujo multipaso: intro (`/onboarding`), evento (código), rol (proyecto / contribuir / ambos), relaciones buscadas, perfil (taxonomía industria–verticales–expertise, talent/soft skills, etc.), **ubicación con geolocalización + geocodificado inverso** y ciudades/radio (`app/onboarding/location`), pantalla de cierre (`/onboarding/done`). |
-| **Landing** | Home público; textos legales solo en rutas dedicadas **`/terms`** y **`/privacy`** (fuentes `lib/terms-generic-content.ts`, `lib/privacy-generic-content.ts`); enlaces en **footer** de la landing y en signup. |
+| **Onboarding** | Flujo multipaso: intro (`/onboarding`), evento (código), rol (proyecto / contribuir / ambos), relaciones buscadas, **perfil** con taxonomía **industria → verticales → expertise** (15 industrias, verticales en BD, seeds `industry-expertise-role-seeds` / `profile-taxonomy`), talent/soft skills, **ubicación** con geolocalización + geocodificado inverso y ciudades/radio (`app/onboarding/location`), pantalla de cierre (`/onboarding/done`). Ruta **`/onboarding/project`** disponible para capturar contexto de proyecto u oportunidad; **enlace en la secuencia y persistencia** pueden estar incompletos hasta integrarlo del todo. Componentes **`HierarchicalIndustrySelector`** y **`FunctionalAreasOnboardingSelect`** existen para evolucionar la UI por industria/área. |
+| **Landing** | Home público; copy de hero y metadescripción alineados al mensaje de “plataforma” y foco en personas correctas; **favicon** en `app/favicon.ico`. Textos legales solo en **`/terms`** y **`/privacy`** (fuentes `lib/terms-generic-content.ts`, `lib/privacy-generic-content.ts`); enlaces en **footer** de la landing y en signup. |
 | **Feed / Descubrir** | Activación tipo radar, selector de búsquedas, cards, panel lateral/detalle, filtros (con límites **Free vs Premium** en cliente), **modo evento** (código activo + RPC de perfiles por evento). |
 | **Búsquedas** | CRUD de búsquedas, estados activa/pausada, límites **Free** (una activa) vs **Premium**. |
 | **Conexiones** | Envío, pendiente/aceptada/rechazada, integración con límites Free; notificaciones en BD para solicitudes. |
-| **Mensajes** | Chat solo entre usuarios con conexión aceptada; UI lista + conversación. |
+| **Mensajes** | Chat solo entre usuarios con conexión aceptada; UI lista + conversación; **Realtime** de mensajes en conversación y helpers de inbox (`use-chat-messages-realtime`); lista de chats optimizada con RPC **`last_messages_for_chats`** e índices asociados en migraciones. |
 | **Perfil** | Edición enriquecida, stats en vivo, completitud; visibilidad global sincronizada con BD. |
-| **Visibilidad** | Oculto por defecto; toggle para mostrarse en descubrimiento; persiste en `profiles.visible`. |
+| **Visibilidad** | Oculto por defecto; toggle para mostrarse en descubrimiento; persiste en `profiles.visible` con sincronización cliente–BD (p. ej. hook de persistencia + contexto de usuario). |
 | **Monetización** | **Stripe Checkout** (`/upgrade`), API checkout + **webhook** que actualiza `profiles.plan`; límites y precios referenciados en `lib/plan-limits.ts`, `lib/product-config.ts` y este documento (§7). |
 | **Middleware** | Rutas de app protegidas por sesión Supabase; páginas de login/signup redirigen si ya hay sesión. |
 
 ### 12.2 Diferencias notables respecto al texto original del PRD
+
+- **Componentes de onboarding** como `HierarchicalIndustrySelector` / `FunctionalAreasOnboardingSelect` pueden no estar aún cableados en el paso de perfil producción; el selector activo hoy es el trío **IndustrySingleSelect + VerticalMultiSelect + ExpertiseMultiSelect**.
 
 - **LinkedIn OAuth** — no implementado; solo Google además de email/contraseña.
 - **Mensaje de conexión “IA”** — hoy es **plantilla automática** (`generateMessage` u equivalente), editable por el usuario; no hay integración LLM.
@@ -401,14 +418,17 @@ Priorizar según eventos, crecimiento o riesgo:
 5. **Validación y UX de registro**: email en vivo, medidor de contraseña, recuperación de cuenta.
 6. **Dominio custom Supabase** + consent screen Google para marca uniforme en OAuth.
 7. Cualquier ampliación **explícita** de métricas (§8) vía analítica producto.
+8. **Integrar `/onboarding/project`** en el flujo (navegación, Stepper, persistencia en Supabase) cuando el contexto de proyecto/pitch sea requisito de onboarding.
 
 ### 12.4 Referencias rápidas en código
 
 - Límites y mensajes Free: `lib/plan-limits.ts`
 - Precios MXN y soporte: `lib/product-config.ts`
+- Taxonomía industrias / expertise / verticales (TS + helpers): `lib/profile-taxonomy.ts`, `lib/industry-expertise-role-seeds.ts`, `lib/leaf-catalog.ts`
 - OAuth Google (UI): `components/auth/google-auth-button.tsx`
 - Callback sesión: `app/auth/callback/route.ts`
 - Onboarding persistencia / bandera `onboarding_completed`: `lib/onboarding-persist.ts`
+- Realtime chat / inbox: `hooks/use-chat-messages-realtime.ts`, `lib/data/chats.ts`
 - Webhook: `app/api/webhooks/stripe/route.ts`
 - Variables de entorno ejemplo: `.env.local.example`
 
