@@ -6,3 +6,7 @@ export function getPublicSiteUrl(): string {
   }
   return "https://joinmurmur.xyz"
 }
+
+export function buildSignupInviteUrl(inviteCode: string): string {
+  return `${getPublicSiteUrl()}/auth/signup?invite=${encodeURIComponent(inviteCode)}`
+}

@@ -3,11 +3,20 @@
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import type { Database } from "@/lib/database.types"
 import { labelProjectStageShort } from "@/lib/project-stage"
+import { buildSignupInviteUrl } from "@/lib/public-site-url"
 import type { ProjectStage } from "@/lib/types"
 
 type Row = Database["public"]["Tables"]["access_requests"]["Row"]
+
+type ApproveNotice = {
+  code: string
+  signupUrl: string
+  emailSent: boolean
+  emailError?: string
+}
 
 function formatDate(iso: string): string {
   try {
@@ -24,6 +33,20 @@ export function AdminAccessRequestsClient() {
   const [rows, setRows] = React.useState<Row[] | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
+  const [approveNotice, setApproveNotice] = React.useState<ApproveNotice | null>(
+    null
+  )
+  const [copyLabel, setCopyLabel] = React.useState<string | null>(null)
+
+  async function copyText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyLabel(label)
+      setTimeout(() => setCopyLabel(null), 2000)
+    } catch {
+      setCopyLabel(null)
+    }
+  }
 
   const load = React.useCallback(async () => {
     const res = await fetch("/api/admin/access-requests")
@@ -56,10 +79,14 @@ export function AdminAccessRequestsClient() {
         window.alert(body.error ?? "No se pudo aprobar.")
         return
       }
-      if (!body.email_sent) {
-        window.alert(
-          `Código generado: ${body.code ?? "?"}. El correo no salió: ${body.email_error ?? "error desconocido"}.`
-        )
+      const code = body.code ?? ""
+      if (code) {
+        setApproveNotice({
+          code,
+          signupUrl: buildSignupInviteUrl(code),
+          emailSent: Boolean(body.email_sent),
+          emailError: body.email_error,
+        })
       }
       await load()
     } finally {
@@ -113,6 +140,72 @@ export function AdminAccessRequestsClient() {
 
   return (
     <div className="space-y-3">
+      {approveNotice ? (
+        <div
+          className="rounded-xl border border-[var(--border)] bg-[var(--bg2)] p-4 space-y-3"
+          role="status"
+        >
+          <p className="text-[13px] font-semibold text-[var(--text)]">
+            {approveNotice.emailSent
+              ? "Aprobado — correo enviado al solicitante."
+              : "Aprobado — envía el acceso manualmente"}
+          </p>
+          {!approveNotice.emailSent ? (
+            <p className="text-[12px] text-[var(--text2)] leading-snug">
+              El código quedó activo, pero el correo automático no salió
+              {approveNotice.emailError
+                ? `: ${approveNotice.emailError}`
+                : "."}{" "}
+              Configura{" "}
+              <strong className="text-[var(--text)]">RESEND_API_KEY</strong> en
+              Vercel (y opcionalmente{" "}
+              <strong className="text-[var(--text)]">EMAIL_FROM</strong> con tu
+              dominio verificado en Resend).
+            </p>
+          ) : null}
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+            <Input
+              readOnly
+              value={approveNotice.code}
+              className="font-mono text-[12px] flex-1"
+              aria-label="Código de invitación"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void copyText(approveNotice.code, "code")}
+            >
+              {copyLabel === "code" ? "Copiado" : "Copiar código"}
+            </Button>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+            <Input
+              readOnly
+              value={approveNotice.signupUrl}
+              className="text-[11px] flex-1"
+              aria-label="Enlace de registro"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void copyText(approveNotice.signupUrl, "link")}
+            >
+              {copyLabel === "link" ? "Copiado" : "Copiar enlace"}
+            </Button>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="self-start"
+            onClick={() => setApproveNotice(null)}
+          >
+            Cerrar
+          </Button>
+        </div>
+      ) : null}
       {error ? (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--red)]/30 bg-[var(--red-bg)] px-3 py-2 text-[12px] text-[var(--red)]">
           <span>{error}</span>

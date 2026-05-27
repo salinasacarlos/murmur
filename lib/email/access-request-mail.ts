@@ -1,32 +1,21 @@
-import { Resend } from "resend"
-
-import { getPublicSiteUrl } from "@/lib/public-site-url"
-
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY?.trim()
-  if (!key) return null
-  return new Resend(key)
-}
-
-function getFrom(): string | null {
-  const from = process.env.EMAIL_FROM?.trim()
-  return from || null
-}
+import { getEmailFrom, getResendClient, getResendConfigError } from "@/lib/email/resend-env"
+import {
+  buildSignupInviteUrl,
+  getPublicSiteUrl,
+} from "@/lib/public-site-url"
 
 export async function sendAccessRequestReceivedEmail(args: {
   to: string
   firstName: string
   queuePosition: number
 }): Promise<{ ok: true } | { ok: false; message: string }> {
-  const resend = getResend()
-  const from = getFrom()
-  if (!resend || !from) {
-    return {
-      ok: false,
-      message: "Faltan RESEND_API_KEY o EMAIL_FROM.",
-    }
+  const configError = getResendConfigError()
+  if (configError) {
+    return { ok: false, message: configError }
   }
 
+  const resend = getResendClient()!
+  const from = getEmailFrom()
   const site = getPublicSiteUrl()
   const name =
     args.firstName.split(/\s+/)[0] ||
@@ -72,17 +61,15 @@ export async function sendAccessRequestApprovedEmail(args: {
   firstName: string
   inviteCode: string
 }): Promise<{ ok: true } | { ok: false; message: string }> {
-  const resend = getResend()
-  const from = getFrom()
-  if (!resend || !from) {
-    return {
-      ok: false,
-      message: "Faltan RESEND_API_KEY o EMAIL_FROM.",
-    }
+  const configError = getResendConfigError()
+  if (configError) {
+    return { ok: false, message: configError }
   }
 
+  const resend = getResendClient()!
+  const from = getEmailFrom()
   const site = getPublicSiteUrl()
-  const signupUrl = `${site}/auth/signup?invite=${encodeURIComponent(args.inviteCode)}`
+  const signupUrl = buildSignupInviteUrl(args.inviteCode)
   const name =
     args.firstName.split(/\s+/)[0] ||
     args.firstName ||
