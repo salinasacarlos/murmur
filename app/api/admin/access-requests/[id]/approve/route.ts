@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { sendAccessRequestApprovedEmail } from "@/lib/email/access-request-mail"
+import { resolveAccessIssuerProfileId } from "@/lib/access-issuer-profile"
 import { getMurmurAdminSession } from "@/lib/murmur-admin"
 import { createSupabaseAdmin } from "@/lib/supabase/admin"
 
@@ -12,13 +13,7 @@ export async function POST(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 })
   }
 
-  const issuerId = process.env.ACCESS_ISSUER_PROFILE_ID?.trim()
-  if (!issuerId) {
-    return NextResponse.json(
-      { error: "Falta ACCESS_ISSUER_PROFILE_ID en el servidor." },
-      { status: 503 }
-    )
-  }
+  const issuerId = resolveAccessIssuerProfileId(session.user)
 
   const { id } = await context.params
 
