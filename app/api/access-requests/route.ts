@@ -79,18 +79,17 @@ export async function POST(request: Request) {
   })
 
   if (!mail.ok) {
-    await admin.from("access_requests").delete().eq("id", row.id)
-    return NextResponse.json(
-      {
-        error:
-          "No pudimos enviarte el correo de confirmación. Revisa tu bandeja en unos minutos o intenta de nuevo.",
-      },
-      { status: 503 }
-    )
+    console.error("[access-requests] email:", mail.message)
+    return NextResponse.json({
+      id: row.id,
+      queue_position: position,
+      email_sent: false,
+    })
   }
 
   return NextResponse.json({
     id: row.id,
     queue_position: position,
+    email_sent: true,
   })
 }
