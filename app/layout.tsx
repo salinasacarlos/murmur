@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   ),
   title: "Murmur — Construye con las personas correctas",
   description:
-    "La red social para builders que buscan a las personas correctas para construir: co-founders, talento, mentores e inversionistas.",
+    "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
 }
 
 export const viewport: Viewport = {

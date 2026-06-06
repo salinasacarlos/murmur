@@ -1398,7 +1398,7 @@ export default function ProfilePage() {
           <h3 className="text-[14px] font-bold tracking-[-0.2px]">Visibilidad</h3>
           <p className="text-[12px] text-[var(--text2)] mt-0.5">
             {visible
-              ? "Apareces en búsquedas de otros builders."
+              ? "Apareces en búsquedas de otras personas."
               : "Estás oculto. Nadie te ve en búsquedas."}
           </p>
           <p className="text-[11px] text-[var(--text3)] mt-1">
@@ -1586,7 +1586,7 @@ export default function ProfilePage() {
           description="Si tienes proyecto, la etapa es obligatoria. Como inversionista, indica si inviertes activamente, conectas capital o no por ahora."
         />
         <div className="flex flex-col gap-3 mb-4">
-          <Field label="¿Qué te trae a murmur?" required>
+          <Field label="¿Cómo usas Murmur?" required>
             <select
               className={cn(
                 "ds-input",
@@ -1882,7 +1882,7 @@ export default function ProfilePage() {
       >
         <DrawerHeader
           title="Disponibilidad y forma de trabajar"
-          description="Elige únicamente opciones estandarizadas para mejorar el matching."
+          description="Elige las opciones que mejor describen tu disponibilidad y forma de trabajar."
         />
 
         <div className="flex flex-col gap-3 mb-4">

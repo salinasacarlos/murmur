@@ -15,19 +15,19 @@ export type OnboardingMurmStep =
 
 const MURM_LEADS: Record<OnboardingMurmStep, string[]> = {
   intro: [
-    "Cuando termines, tu perfil quedará listo para que decidas cuándo mostrarte.",
+    "Cuando termines, tu perfil quedará listo. Tú decides cuándo mostrarte.",
   ],
   profile: [
-    "Estos datos son los que usamos para el matching; tú controlas la visibilidad.",
+    "Con esto te mostramos perfiles que encajan. Tú controlas la visibilidad.",
   ],
   intent: [
-    "Cómo participas y qué formatos buscas orientan las conexiones; siempre lo puedes ajustar.",
+    "Cómo participas y qué buscas orientan las sugerencias. Siempre lo puedes cambiar.",
   ],
   location: [
-    "Ciudad y radio ayudan al radar sin exponer tu ubicación exacta.",
+    "Ciudad y radio ayudan a filtrar. Nunca mostramos tu ubicación exacta.",
   ],
   done: [
-    "Listo. Puedes crear una búsqueda específica o explorar el feed cuando quieras.",
+    "Listo. Puedes crear una búsqueda o ir al feed cuando quieras.",
   ],
 }
 

@@ -16,7 +16,7 @@ export const ONBOARDING_ROLE_OPTIONS: OnboardingRoleOption[] = [
   {
     id: "contributor",
     title: "Quiero contribuir",
-    description: "Quiero sumarme a un proyecto o equipo con intención clara.",
+    description: "Quiero sumarme a un proyecto o equipo.",
   },
   {
     id: "investor",
@@ -35,10 +35,9 @@ export const ONBOARDING_ROLE_OPTIONS: OnboardingRoleOption[] = [
 export const ONBOARDING_INTENT_STEP_COPY = {
   title: "¿Qué buscas en Murmur?",
   description:
-    "Elige cómo participas en la plataforma y los formatos de conexión que te interesan.",
+    "Elige cómo participas y qué tipo de conexiones te interesan.",
   roleSectionTitle: "Cómo participas",
-  roleSectionHint:
-    "Esto orienta el matching; no limita lo que puedes explorar después.",
+  roleSectionHint: "Nos ayuda a mostrarte perfiles relevantes. Puedes cambiarlo después.",
 } as const
 
 export const ONBOARDING_STEP_COUNT = 4

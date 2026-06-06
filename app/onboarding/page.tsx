@@ -15,18 +15,18 @@ import { cn } from "@/lib/utils"
 const BENEFITS = [
   {
     icon: IconCompass,
-    title: "Match con contexto",
-    line: "Perfiles alineados con lo que buscas, no scroll sin rumbo.",
+    title: "Gente que encaja",
+    line: "Ves perfiles relacionados con lo que buscas.",
   },
   {
     icon: IconUser,
     title: "Tú controlas la visibilidad",
-    line: "Empiezas discreto; decides cuándo mostrarte.",
+    line: "Empiezas oculto. Te muestras cuando quieras.",
   },
   {
     icon: IconMessage,
-    title: "Conexiones con historia",
-    line: "Cada solicitud lleva propósito, no mensajes en frío.",
+    title: "Solicitudes con contexto",
+    line: "Cada mensaje dice por qué quieres conectar.",
   },
 ] as const
 
@@ -52,10 +52,10 @@ export default function OnboardingIntroPage() {
           </div>
         </div>
         <h1 className="text-[22px] md:text-[24px] font-extrabold tracking-[-0.45px] text-[var(--text)] mb-2">
-          Encuentra a los tuyos
+          Arma tu perfil
         </h1>
         <p className="text-[13px] text-[var(--text2)] leading-relaxed max-w-[340px] mx-auto">
-          murmur conecta founders, talento y builders con intención clara.
+          Cuéntanos quién eres y qué buscas. En pocos minutos estarás listo.
         </p>
       </div>
 
@@ -93,11 +93,10 @@ export default function OnboardingIntroPage() {
           </Button>
         </Link>
         <p className="text-[11px] text-[var(--text3)] text-center mt-3 leading-relaxed">
-          Primero tu perfil, luego qué buscas. En unos minutos estarás listo para el feed.
+          Primero tu perfil, luego qué buscas. Puedes editar todo después.
         </p>
         <p className="text-[11px] text-[var(--text3)] text-center mt-2 leading-relaxed">
-          ¿Vienes de un evento en vivo? Cuando entres al feed podrás ingresar el código
-          ahí y unirte al contexto del evento.
+          ¿Vienes de un evento? En el feed podrás ingresar el código cuando quieras.
         </p>
       </div>
     </Card>

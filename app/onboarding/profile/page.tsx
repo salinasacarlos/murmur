@@ -64,7 +64,7 @@ export default function ProfileStepPage() {
       <Stepper current={1} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
         title="Cuéntanos quién eres"
-        description="Datos básicos, industria y expertise para empezar a conectar con perfiles afines."
+        description="Nombre, industria y skills. Con esto empezamos a sugerirte perfiles."
         back="/onboarding"
         next="/onboarding/intent"
         nextDisabled={

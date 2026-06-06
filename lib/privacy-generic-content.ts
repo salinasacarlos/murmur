@@ -30,7 +30,7 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
     id: "finalidades",
     title: "3. Finalidades del tratamiento",
     paragraphs: [
-      "Tratamos datos personales para: crear y administrar tu cuenta; mostrarte perfiles y facilitar conexiones alineadas con tu intención; operar, mantener y mejorar la Plataforma; comunicaciones relacionadas con el servicio (por ejemplo, verificación, soporte, avisos importantes); seguridad, prevención de fraude y cumplimiento de obligaciones legales; y, cuando corresponda, gestionar suscripciones y pagos a través de proveedores autorizados.",
+      "Tratamos datos personales para: crear y administrar tu cuenta; mostrarte perfiles según lo que indicaste en tu perfil; operar, mantener y mejorar la Plataforma; comunicaciones relacionadas con el servicio (por ejemplo, verificación, soporte, avisos importantes); seguridad, prevención de fraude y cumplimiento de obligaciones legales; y, cuando corresponda, gestionar suscripciones y pagos a través de proveedores autorizados.",
     ],
   },
   {

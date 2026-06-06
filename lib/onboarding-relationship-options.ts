@@ -150,21 +150,21 @@ export function getOnboardingRelationshipsStepCopy(
       return {
         title: "¿En qué formato quieres unirte?",
         description:
-          "Marca los tipos de oportunidad que te interesan. Esto ayuda a emparejarte con proyectos afines.",
+          "Marca los tipos de oportunidad que te interesan.",
         options: CONTRIBUTOR_OPTIONS,
       }
     case "investor":
       return {
-        title: "¿Cómo te conectas con equipos?",
+        title: "¿Cómo te relacionas con equipos?",
         description:
-          "Indica cómo sueles relacionarte con founders y proyectos en Murmur.",
+          "Indica cómo sueles trabajar con founders y proyectos.",
         options: INVESTOR_OPTIONS,
       }
     case "both":
       return {
-        title: "¿Qué tipo de conexiones te interesan?",
+        title: "¿Qué conexiones te interesan?",
         description:
-          "Tienes proyecto propio y también quieres sumarte a otros. Marca todo lo que aplique.",
+          "Tienes proyecto propio y también quieres sumarte a otros. Marca lo que aplique.",
         options: BOTH_OPTIONS,
       }
     case "founder":
@@ -172,7 +172,7 @@ export function getOnboardingRelationshipsStepCopy(
       return {
         title: "¿Qué tipo de conexiones buscas?",
         description:
-          "Elige las que apliquen para tu proyecto. Podrás ajustarlo luego.",
+          "Elige las que apliquen para tu proyecto. Puedes cambiarlo después.",
         options: FOUNDER_OPTIONS,
       }
   }

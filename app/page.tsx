@@ -18,9 +18,9 @@ import {
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "Murmur — La red para builders",
+  title: "Murmur — Socios, talento y proyectos",
   description:
-    "La plataforma que te ayuda a encontrar a quien necesitas. Socios, talento, mentores, inversionistas y hasta amigos.",
+    "Encuentra socios, talento, mentores e inversionistas. Murmur es por invitación.",
 }
 
 const footerLink = "text-[12px] text-[var(--text2)] hover:text-[var(--p)] transition-colors"
@@ -63,7 +63,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto grid lg:grid-cols-[1fr_1.05fr] gap-12 lg:gap-10 items-center">
             <div>
               <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-4">
-                La red para builders
+                Para quien crea proyectos
               </p>
               <h1
                 className="font-extrabold tracking-[-2px] mb-5"
@@ -76,11 +76,8 @@ export default function LandingPage() {
                 correctas.
               </h1>
               <p className="text-[15px] md:text-[16px] text-[var(--text2)] leading-relaxed max-w-lg mb-8">
-                Murmur te acerca a socios, talento, mentores e inversionistas que encajan
-                con lo que haces.{" "}
-                <span className="text-[var(--text)] font-medium">
-                  Para los que crean en serio.
-                </span>
+                Murmur te acerca a socios, talento, mentores e inversionistas
+                que encajan con lo que haces.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/auth/signup">
@@ -108,9 +105,9 @@ export default function LandingPage() {
             <HeroMockup />
           </div>
           <p className="max-w-6xl mx-auto text-center text-[13px] text-[var(--text2)] mt-12 md:mt-16">
-            Únete a{" "}
-            <strong className="text-[var(--text)] font-semibold">+400 builders</strong> que
-            ya encontraron a su partna en México
+            Más de{" "}
+            <strong className="text-[var(--text)] font-semibold">400 personas</strong>{" "}
+            ya usan Murmur en México
           </p>
         </section>
 
@@ -127,26 +124,26 @@ export default function LandingPage() {
               className="font-extrabold tracking-[-1px] mb-4 max-w-xl"
               style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
             >
-              Sin swipes. Sin ruido. Sin azar.
+              Así funciona Murmur
             </h2>
             <p className="text-[15px] text-[var(--text2)] max-w-2xl mb-12 md:mb-16">
-              Cada conexión en Murmur tiene un por qué. Así funciona.
+              Sin swipes ni mensajes al azar. Cada paso tiene un sentido.
             </p>
             <div className="grid md:grid-cols-3 gap-8 md:gap-6">
               <StepCard
                 n="01"
-                title="Define qué buscas"
-                body="¿Tienes un proyecto y necesitas equipo? ¿Quieres unirte a algo? ¿Estás explorando? Tu intención le da forma a quién te mostramos."
+                title="Dices qué buscas"
+                body="¿Tienes proyecto? ¿Quieres sumarte a uno? ¿Explorando? Con eso filtramos a quién te mostramos."
               />
               <StepCard
                 n="02"
-                title="Te sugerimos buenos matches"
-                body="No es solo por industria o ciudad. Murmur cruza lo que sabes hacer, lo que te falta y lo que estás construyendo para acercarte a quien te complementa."
+                title="Ves gente relevante"
+                body="Industria, ciudad, skills y lo que cada quien busca. Murmur te acerca a perfiles que encajan contigo."
               />
               <StepCard
                 n="03"
-                title="Conecta con intención"
-                body='Ves el perfil, entiendes por qué hay compatibilidad y mandas una solicitud con un mensaje que resume el contexto. Nada de "hey" al vacío.'
+                title="Mandas una solicitud clara"
+                body='Ves el perfil, entiendes por qué encajan y escribes con contexto. Nada de un "hola" suelto.'
               />
             </div>
           </div>
@@ -157,17 +154,17 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
-                Matches con contexto
+                Búsquedas concretas
               </p>
               <h2
                 className="font-extrabold tracking-[-1px] mb-4"
                 style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
               >
-                Dices lo que buscas. Descubres a quien encaja.
+                Dices lo que buscas. Ves quién encaja.
               </h2>
               <p className="text-[15px] text-[var(--text2)] leading-relaxed">
-                Tu perfil y tus búsquedas definen un radar: Murmur prioriza perfiles
-                alineados con tu intención, sin ruido de networking genérico.
+                Tu perfil y tus búsquedas forman un radar: Murmur prioriza
+                perfiles que tienen sentido para ti, sin ruido de sobra.
               </p>
             </div>
             <IaMatchVisual />
@@ -193,22 +190,22 @@ export default function LandingPage() {
               <FeatureCard
                 kicker="Eventos"
                 title="Modo evento"
-                body="En contextos de evento puedes activar tu visibilidad para que otros builders alineados te encuentren. Ideal cuando estás presente y abierto a conversar."
+                body="En un meetup o conferencia puedes hacerte visible para que otros asistentes te encuentren. Tú decides cuándo."
                 bullets={["Compatible con meetups y conferencias", "Tú controlas cuándo apareces"]}
               />
               <FeatureCard
                 kicker="Privacidad"
                 title="Tú decides cuándo aparecer"
-                body="Fuera de eventos eres invisible por defecto. Sin mensajes en frío de desconocidos. Te activas cuando quieres — en eventos, cuando estás buscando, cuando tiene sentido."
+                body="Por defecto nadie te ve. Sin mensajes de desconocidos. Te activas cuando quieres buscar o estás en un evento."
                 stats={[
                   { label: "Mensajes no solicitados", value: "0" },
-                  { label: "Conexiones con intención", value: "100%" },
+                  { label: "Solicitudes con mensaje", value: "100%" },
                 ]}
               />
               <FeatureCard
                 kicker="Chat"
                 title="Todo dentro de Murmur"
-                body="Cuando alguien acepta tu solicitud, el chat se abre directamente en la app. Sin intercambiar WhatsApps antes de saber si la conexión vale. La conversación empieza donde debe: con contexto."
+                body="Cuando alguien acepta tu solicitud, el chat abre aquí. Sin pasar WhatsApps antes de conocerse. La conversación empieza con contexto."
               />
               <FeatureCard
                 kicker="México"
@@ -229,26 +226,26 @@ export default function LandingPage() {
               className="font-extrabold tracking-[-1px] mb-12"
               style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
             >
-              Builders que ya encontraron a quien necesitaban
+              Gente que ya encontró socio, talento o proyecto
             </h2>
             <div className="grid md:grid-cols-3 gap-6">
               <TestimonialCard
                 quote="Llevaba 6 meses buscando un co-founder técnico. En Murmur encontré a alguien en 3 semanas que no solo tenía las skills, sino la misma visión."
                 initials="LM"
                 name="Luis Mendoza"
-                role="Builder · SaaS B2B · CDMX"
+                role="Fundador · SaaS B2B · CDMX"
               />
               <TestimonialCard
-                quote="Lo usé en Talent Land. Activé el modo evento y en una tarde conecté con 4 personas que realmente tenían sentido para mi proyecto. Imposible en networking tradicional."
+                quote="Lo usé en Talent Land. Activé el modo evento y en una tarde hablé con 4 personas que encajaban con mi proyecto."
                 initials="VR"
                 name="Valentina Ríos"
                 role="CPO · Edtech · GDL"
               />
               <TestimonialCard
-                quote="No tenía un proyecto propio pero quería construir algo. Murmur me conectó con personas que buscaban exactamente mi perfil — sin mandar mensajes en frío a nadie."
+                quote="No tenía proyecto propio pero quería construir algo. Murmur me conectó con equipos que buscaban mi perfil, sin mandar mensajes en frío."
                 initials="CA"
                 name="Carlos Álvarez"
-                role="Diseñador · Builder · MTY"
+                role="Diseñador · MTY"
               />
             </div>
           </div>
@@ -271,7 +268,7 @@ export default function LandingPage() {
                 <h3 className="text-[18px] font-bold mb-1">Free</h3>
                 <p className="text-[24px] font-extrabold text-[var(--p)] mb-1">$0 / mes</p>
                 <p className="text-[13px] text-[var(--text2)] mb-6">
-                  Para explorar el ecosistema y hacer tus primeras conexiones.
+                  Para explorar y hacer tus primeras conexiones.
                 </p>
                 <ul className="space-y-2.5 text-[13px] text-[var(--text2)] mb-8 flex-1">
                   <PricingLi>
@@ -331,7 +328,7 @@ export default function LandingPage() {
                   gestionar la suscripción desde tu cuenta.
                 </p>
                 <p className="text-[13px] text-[var(--text2)] mb-6">
-                  Para quien conecta en serio y necesita más alcance.
+                  Si necesitas más alcance y más filtros.
                 </p>
                 <ul className="space-y-2.5 text-[13px] text-[var(--text2)] mb-8 flex-1">
                   <PricingLi>Varias ciudades / radar amplio</PricingLi>
@@ -383,10 +380,10 @@ export default function LandingPage() {
                       lineHeight: 1.12,
                     }}
                   >
-                    Encuentra a los tuyos.
+                    Empieza en Murmur
                   </h2>
                   <p className="text-[15px] leading-relaxed text-white/60">
-                    Co-founders, talento, mentores e inversionistas. Murmur los une.
+                    Socios, talento, mentores e inversionistas en un solo lugar.
                   </p>
                 </div>
                 <div className="flex flex-col items-center gap-4 w-full sm:w-auto">
@@ -397,7 +394,7 @@ export default function LandingPage() {
                       "w-full justify-center rounded-full border-0 bg-white text-[#0a0a0f] px-8 py-3 text-[14px] font-semibold shadow-lg shadow-black/30 hover:bg-neutral-100 hover:text-[#0a0a0f] focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050508] sm:w-auto"
                     )}
                   >
-                    Encontrar a los mios
+                    Crear cuenta
                   </Link>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45 text-center">
                     Gratis · sin tarjeta · requiere invitación
@@ -434,7 +431,7 @@ export default function LandingPage() {
           </nav>
         </div>
         <p className="max-w-6xl mx-auto text-[11px] text-[var(--text3)] mt-8">
-          © {new Date().getFullYear()} Murmur · Para los que construyen algo 🌎
+          © {new Date().getFullYear()} Murmur · Hecho en México
         </p>
       </footer>
     </div>
@@ -594,7 +591,7 @@ function HeroMockup() {
           </div>
           <p className="text-[11px] font-bold text-[var(--text)] mb-1">Descubrir</p>
           <p className="text-[10px] text-[var(--text3)] mb-3">
-            14 sugeridos por IA · CDMX y GDL
+            14 sugeridos · CDMX y GDL
           </p>
           <div className="flex flex-wrap gap-1 mb-3">
             {["Todos", "Co-founders", "Talento", "Eventos"].map((t) => (

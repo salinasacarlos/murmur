@@ -123,7 +123,7 @@ export default function ProjectStepPage() {
           <p className="text-[13px] text-[var(--text2)]">Cargando…</p>
         ) : intent == null ? (
           <p className="text-[13px] text-[var(--text2)]">
-            Vuelve al paso de intención y elige cómo participas en Murmur.
+            Vuelve al paso anterior y elige cómo participas en Murmur.
           </p>
         ) : hasProject ? (
           <div className="ds-card p-4 flex flex-col gap-3 mt-2">

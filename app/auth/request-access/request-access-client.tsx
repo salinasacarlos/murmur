@@ -136,10 +136,9 @@ export function RequestAccessClient() {
         Pedir entrada a Murmur
       </h1>
       <p className="text-[13px] text-[var(--text2)] mb-6 leading-snug">
-        Murmur es por invitación y va dirigido a quien está impulsando algo con
-        intención — proyecto, negocio, marca o iniciativa, en cualquier
-        sector. Si aún no tienes código, cuéntanos en pocas palabras. Leemos cada
-        mensaje.
+        Murmur es por invitación. Va para quien tiene un proyecto, negocio
+        o iniciativa en marcha, en cualquier sector. Si aún no tienes código,
+        cuéntanos en pocas palabras. Leemos cada mensaje.
       </p>
 
       <form className="flex flex-col gap-3" onSubmit={(e) => void handleSubmit(e)} noValidate>
