@@ -5,6 +5,10 @@ import { createServerClient } from "@supabase/ssr"
 import type { Database } from "@/lib/database.types"
 
 import { getSupabasePublicEnv } from "@/lib/supabase/public-env"
+import {
+  getCanonicalSiteOrigin,
+  isVercelAppHost,
+} from "@/lib/site-origin"
 
 const PROTECTED_PREFIXES = [
   "/admin",
@@ -22,6 +26,20 @@ const PROTECTED_PREFIXES = [
 const AUTH_PAGES = ["/auth/login", "/auth/signup"]
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get("host") ?? ""
+
+  // Producción: nunca servir la app en *.vercel.app (cookies OAuth quedan en el host equivocado).
+  if (
+    process.env.VERCEL_ENV === "production" &&
+    isVercelAppHost(host)
+  ) {
+    const canonical = new URL(getCanonicalSiteOrigin())
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.protocol = canonical.protocol
+    redirectUrl.host = canonical.host
+    return NextResponse.redirect(redirectUrl, 308)
+  }
+
   const env = getSupabasePublicEnv()
 
   let response = NextResponse.next({ request })

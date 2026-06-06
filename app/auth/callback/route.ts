@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { type NextRequest, NextResponse } from "next/server"
 
 import type { Database } from "@/lib/database.types"
+import { getRedirectOrigin } from "@/lib/site-origin"
 import { getSupabasePublicEnv } from "@/lib/supabase/public-env"
 
 function safeNextPath(raw: string | null): string {
@@ -14,14 +15,18 @@ function safeNextPath(raw: string | null): string {
 export async function GET(request: NextRequest) {
   const env = getSupabasePublicEnv()
   if (!env) {
-    return NextResponse.redirect(new URL("/auth/login?error=config", request.url))
+    return NextResponse.redirect(
+      new URL("/auth/login?error=config", getRedirectOrigin(request))
+    )
   }
 
   const code = request.nextUrl.searchParams.get("code")
   const nextPath = safeNextPath(request.nextUrl.searchParams.get("next"))
 
   if (!code) {
-    return NextResponse.redirect(new URL("/auth/login?error=oauth", request.url))
+    return NextResponse.redirect(
+      new URL("/auth/login?error=oauth", getRedirectOrigin(request))
+    )
   }
 
   let sessionCookies: {
@@ -46,7 +51,9 @@ export async function GET(request: NextRequest) {
   )
 
   if (exchangeError) {
-    return NextResponse.redirect(new URL("/auth/login?error=oauth", request.url))
+    return NextResponse.redirect(
+      new URL("/auth/login?error=oauth", getRedirectOrigin(request))
+    )
   }
 
   const {
@@ -54,7 +61,9 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.redirect(new URL("/auth/login?error=oauth", request.url))
+    return NextResponse.redirect(
+      new URL("/auth/login?error=oauth", getRedirectOrigin(request))
+    )
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -68,8 +77,9 @@ export async function GET(request: NextRequest) {
   const onboardingDone =
     !profileError && profile?.onboarding_completed === true
   const destination = onboardingDone ? nextPath : "/onboarding"
+  const origin = getRedirectOrigin(request)
 
-  const response = NextResponse.redirect(new URL(destination, request.url))
+  const response = NextResponse.redirect(new URL(destination, origin))
 
   for (const { name, value, options } of sessionCookies) {
     response.cookies.set(name, value, options)

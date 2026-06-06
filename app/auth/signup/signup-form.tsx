@@ -15,6 +15,7 @@ import {
   normalizeInviteCodeInput,
 } from "@/lib/invite-code"
 import type { InvitePreviewResponse } from "@/lib/invite-preview"
+import { getClientAuthOrigin } from "@/lib/site-origin"
 
 function useDebouncedValue<T>(value: T, ms: number): T {
   const [debounced, setDebounced] = React.useState(value)
@@ -121,7 +122,7 @@ export function SignupForm() {
       const supabase = getSupabaseBrowserClient()
       const emailRedirectTo =
         process.env.NEXT_PUBLIC_AUTH_CONFIRM_REDIRECT?.trim() ||
-        `${window.location.origin}/auth/login`
+        `${getClientAuthOrigin()}/auth/login`
 
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: trimmedEmail,

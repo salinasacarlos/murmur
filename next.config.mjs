@@ -49,6 +49,13 @@ const resolvedSupabaseKey = firstNonEmpty(
   process.env.SUPABASE_ANON_KEY
 )
 
+const resolvedSiteUrl = (() => {
+  const raw = firstNonEmpty(process.env.NEXT_PUBLIC_SITE_URL)
+  if (raw) return raw.replace(/\/+$/, "")
+  if (process.env.VERCEL_ENV === "production") return "https://joinmurmur.xyz"
+  return ""
+})()
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
@@ -58,6 +65,7 @@ const nextConfig = {
     ...(resolvedSupabaseKey
       ? { NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: resolvedSupabaseKey }
       : {}),
+    ...(resolvedSiteUrl ? { NEXT_PUBLIC_SITE_URL: resolvedSiteUrl } : {}),
   },
   turbopack: {
     root: projectRoot,

@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { buildAuthCallbackUrl } from "@/lib/site-origin"
 import { cn } from "@/lib/utils"
 
 function GoogleGlyph({ className }: { className?: string }) {
@@ -58,16 +59,7 @@ export function GoogleAuthButton({
     setBusy(true)
     try {
       const supabase = getSupabaseBrowserClient()
-      const params = new URLSearchParams()
-      if (
-        nextPath &&
-        nextPath.startsWith("/") &&
-        !nextPath.startsWith("//")
-      ) {
-        params.set("next", nextPath)
-      }
-      const qs = params.toString()
-      const redirectTo = `${window.location.origin}/auth/callback${qs ? `?${qs}` : ""}`
+      const redirectTo = buildAuthCallbackUrl(nextPath)
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
