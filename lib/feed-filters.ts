@@ -102,3 +102,35 @@ export function profileMatchesDiscoverFilters(
 
   return true
 }
+
+/** Búsqueda rápida por texto en el feed Descubrir (nombre, rol, bio, ciudad, etc.). */
+export function profileMatchesDiscoverQuery(
+  p: Profile,
+  query: string
+): boolean {
+  const q = query.trim().toLowerCase()
+  if (!q) return true
+
+  const haystack = [
+    p.name,
+    p.role,
+    p.bio,
+    p.city,
+    ...(p.cities ?? []),
+    p.projectName,
+    p.projectSeekSummary,
+    p.opportunitySeekSummary,
+    p.contributorPitch,
+    p.funFact,
+    ...(p.expertiseSlugs ?? []),
+    ...(p.functionalAreaTags ?? []),
+    ...(p.verticalSlugs ?? []),
+    ...(p.talentSlugs ?? []),
+    ...(p.relationsLooking ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+
+  return haystack.includes(q)
+}

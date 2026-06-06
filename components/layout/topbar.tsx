@@ -12,7 +12,7 @@ import {
   NotificationUnreadDot,
   useNotificationsUnread,
 } from "@/components/providers/notifications-unread-provider"
-import { IconSearch, IconBell } from "@/components/icons"
+import { IconBell } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 const PAGE_TITLES: Record<string, string> = {
@@ -72,16 +72,6 @@ export function Topbar() {
             </span>
           </Link>
           <AccountProfileLink variant="compact" />
-          <div
-            className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-lg",
-              "border border-[var(--border)] bg-[var(--bg2)]",
-              "text-[12px] text-[var(--text3)] w-64"
-            )}
-          >
-            <IconSearch size={14} />
-            <span>Buscar...</span>
-          </div>
         </div>
       </header>
 

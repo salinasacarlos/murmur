@@ -8,13 +8,14 @@ import { EventCodeJoin } from "@/components/feed/event-code-join"
 import { ProfileCard } from "@/components/feed/profile-card"
 import { ProfileDetailPanel } from "@/components/feed/profile-detail-panel"
 import { RadarCTA } from "@/components/feed/radar-cta"
+import { DiscoverProfileSearch } from "@/components/feed/discover-profile-search"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
 import { FiltersDrawer } from "@/components/feed/filters-drawer"
 import { IconSpark, IconX } from "@/components/icons"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
 import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/connections"
-import { profileMatchesDiscoverFilters } from "@/lib/feed-filters"
+import { profileMatchesDiscoverFilters, profileMatchesDiscoverQuery } from "@/lib/feed-filters"
 import { isPremiumPlan } from "@/lib/plan-limits"
 import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
@@ -90,6 +91,7 @@ function FeedPageContent() {
     isPremiumPlan(profile?.plan) || activeSearchSlots === 0
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [eventOpen, setEventOpen] = React.useState(false)
+  const [profileQuery, setProfileQuery] = React.useState("")
 
   React.useEffect(() => {
     const spotlight = searchParams.get("spotlight")
@@ -109,8 +111,13 @@ function FeedPageContent() {
       if (!s) return list
       list = list.filter((p) => profileMatchesSearchChip(p, s))
     }
+    if (profileQuery.trim()) {
+      list = list.filter((p) => profileMatchesDiscoverQuery(p, profileQuery))
+    }
     return list
-  }, [profiles, discoverFilters, activeSearch, searches])
+  }, [profiles, discoverFilters, activeSearch, searches, profileQuery])
+
+  const hasProfileQuery = profileQuery.trim().length > 0
 
   if (!activated) {
     return <RadarCTA onActivate={activateFeed} />
@@ -136,6 +143,11 @@ function FeedPageContent() {
           onOpenEvent={() => setEventOpen(true)}
           eventActive={activeEvent !== null}
           canAddSearch={canAddSearch}
+        />
+
+        <DiscoverProfileSearch
+          value={profileQuery}
+          onChange={setProfileQuery}
         />
 
         {activeEvent ? (
@@ -198,12 +210,26 @@ function FeedPageContent() {
               <IconSpark size={20} />
             </div>
             <h3 className="text-[15px] font-bold text-[var(--text)]">
-              {activeEvent
-                ? "Aún no hay nadie más conectado a este evento"
-                : "Nadie coincide con lo que pediste"}
+              {hasProfileQuery
+                ? "Nadie coincide con tu búsqueda"
+                : activeEvent
+                  ? "Aún no hay nadie más conectado a este evento"
+                  : "Nadie coincide con lo que pediste"}
             </h3>
             <p className="mt-1 max-w-xs text-[12px] text-[var(--text2)]">
-              {activeEvent ? (
+              {hasProfileQuery ? (
+                <>
+                  Prueba otro nombre, rol o ciudad, o{" "}
+                  <button
+                    type="button"
+                    onClick={() => setProfileQuery("")}
+                    className="font-semibold text-[var(--p)] hover:underline underline-offset-2"
+                  >
+                    limpia la búsqueda
+                  </button>
+                  .
+                </>
+              ) : activeEvent ? (
                 <>
                   Cuando alguien se una con el código{" "}
                   <span
