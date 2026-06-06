@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Field, Input } from "@/components/ui/input"
@@ -9,10 +10,16 @@ import { buildAuthCallbackUrl } from "@/lib/site-origin"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 export function ForgotPasswordForm() {
+  const searchParams = useSearchParams()
   const [email, setEmail] = React.useState("")
   const [submitting, setSubmitting] = React.useState(false)
   const [sent, setSent] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    const fromUrl = searchParams.get("email")?.trim()
+    if (fromUrl) setEmail(fromUrl)
+  }, [searchParams])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()

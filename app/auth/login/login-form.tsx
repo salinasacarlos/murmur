@@ -75,6 +75,12 @@ export function LoginForm() {
 
   const resetOk = searchParams.get("reset") === "1"
 
+  const forgotPasswordHref = React.useMemo(() => {
+    const trimmed = email.trim()
+    if (!trimmed) return "/auth/forgot-password"
+    return `/auth/forgot-password?email=${encodeURIComponent(trimmed)}`
+  }, [email])
+
   return (
     <>
       {resetOk ? (
@@ -118,7 +124,7 @@ export function LoginForm() {
 
         <p className="text-[11px] text-right -mt-1">
           <Link
-            href="/auth/forgot-password"
+            href={forgotPasswordHref}
             className="text-[var(--p)] font-semibold hover:underline underline-offset-2"
           >
             ¿Olvidaste tu contraseña?
