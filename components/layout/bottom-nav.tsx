@@ -8,6 +8,7 @@ import { useTheme } from "next-themes"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { Toggle } from "@/components/ui/toggle"
 import { AccountProfileLink } from "@/components/layout/account-profile-link"
+import { DiscoverNavMobile } from "@/components/layout/discover-nav-promo"
 import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
@@ -15,7 +16,6 @@ import {
   useNotificationsUnread,
 } from "@/components/providers/notifications-unread-provider"
 import {
-  IconCompass,
   IconUsers,
   IconMessage,
   IconSearch,
@@ -28,12 +28,38 @@ import {
 import { isPremiumPlan } from "@/lib/plan-limits"
 import { cn } from "@/lib/utils"
 
-const TABS = [
-  { href: "/feed", label: "Descubrir", icon: IconCompass },
+const LEFT_TABS = [
   { href: "/connections", label: "Conexiones", icon: IconUsers },
   { href: "/messages", label: "Mensajes", icon: IconMessage },
-  { href: "/searches", label: "Búsquedas", icon: IconSearch },
 ] as const
+
+const RIGHT_TABS = [{ href: "/searches", label: "Búsquedas", icon: IconSearch }] as const
+
+function BottomNavTab({
+  href,
+  label,
+  icon: Icon,
+  pathname,
+}: {
+  href: string
+  label: string
+  icon: React.ComponentType<{ size?: number }>
+  pathname: string
+}) {
+  const active = pathname === href || pathname.startsWith(href + "/")
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "relative z-[1] flex min-h-[44px] min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 transition-colors",
+        active ? "text-[var(--p)]" : "text-[var(--text2)]"
+      )}
+    >
+      <Icon size={20} />
+      <span className="text-[10px] font-medium">{label}</span>
+    </Link>
+  )
+}
 
 export function BottomNav() {
   const pathname = usePathname()
@@ -66,36 +92,34 @@ export function BottomNav() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg)]/95 backdrop-blur border-t-[0.5px] border-[var(--border)]"
         style={{ paddingBottom: "var(--sab)" }}
       >
-        <div className="flex h-14">
-          {TABS.map((tab) => {
-            const Icon = tab.icon
-            const active =
-              pathname === tab.href || pathname.startsWith(tab.href + "/")
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={cn(
-                  "relative z-[1] flex min-h-[44px] min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 transition-colors",
-                  active ? "text-[var(--p)]" : "text-[var(--text2)]"
-                )}
-              >
-                <Icon size={20} />
-                <span className="text-[10px] font-medium">{tab.label}</span>
-              </Link>
-            )
-          })}
-          <button
-            type="button"
-            onClick={() => setMoreOpen(true)}
-            className={cn(
-              "flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors",
-              moreActive ? "text-[var(--p)]" : "text-[var(--text2)]"
-            )}
-          >
-            <IconSettings size={20} />
-            <span className="text-[10px] font-medium">Más</span>
-          </button>
+        <div
+          className="flex items-end px-1 pt-1"
+          style={{ height: "var(--mobile-nav-h)" }}
+        >
+          <div className="flex min-w-0 flex-1 items-end justify-around">
+            {LEFT_TABS.map((tab) => (
+              <BottomNavTab key={tab.href} {...tab} pathname={pathname} />
+            ))}
+          </div>
+
+          <DiscoverNavMobile />
+
+          <div className="flex min-w-0 flex-1 items-end justify-around">
+            {RIGHT_TABS.map((tab) => (
+              <BottomNavTab key={tab.href} {...tab} pathname={pathname} />
+            ))}
+            <button
+              type="button"
+              onClick={() => setMoreOpen(true)}
+              className={cn(
+                "flex min-h-[44px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
+                moreActive ? "text-[var(--p)]" : "text-[var(--text2)]"
+              )}
+            >
+              <IconSettings size={20} />
+              <span className="text-[10px] font-medium">Más</span>
+            </button>
+          </div>
         </div>
       </nav>
 

@@ -50,7 +50,7 @@ export default async function AppLayout({
             <Sidebar />
             <div className="md:pl-[224px] flex flex-col min-h-svh">
               <Topbar />
-              <main className="flex min-h-0 flex-1 flex-col pb-[calc(56px+var(--sab))] md:pb-0">
+              <main className="flex min-h-0 flex-1 flex-col pb-[calc(var(--mobile-nav-h)+var(--sab))] md:pb-0">
                 {children}
               </main>
               <BottomNav />

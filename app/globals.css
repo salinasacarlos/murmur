@@ -35,7 +35,7 @@
 
   --topbar-h: 64px;
   --sidebar-w: 224px;
-  --mobile-nav-h: 56px;
+  --mobile-nav-h: 64px;
 
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);

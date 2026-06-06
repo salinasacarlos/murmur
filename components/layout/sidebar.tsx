@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { Logo } from "@/components/brand/logo"
+import { DiscoverNavSidebar } from "@/components/layout/discover-nav-promo"
 import { Avatar } from "@/components/ui/avatar"
 import { Toggle } from "@/components/ui/toggle"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
@@ -16,7 +17,6 @@ import {
   useNotificationsUnread,
 } from "@/components/providers/notifications-unread-provider"
 import {
-  IconCompass,
   IconSearch,
   IconUsers,
   IconMessage,
@@ -27,7 +27,6 @@ import {
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/feed", label: "Descubrir", icon: IconCompass },
   { href: "/searches", label: "Mis búsquedas", icon: IconSearch },
   { href: "/connections", label: "Conexiones", icon: IconUsers },
   { href: "/messages", label: "Mensajes", icon: IconMessage },
@@ -100,6 +99,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 flex flex-col gap-0.5">
+        <DiscoverNavSidebar />
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const active =
