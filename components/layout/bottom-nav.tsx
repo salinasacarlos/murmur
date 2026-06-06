@@ -7,6 +7,7 @@ import { useTheme } from "next-themes"
 
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { Toggle } from "@/components/ui/toggle"
+import { AccountProfileLink } from "@/components/layout/account-profile-link"
 import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
@@ -20,7 +21,6 @@ import {
   IconSearch,
   IconSettings,
   IconSpark,
-  IconUser,
   IconChevronRight,
   IconLogOut,
   IconBell,
@@ -45,9 +45,9 @@ export function BottomNav() {
   const { hasUnread } = useNotificationsUnread()
 
   const moreActive =
-    pathname === "/profile" ||
-    pathname.startsWith("/profile/") ||
-    pathname === "/invitations"
+    pathname === "/invitations" ||
+    pathname === "/notifications" ||
+    pathname === "/upgrade"
 
   async function handleSignOut() {
     if (signingOut) return
@@ -104,9 +104,10 @@ export function BottomNav() {
         onOpenChange={setMoreOpen}
         ariaLabel="Más opciones"
       >
-        <DrawerHeader title="Configuración" />
+        <DrawerHeader title="Cuenta" />
 
         <div className="flex flex-col gap-2">
+          <AccountProfileLink onNavigate={() => setMoreOpen(false)} />
           <div className="ds-card p-4 flex items-center justify-between">
             <div>
               <div className="text-[13px] font-semibold text-[var(--text)]">
@@ -170,18 +171,6 @@ export function BottomNav() {
             <div className="flex items-center gap-3">
               <IconSpark size={16} />
               <span className="text-[13px] font-medium">Mis invitaciones</span>
-            </div>
-            <IconChevronRight size={14} />
-          </Link>
-
-          <Link
-            href="/profile"
-            onClick={() => setMoreOpen(false)}
-            className="ds-card p-4 flex items-center justify-between hover:border-[var(--border2)] transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <IconUser size={16} />
-              <span className="text-[13px] font-medium">Mi perfil</span>
             </div>
             <IconChevronRight size={14} />
           </Link>

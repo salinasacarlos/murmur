@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { Logo } from "@/components/brand/logo"
+import { AccountProfileLink } from "@/components/layout/account-profile-link"
 import { Toggle } from "@/components/ui/toggle"
 import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import {
@@ -20,7 +21,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/searches/new": "Nueva búsqueda",
   "/connections": "Conexiones",
   "/messages": "Mensajes",
-  "/profile": "Mi perfil",
+  "/profile": "Perfil",
   "/invitations": "Mis invitaciones",
   "/notifications": "Notificaciones",
 }
@@ -70,6 +71,7 @@ export function Topbar() {
               />
             </span>
           </Link>
+          <AccountProfileLink variant="compact" />
           <div
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg",
@@ -87,10 +89,11 @@ export function Topbar() {
         className="md:hidden sticky top-0 z-30 bg-[var(--bg)]/95 backdrop-blur border-b-[0.5px] border-[var(--border)]"
         style={{ paddingTop: "var(--sat)" }}
       >
-        <div className="flex items-center justify-between h-14 px-4">
-          <Link href="/feed">
+        <div className="flex items-center justify-between h-14 px-4 gap-3">
+          <Link href="/feed" className="shrink-0">
             <Logo size="sm" />
           </Link>
+          <div className="flex items-center gap-2 shrink-0">
           <div
             role="group"
             aria-label={`Visibilidad: ${visible ? "apareces en búsquedas" : "oculto"}`}
@@ -118,6 +121,8 @@ export function Topbar() {
               disabled={savingVisibility}
               label="Cambiar visibilidad"
             />
+          </div>
+          <AccountProfileLink variant="compact" />
           </div>
         </div>
       </header>

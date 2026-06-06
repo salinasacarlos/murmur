@@ -8,6 +8,7 @@ import { Logo } from "@/components/brand/logo"
 import { Avatar } from "@/components/ui/avatar"
 import { Toggle } from "@/components/ui/toggle"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { useAccountDisplay } from "@/hooks/use-account-display"
 import { usePersistVisibility } from "@/hooks/use-persist-visibility"
 import { isPremiumPlan } from "@/lib/plan-limits"
 import {
@@ -20,7 +21,6 @@ import {
   IconUsers,
   IconMessage,
   IconSpark,
-  IconUser,
   IconLogOut,
   IconBell,
 } from "@/components/icons"
@@ -33,26 +33,16 @@ const NAV_ITEMS = [
   { href: "/messages", label: "Mensajes", icon: IconMessage },
   { href: "/notifications", label: "Notificaciones", icon: IconBell },
   { href: "/invitations", label: "Mis invitaciones", icon: IconSpark },
-  { href: "/profile", label: "Mi perfil", icon: IconUser },
 ] as const
 
 export function Sidebar() {
   const pathname = usePathname()
   const { visible, persistVisibility, saving: savingVisibility } =
     usePersistVisibility()
-  const { profile, user, signOut } = useCurrentUser()
+  const { signOut, profile } = useCurrentUser()
+  const { displayName, initials, photoUrl, planLabel } = useAccountDisplay()
   const { hasUnread } = useNotificationsUnread()
   const [signingOut, setSigningOut] = React.useState(false)
-
-  const displayName =
-    profile?.name?.trim() ||
-    (user?.user_metadata?.name as string | undefined)?.trim() ||
-    user?.email ||
-    "Tu cuenta"
-  const initials =
-    profile?.initials || displayName.slice(0, 2).toUpperCase() || "TU"
-  const photoUrl = profile?.photo_url ?? undefined
-  const planLabel = profile?.plan === "premium" ? "Premium" : "Free"
 
   async function handleSignOut() {
     if (signingOut) return
@@ -157,20 +147,31 @@ export function Sidebar() {
         className="border-t-[0.5px] border-[var(--border)] px-4 py-3 flex items-center gap-2.5"
         style={{ paddingBottom: "calc(12px + var(--sab))" }}
       >
-        <Avatar
-          initials={initials}
-          imageUrl={photoUrl}
-          alt={`Foto de ${displayName}`}
-          size="sm"
-        />
-        <div className="min-w-0 flex-1">
-          <div className="text-[12px] font-semibold text-[var(--text)] truncate">
-            {displayName}
+        <Link
+          href="/profile"
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1 py-0.5 -mx-1",
+            "hover:bg-[var(--bg2)] transition-colors group",
+            pathname === "/profile" || pathname.startsWith("/profile/")
+              ? "bg-[var(--pl)]"
+              : undefined
+          )}
+        >
+          <Avatar
+            initials={initials}
+            imageUrl={photoUrl}
+            alt={`Foto de ${displayName}`}
+            size="sm"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] font-semibold text-[var(--text)] truncate">
+              {displayName}
+            </div>
+            <div className="text-[10px] text-[var(--text3)] truncate uppercase tracking-wider group-hover:text-[var(--p)] transition-colors">
+              {planLabel} · Ver perfil
+            </div>
           </div>
-          <div className="text-[10px] text-[var(--text3)] truncate uppercase tracking-wider">
-            {planLabel}
-          </div>
-        </div>
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}

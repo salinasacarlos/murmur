@@ -87,7 +87,7 @@ import { labelInvestorActivityShort } from "@/lib/investor-activity"
 import { labelProjectStageShort } from "@/lib/project-stage"
 
 export default function ProfilePage() {
-  const { user: authUser, profile, refresh, mergeProfile } = useCurrentUser()
+  const { user: authUser, profile, refresh, mergeProfile, signOut } = useCurrentUser()
   const { visible, setVisible } = useVisibility()
 
   const [enrichedProfile, setEnrichedProfile] = React.useState<Profile | null>(
@@ -194,6 +194,7 @@ export default function ProfilePage() {
   }, [authUser, profile, enrichedProfile])
 
   const [profileEditOpen, setProfileEditOpen] = React.useState(false)
+  const [signingOut, setSigningOut] = React.useState(false)
   const [industryEditOpen, setIndustryEditOpen] = React.useState(false)
   const [expertiseEditOpen, setExpertiseEditOpen] = React.useState(false)
   const [talentsEditOpen, setTalentsEditOpen] = React.useState(false)
@@ -957,7 +958,7 @@ export default function ProfilePage() {
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full flex flex-col gap-4">
       <div className="md:hidden">
         <h2 className="text-[18px] font-extrabold tracking-[-0.4px]">
-          Mi perfil
+          Perfil
         </h2>
       </div>
 
@@ -1945,12 +1946,32 @@ export default function ProfilePage() {
         </Card>
       ) : null}
 
-      <Card padding="default" className="ds-fade-up flex flex-col gap-1">
-        <p className="text-[11px] uppercase tracking-wide text-[var(--text3)]">
-          Cuenta
-        </p>
-        <p className="text-[13px] text-[var(--text)]">{user.email}</p>
-        <p className="text-[12px] text-[var(--text3)]">Plan {user.plan}</p>
+      <Card padding="default" className="ds-fade-up flex flex-col gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-[var(--text3)]">
+            Cuenta
+          </p>
+          <p className="text-[13px] text-[var(--text)] mt-1">{user.email}</p>
+          <p className="text-[12px] text-[var(--text3)] mt-0.5">Plan {user.plan}</p>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="w-full justify-center"
+          disabled={signingOut}
+          onClick={async () => {
+            if (signingOut) return
+            setSigningOut(true)
+            try {
+              await signOut()
+            } finally {
+              setSigningOut(false)
+            }
+          }}
+        >
+          {signingOut ? "Cerrando sesión…" : "Cerrar sesión"}
+        </Button>
       </Card>
     </div>
   )
