@@ -2,6 +2,7 @@ import * as React from "react"
 import Link from "next/link"
 
 import { Logo } from "@/components/brand/logo"
+import { OnboardingSignOutLink } from "@/components/auth/onboarding-sign-out-link"
 
 export default function OnboardingLayout({
   children,
@@ -17,9 +18,7 @@ export default function OnboardingLayout({
         <Link href="/">
           <Logo size="md" />
         </Link>
-        <span className="text-[11px] uppercase tracking-[0.07em] font-semibold text-[var(--text3)]">
-          Onboarding
-        </span>
+        <OnboardingSignOutLink />
       </header>
       <main className="flex-1 flex items-start md:items-center justify-center px-4 py-6">
         <div className="w-full max-w-[520px]">{children}</div>
