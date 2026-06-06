@@ -5,6 +5,11 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { VisibilityProvider } from "@/components/providers/visibility-provider"
 import { CANONICAL_SITE_ORIGIN } from "@/lib/site"
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+} from "@/lib/site-metadata"
 import { cn } from "@/lib/utils"
 
 const raleway = Raleway({
@@ -22,26 +27,23 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ?? CANONICAL_SITE_ORIGIN
   ),
-  title: "Murmur — Construye con las personas correctas",
-  description:
-    "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
   },
   openGraph: {
-    title: "Murmur — Construye con las personas correctas",
-    description:
-      "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
-    siteName: "Murmur",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_NAME,
     locale: "es_ES",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Murmur — Construye con las personas correctas",
-    description:
-      "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 }
 

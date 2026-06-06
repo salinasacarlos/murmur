@@ -6,12 +6,15 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
 import { getSupportEmail } from "@/lib/product-config"
+import {
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+} from "@/lib/site-metadata"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "Murmur — Socios, talento y proyectos",
-  description:
-    "Encuentra socios, talento, mentores e inversionistas. Murmur es por invitación.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
 }
 
 const footerLink = "text-[12px] text-[var(--text2)] hover:text-[var(--p)] transition-colors"

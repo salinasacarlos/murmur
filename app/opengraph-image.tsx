@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og"
 
-export const alt = "Murmur — Construye con las personas correctas"
+import { SITE_HERO_HEADLINE, SITE_TITLE } from "@/lib/site-metadata"
+
+export const alt = SITE_TITLE
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
@@ -90,7 +92,7 @@ export default function OpenGraphImage() {
             lineHeight: 1.35,
           }}
         >
-          Construye con las personas correctas
+          {SITE_HERO_HEADLINE}
         </div>
       </div>
     ),
