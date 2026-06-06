@@ -25,6 +25,24 @@ export const metadata: Metadata = {
   title: "Murmur — Construye con las personas correctas",
   description:
     "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    title: "Murmur — Construye con las personas correctas",
+    description:
+      "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
+    siteName: "Murmur",
+    locale: "es_ES",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Murmur — Construye con las personas correctas",
+    description:
+      "Red para encontrar socios, talento, mentores e inversionistas. Murmur es por invitación.",
+  },
 }
 
 export const viewport: Viewport = {
