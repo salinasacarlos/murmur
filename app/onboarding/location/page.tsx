@@ -11,6 +11,7 @@ import { Field, Input } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { IconMapPin } from "@/components/icons"
 import { CITIES_CATALOG } from "@/lib/catalogs"
+import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding-intent-options"
 import {
   persistOnboardingLocationFinish,
   requireUserId,
@@ -91,7 +92,7 @@ export default function LocationStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={5} total={5} />
+      <Stepper current={4} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
         title="¿Dónde estás?"
         description="Ciudad y radio; nunca mostramos tu ubicación exacta."
@@ -107,8 +108,12 @@ export default function LocationStepPage() {
             .select("onboarding_intent, project_stage, investor_activity")
             .eq("id", uid)
             .maybeSingle()
+          if (!row?.onboarding_intent) {
+            router.replace("/onboarding/intent")
+            return false
+          }
           if (
-            userHasProjectIntent(row?.onboarding_intent) &&
+            userHasProjectIntent(row.onboarding_intent) &&
             !row?.project_stage
           ) {
             router.replace("/onboarding/project")

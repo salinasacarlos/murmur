@@ -8,9 +8,8 @@ export const MURM_SESSION_SEED_KEY = "murmur:murm-session-seed"
 
 export type OnboardingMurmStep =
   | "intro"
-  | "role"
-  | "relationships"
   | "profile"
+  | "intent"
   | "location"
   | "done"
 
@@ -18,14 +17,11 @@ const MURM_LEADS: Record<OnboardingMurmStep, string[]> = {
   intro: [
     "Cuando termines, tu perfil quedará listo para que decidas cuándo mostrarte.",
   ],
-  role: [
-    "Una elección aquí orienta el matching; puedes detallar proyecto u oportunidad en tus búsquedas.",
-  ],
-  relationships: [
-    "Esto alimenta el tipo de conexiones que verás; siempre lo puedes ajustar.",
-  ],
   profile: [
     "Estos datos son los que usamos para el matching; tú controlas la visibilidad.",
+  ],
+  intent: [
+    "Cómo participas y qué formatos buscas orientan las conexiones; siempre lo puedes ajustar.",
   ],
   location: [
     "Ciudad y radio ayudan al radar sin exponer tu ubicación exacta.",

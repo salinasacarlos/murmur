@@ -47,13 +47,38 @@ export async function persistOnboardingIntent(
   userId: string,
   intent: OnboardingIntent
 ): Promise<{ ok: boolean; error?: string }> {
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("onboarding_intent")
+    .eq("id", userId)
+    .maybeSingle()
+
   const { error } = await supabase
     .from("profiles")
     .update({ onboarding_intent: intent })
     .eq("id", userId)
 
   if (error) return { ok: false, error: error.message }
+
+  if (existing?.onboarding_intent && existing.onboarding_intent !== intent) {
+    await replaceProfileRelationsLooking(supabase, userId, [])
+  }
+
   return { ok: true }
+}
+
+export async function persistOnboardingIntentStep(
+  supabase: Client,
+  userId: string,
+  input: { intent: OnboardingIntent; relations: RelationType[] }
+): Promise<{ ok: boolean; error?: string }> {
+  const intentResult = await persistOnboardingIntent(
+    supabase,
+    userId,
+    input.intent
+  )
+  if (!intentResult.ok) return intentResult
+  return persistOnboardingRelationships(supabase, userId, input.relations)
 }
 
 /** Paso contexto: proyecto, contribuir o inversionista (después del perfil base). */

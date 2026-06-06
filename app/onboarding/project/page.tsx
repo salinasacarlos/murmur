@@ -17,6 +17,7 @@ import {
   userIsInvestor,
 } from "@/lib/profile-project-guard"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding-intent-options"
 import { cn } from "@/lib/utils"
 import type {
   InvestorActivity,
@@ -89,11 +90,11 @@ export default function ProjectStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={4} total={5} />
+      <Stepper current={3} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
         title="Contexto"
         description={description}
-        back="/onboarding/profile"
+        back="/onboarding/intent"
         next="/onboarding/location"
         nextDisabled={nextDisabled}
         onBeforeNext={async () => {
@@ -122,7 +123,7 @@ export default function ProjectStepPage() {
           <p className="text-[13px] text-[var(--text2)]">Cargando…</p>
         ) : intent == null ? (
           <p className="text-[13px] text-[var(--text2)]">
-            Vuelve al paso anterior y elige tu rol en murmur.
+            Vuelve al paso de intención y elige cómo participas en Murmur.
           </p>
         ) : hasProject ? (
           <div className="ds-card p-4 flex flex-col gap-3 mt-2">
@@ -192,21 +193,21 @@ export default function ProjectStepPage() {
           </div>
         ) : (
           <div className="ds-card p-4 flex flex-col gap-3 mt-2">
-            <Field label="Tipo de oportunidad buscada">
-              <PublicFieldNotice className="mb-1" />
-              <Input
-                placeholder="ej. Socio/a comercial, primer empleo clave, colaboración por proyecto…"
-                value={opportunitySeek}
-                onChange={(e) => setOpportunitySeek(e.target.value)}
-              />
-            </Field>
             <Field label="Qué puedo aportar">
               <PublicFieldNotice className="mb-1" />
               <Textarea
                 placeholder="ej. Años liderando equipos en ventas, educación, operaciones o en tu campo…"
-                rows={3}
+                rows={4}
                 value={contributorPitch}
                 onChange={(e) => setContributorPitch(e.target.value)}
+              />
+            </Field>
+            <Field label="Detalle opcional sobre lo que buscas">
+              <PublicFieldNotice className="mb-1" />
+              <Input
+                placeholder="ej. Startup en etapa temprana, sector salud, rol comercial…"
+                value={opportunitySeek}
+                onChange={(e) => setOpportunitySeek(e.target.value)}
               />
             </Field>
           </div>

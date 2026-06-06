@@ -13,6 +13,7 @@ import {
   persistOnboardingProfileStep,
   requireUserId,
 } from "@/lib/onboarding-persist"
+import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding-intent-options"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import { cn } from "@/lib/utils"
@@ -60,12 +61,12 @@ export default function ProfileStepPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper current={3} total={5} />
+      <Stepper current={1} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
         title="Cuéntanos quién eres"
         description="Datos básicos, industria y expertise para empezar a conectar con perfiles afines."
-        back="/onboarding/relationships"
-        next="/onboarding/project"
+        back="/onboarding"
+        next="/onboarding/intent"
         nextDisabled={
           !primaryIndustrySlug ||
           verticalSlugs.length === 0 ||

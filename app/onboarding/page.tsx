@@ -87,13 +87,13 @@ export default function OnboardingIntroPage() {
       </div>
 
       <div className="p-6 md:p-8 pt-5">
-        <Link href="/onboarding/role" className="block">
+        <Link href="/onboarding/profile" className="block">
           <Button size="lg" className="w-full justify-center">
             Continuar
           </Button>
         </Link>
         <p className="text-[11px] text-[var(--text3)] text-center mt-3 leading-relaxed">
-          En unos minutos tendrás un perfil listo para el feed. Podrás editar después.
+          Primero tu perfil, luego qué buscas. En unos minutos estarás listo para el feed.
         </p>
         <p className="text-[11px] text-[var(--text3)] text-center mt-2 leading-relaxed">
           ¿Vienes de un evento en vivo? Cuando entres al feed podrás ingresar el código
