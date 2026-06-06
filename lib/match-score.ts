@@ -31,6 +31,29 @@ export type MatchScoreResult = {
   compatibility: Compatibility
   /** Búsqueda que mejor explica el score (útil con chip «Todas»). */
   matchedSearchId: string | null
+  matchedSearchTitle: string | null
+}
+
+export function hasSearchMatchCriteria(criteria: MatchCriteria): boolean {
+  return (
+    Boolean(criteria.primaryIndustrySlug) ||
+    (criteria.expertiseSlugs?.length ?? 0) > 0 ||
+    (criteria.verticalSlugs?.length ?? 0) > 0 ||
+    (criteria.talentSlugs?.length ?? 0) > 0 ||
+    (criteria.relations?.length ?? 0) > 0
+  )
+}
+
+/** ¿El perfil encaja con al menos una búsqueda activa? */
+export function profileMatchesAnyActiveSearch(
+  profile: Profile,
+  activeSearches: Search[]
+): boolean {
+  const actives = activeSearches.filter((s) => s.status === "active")
+  if (actives.length === 0) return false
+  return actives.some((search) =>
+    profileMatchesSearchCriteria(profile, searchToMatchCriteria(search))
+  )
 }
 
 export function compatibilityFromScore(score: number): Compatibility {
@@ -183,6 +206,7 @@ export function scoreProfileAgainstSearch(
     score,
     compatibility: compatibilityFromScore(score),
     matchedSearchId: search.id,
+    matchedSearchTitle: search.title,
   }
 }
 
@@ -192,39 +216,55 @@ export type DiscoverMatchContext = {
   cityQuery?: string
 }
 
-/** Mejor score entre búsquedas activas; con chip concreto solo esa búsqueda. */
+/** Score vs búsquedas activas del usuario (nunca vs su propio perfil). Siempre devuelve resultado. */
 export function scoreProfileForDiscover(
   profile: Profile,
   context: DiscoverMatchContext
-): MatchScoreResult {
+): MatchScoreResult | null {
   const { activeSearchId, activeSearches, cityQuery } = context
   const actives = activeSearches.filter((s) => s.status === "active")
 
-  if (activeSearchId !== "all") {
-    const search = actives.find((s) => s.id === activeSearchId)
-    if (search) {
-      return scoreProfileAgainstSearch(profile, search, { cityQuery })
-    }
+  if (actives.length === 0) {
+    return null
   }
 
-  if (actives.length === 0) {
-    const score = cityQuery?.trim()
-      ? computeMatchScore(profile, {}, { cityQuery })
-      : 40
+  if (activeSearchId !== "all") {
+    const search = actives.find((s) => s.id === activeSearchId)
+    if (!search) return null
+    const criteria = searchToMatchCriteria(search)
+    if (!hasSearchMatchCriteria(criteria)) {
+      return {
+        score: 35,
+        compatibility: "media",
+        matchedSearchId: search.id,
+        matchedSearchTitle: search.title,
+      }
+    }
+    return scoreProfileAgainstSearch(profile, search, { cityQuery })
+  }
+
+  const scorable = actives.filter((s) =>
+    hasSearchMatchCriteria(searchToMatchCriteria(s))
+  )
+
+  if (scorable.length === 0) {
+    const fallback = actives[0]!
     return {
-      score,
-      compatibility: compatibilityFromScore(score),
-      matchedSearchId: null,
+      score: 35,
+      compatibility: "media",
+      matchedSearchId: fallback.id,
+      matchedSearchTitle: fallback.title,
     }
   }
 
   let best: MatchScoreResult = {
-    score: 0,
-    compatibility: "baja" as Compatibility,
+    score: -1,
+    compatibility: "baja",
     matchedSearchId: null,
+    matchedSearchTitle: null,
   }
 
-  for (const search of actives) {
+  for (const search of scorable) {
     const result = scoreProfileAgainstSearch(profile, search, { cityQuery })
     if (result.score > best.score) {
       best = result
@@ -234,20 +274,39 @@ export function scoreProfileForDiscover(
   return best
 }
 
+export type RankedDiscoverProfile = Profile & {
+  matchScore: number
+  matchedSearchId: string | null
+  matchedSearchTitle: string | null
+}
+
 export function rankProfilesForDiscover(
   profiles: Profile[],
   context: DiscoverMatchContext
-): Array<Profile & { matchScore: number }> {
-  return profiles
-    .map((profile) => {
-      const { score, compatibility } = scoreProfileForDiscover(profile, context)
-      return {
-        ...profile,
-        compatibility,
-        matchScore: score,
-      }
-    })
-    .sort((a, b) => b.matchScore - a.matchScore)
+): RankedDiscoverProfile[] {
+  const actives = context.activeSearches.filter((s) => s.status === "active")
+
+  if (actives.length === 0) {
+    return profiles.map((profile) => ({
+      ...profile,
+      matchScore: 0,
+      matchedSearchId: null,
+      matchedSearchTitle: null,
+    }))
+  }
+
+  const ranked: RankedDiscoverProfile[] = profiles.map((profile) => {
+    const result = scoreProfileForDiscover(profile, context)
+    return {
+      ...profile,
+      compatibility: result?.compatibility ?? "baja",
+      matchScore: result?.score ?? 0,
+      matchedSearchId: result?.matchedSearchId ?? null,
+      matchedSearchTitle: result?.matchedSearchTitle ?? null,
+    }
+  })
+
+  return ranked.sort((a, b) => b.matchScore - a.matchScore)
 }
 
 export function countProfilesMatchingSearch(

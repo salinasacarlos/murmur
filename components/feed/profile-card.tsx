@@ -31,12 +31,17 @@ interface ProfileCardProps {
   profile: Profile
   onClick?: () => void
   connectionHint?: PeerConnectionHint
+  /** Búsqueda activa que explica el match (Descubrir). */
+  matchedSearchTitle?: string | null
+  showMatchBadge?: boolean
 }
 
 export function ProfileCard({
   profile,
   onClick,
   connectionHint = { state: "none" },
+  matchedSearchTitle,
+  showMatchBadge = true,
 }: ProfileCardProps) {
   const heroIndustrySlug = resolveHeroIndustrySlug({
     primaryIndustrySlug: profile.primaryIndustrySlug,
@@ -76,8 +81,18 @@ export function ProfileCard({
             <h3 className="text-[14px] font-bold tracking-[-0.2px] text-[var(--text)] truncate">
               {profile.name}
             </h3>
-            <CompatibilityBadge level={profile.compatibility} />
+            {showMatchBadge ? (
+              <CompatibilityBadge level={profile.compatibility} />
+            ) : null}
           </div>
+          {matchedSearchTitle ? (
+            <p className="text-[10px] text-[var(--text3)] mt-0.5 truncate">
+              Match con{" "}
+              <span className="font-semibold text-[var(--p)]">
+                {matchedSearchTitle}
+              </span>
+            </p>
+          ) : null}
           <p className="text-[12px] text-[var(--text2)] truncate">
             {profile.role}
           </p>

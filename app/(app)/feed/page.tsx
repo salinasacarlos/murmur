@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Suspense } from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { EventCodeJoin } from "@/components/feed/event-code-join"
@@ -18,13 +19,13 @@ import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/co
 import { profileMatchesDiscoverFilters, profileMatchesDiscoverQuery } from "@/lib/feed-filters"
 import {
   countProfilesMatchingSearch,
-  profileMatchesSearchCriteria,
+  MATCH_TIER_MEDIA,
   rankProfilesForDiscover,
-  searchToMatchCriteria,
 } from "@/lib/match-score"
 import { isPremiumPlan } from "@/lib/plan-limits"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
 
 function FeedPageContent() {
   const router = useRouter()
@@ -63,7 +64,12 @@ function FeedPageContent() {
     feedLoading,
   } = useDiscoverFeed()
 
-  const activeSearchSlots = searches.filter((s) => s.status === "active").length
+  const activeSearches = React.useMemo(
+    () => searches.filter((s) => s.status === "active"),
+    [searches]
+  )
+  const hasActiveSearches = activeSearches.length > 0
+  const activeSearchSlots = activeSearches.length
   const canAddSearch =
     isPremiumPlan(profile?.plan) || activeSearchSlots === 0
   const [filtersOpen, setFiltersOpen] = React.useState(false)
@@ -92,15 +98,17 @@ function FeedPageContent() {
   const visibleProfiles = React.useMemo(() => {
     let list = poolForMatchCounts
 
-    if (activeSearch !== "all") {
-      const s = searches.find((x) => x.id === activeSearch)
-      if (!s) return list
-      const criteria = searchToMatchCriteria(s)
-      list = list.filter((p) => profileMatchesSearchCriteria(p, criteria))
-    }
-
     if (profileQuery.trim()) {
       list = list.filter((p) => profileMatchesDiscoverQuery(p, profileQuery))
+    }
+
+    if (!hasActiveSearches) {
+      return list.map((profile) => ({
+        ...profile,
+        matchScore: 0,
+        matchedSearchId: null,
+        matchedSearchTitle: null,
+      }))
     }
 
     return rankProfilesForDiscover(list, {
@@ -114,6 +122,7 @@ function FeedPageContent() {
     searches,
     profileQuery,
     discoverFilters.city,
+    hasActiveSearches,
   ])
 
   const hasProfileQuery = profileQuery.trim().length > 0
@@ -222,7 +231,7 @@ function FeedPageContent() {
                 ? "Nadie coincide con tu búsqueda"
                 : activeEvent
                   ? "Aún no hay nadie más conectado a este evento"
-                  : "Nadie coincide con lo que pediste"}
+                  : "Aún no hay perfiles en Descubrir"}
             </h3>
             <p className="mt-1 max-w-xs text-[12px] text-[var(--text2)]">
               {hasProfileQuery ? (
@@ -250,11 +259,24 @@ function FeedPageContent() {
                 </>
               ) : (
                 <>
-                  Prueba otros filtros, otra búsqueda activa, o vuelve en un rato
-                  al radar.
+                  Vuelve más tarde o amplía filtros. Si creas una búsqueda
+                  activa, verás compatibilidad alta, media o baja en cada
+                  perfil.
                 </>
               )}
             </p>
+            {!hasActiveSearches ? (
+              <Link
+                href="/searches/new"
+                className={buttonVariants({
+                  variant: "secondary",
+                  size: "lg",
+                  className: "mt-5 min-w-[200px] justify-center",
+                })}
+              >
+                Crear búsqueda
+              </Link>
+            ) : null}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -263,6 +285,12 @@ function FeedPageContent() {
                 key={p.id}
                 profile={p}
                 connectionHint={peerHints.get(p.id) ?? { state: "none" }}
+                matchedSearchTitle={
+                  (p.matchScore ?? 0) >= MATCH_TIER_MEDIA
+                    ? p.matchedSearchTitle
+                    : null
+                }
+                showMatchBadge={hasActiveSearches}
                 onClick={() => setSelected(p)}
               />
             ))}
