@@ -146,14 +146,16 @@ export function ProfileCard({
         ) : null}
       </div>
 
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--bg2)]/60 px-3 py-2">
-        <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)]">
-          Escrito por {profile.name.split(" ")[0]}
-        </p>
-        <p className="line-clamp-2 text-[12px] leading-relaxed text-[var(--text)]">
-          {profile.achievement}
-        </p>
-      </div>
+      {profile.bio.trim() ? (
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg2)]/60 px-3 py-2">
+          <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text3)]">
+            Bio
+          </p>
+          <p className="line-clamp-2 text-[12px] leading-relaxed text-[var(--text)]">
+            {profile.bio}
+          </p>
+        </div>
+      ) : null}
 
       {profile.funFact.trim() ? (
         <div className="rounded-lg border border-[var(--border)] border-dashed bg-[var(--bg2)]/40 px-3 py-2">

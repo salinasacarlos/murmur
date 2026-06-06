@@ -144,11 +144,20 @@ export interface IgnoredConnection {
   ignoredAt: string
 }
 
+export interface MessageReplyPreview {
+  id: string
+  fromMe: boolean
+  authorLabel: string
+  text: string
+}
+
 export interface Message {
   id: string
   fromMe: boolean
   text: string
   sentAt: string
+  replyToMessageId?: string | null
+  replyTo?: MessageReplyPreview | null
 }
 
 export interface Chat {

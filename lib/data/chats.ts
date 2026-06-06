@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
+import { enrichMessagesWithReplies } from "@/lib/chat-replies"
 import { mapMessageRow } from "@/lib/data/mappers"
 import { fetchProfileById, fetchProfilesByIds } from "@/lib/data/profiles"
 import type { Chat, Message } from "@/lib/types"
@@ -162,7 +163,11 @@ export async function fetchChatConversation(
     .order("sent_at", { ascending: true })
     .limit(200)
 
-  const messages = (msgs ?? []).map((m) => mapMessageRow(m, currentUserId))
+  const messages = enrichMessagesWithReplies(
+    msgs ?? [],
+    currentUserId,
+    profile.name
+  )
 
   return {
     id: chatId,
@@ -177,7 +182,12 @@ export async function fetchChatConversation(
 
 export async function sendChatMessage(
   supabase: Client,
-  args: { chatId: string; senderId: string; body: string }
+  args: {
+    chatId: string
+    senderId: string
+    body: string
+    replyToMessageId?: string | null
+  }
 ): Promise<
   { ok: true; message: Message } | { ok: false; error: string }
 > {
@@ -187,6 +197,7 @@ export async function sendChatMessage(
       chat_id: args.chatId,
       sender_id: args.senderId,
       body: args.body,
+      reply_to_message_id: args.replyToMessageId ?? null,
       sent_at: new Date().toISOString(),
     })
     .select("*")

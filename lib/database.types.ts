@@ -458,6 +458,7 @@ export type Database = {
           body: string
           chat_id: string
           id: string
+          reply_to_message_id: string | null
           sender_id: string
           sent_at: string
         }
@@ -465,6 +466,7 @@ export type Database = {
           body: string
           chat_id: string
           id?: string
+          reply_to_message_id?: string | null
           sender_id: string
           sent_at?: string
         }
@@ -472,6 +474,7 @@ export type Database = {
           body?: string
           chat_id?: string
           id?: string
+          reply_to_message_id?: string | null
           sender_id?: string
           sent_at?: string
         }

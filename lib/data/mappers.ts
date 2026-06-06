@@ -145,5 +145,6 @@ export function mapMessageRow(
     fromMe: row.sender_id === currentUserId,
     text: row.body,
     sentAt: row.sent_at,
+    replyToMessageId: row.reply_to_message_id ?? null,
   }
 }

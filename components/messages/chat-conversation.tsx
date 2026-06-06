@@ -8,6 +8,14 @@ import { ChatBubble } from "@/components/messages/chat-bubble"
 import { MessageComposer } from "@/components/messages/message-composer"
 import { ReportUserDrawer } from "@/components/report/report-user-drawer"
 import { IconArrowLeft, IconUser } from "@/components/icons"
+import {
+  attachReplyPreview,
+  buildReplyPreview,
+} from "@/lib/chat-replies"
+import {
+  formatChatMessageTime,
+  layoutChatMessages,
+} from "@/lib/chat-message-layout"
 import { sendChatMessage } from "@/lib/data/chats"
 import { useChatMessagesRealtime } from "@/hooks/use-chat-messages-realtime"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
@@ -27,23 +35,49 @@ export function ChatConversation({
   const [messages, setMessages] = React.useState<Message[]>(
     initialChat.messages
   )
+  const [replyTarget, setReplyTarget] = React.useState<Message | null>(null)
   const [reportOpen, setReportOpen] = React.useState(false)
 
-  const appendIfNew = React.useCallback((msg: Message) => {
+  const peerName = initialChat.profile.name
+
+  const appendIfNew = React.useCallback(
+    (msg: Message) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
+    },
+    []
+  )
+
+  useChatMessagesRealtime(chatId, currentUserId, (msg) => {
     setMessages((prev) => {
       if (prev.some((m) => m.id === msg.id)) return prev
-      return [...prev, msg]
+      let enriched = msg
+      if (msg.replyToMessageId) {
+        const quoted = prev.find((m) => m.id === msg.replyToMessageId)
+        enriched = quoted
+          ? attachReplyPreview(msg, quoted, peerName)
+          : {
+              ...msg,
+              replyTo: {
+                id: msg.replyToMessageId,
+                fromMe: false,
+                authorLabel: "Mensaje",
+                text: "…",
+              },
+            }
+      }
+      return [...prev, enriched]
     })
-  }, [])
-
-  useChatMessagesRealtime(chatId, currentUserId, appendIfNew)
+  })
 
   const scrollRef = React.useRef<HTMLDivElement>(null)
   React.useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el) return
     el.scrollTop = el.scrollHeight
-  }, [messages.length])
+  }, [messages.length, replyTarget?.id])
 
   async function handleSend(text: string) {
     const supabase = getSupabaseBrowserClient()
@@ -51,22 +85,24 @@ export function ChatConversation({
       chatId,
       senderId: currentUserId,
       body: text,
+      replyToMessageId: replyTarget?.id ?? null,
     })
     if (!res.ok) {
       console.error(res.error)
       return
     }
-    appendIfNew(res.message)
+    appendIfNew(
+      attachReplyPreview(res.message, replyTarget, peerName)
+    )
+    setReplyTarget(null)
   }
 
   const chat = initialChat
-  const groups = groupMessages(messages)
+  const daySections = layoutChatMessages(messages)
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[var(--bg)]">
-      <header
-        className="flex items-center gap-3 px-4 py-3 border-b-[0.5px] border-[var(--border)] sticky top-0 bg-[var(--bg)] z-10"
-      >
+      <header className="flex items-center gap-3 px-4 py-3 border-b-[0.5px] border-[var(--border)] sticky top-0 bg-[var(--bg)] z-10">
         <Link
           href="/messages"
           className="md:hidden text-[var(--text2)] hover:text-[var(--text)]"
@@ -105,28 +141,45 @@ export function ChatConversation({
 
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 pt-4 flex flex-col gap-4 max-md:pb-[calc(7rem+var(--sab))] md:py-4"
+        className="flex-1 overflow-y-auto px-4 pt-4 flex flex-col gap-3 max-md:pb-[calc(7rem+var(--sab))] md:py-4"
       >
-        {groups.map((group, gi) => (
-          <div key={gi} className="flex flex-col gap-1">
-            <div className="text-[10px] uppercase tracking-[0.07em] font-semibold text-[var(--text3)] text-center mb-1">
-              {formatTimestamp(group[0].sentAt)}
+        {daySections.map((section) => (
+          <div key={section.dayKey} className="flex flex-col gap-2">
+            <div className="sticky top-0 z-[1] flex justify-center py-1">
+              <span className="rounded-full bg-[var(--bg2)] border border-[var(--border)] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text3)]">
+                {section.label}
+              </span>
             </div>
-            {group.map((m, mi) => (
-              <ChatBubble
-                key={m.id}
-                fromMe={m.fromMe}
-                isFirstInGroup={mi === 0}
-                isLastInGroup={mi === group.length - 1}
-              >
-                {m.text}
-              </ChatBubble>
+            {section.groups.map((group, gi) => (
+              <div key={`${section.dayKey}-${gi}`} className="flex flex-col gap-0.5">
+                {group.map((m, mi) => (
+                  <ChatBubble
+                    key={m.id}
+                    fromMe={m.fromMe}
+                    isFirstInGroup={mi === 0}
+                    isLastInGroup={mi === group.length - 1}
+                    time={formatChatMessageTime(m.sentAt)}
+                    replyTo={m.replyTo}
+                    onReply={() => setReplyTarget(m)}
+                  >
+                    {m.text}
+                  </ChatBubble>
+                ))}
+              </div>
             ))}
           </div>
         ))}
       </div>
 
-      <MessageComposer onSend={(t) => void handleSend(t)} />
+      <MessageComposer
+        onSend={(t) => void handleSend(t)}
+        replyTo={
+          replyTarget
+            ? buildReplyPreview(replyTarget, peerName)
+            : null
+        }
+        onCancelReply={() => setReplyTarget(null)}
+      />
 
       <ReportUserDrawer
         open={reportOpen}
@@ -138,41 +191,4 @@ export function ChatConversation({
       />
     </div>
   )
-}
-
-function groupMessages(messages: Message[]): Message[][] {
-  const groups: Message[][] = []
-  let current: Message[] = []
-  let lastFromMe: boolean | null = null
-  let lastTime = 0
-
-  for (const m of messages) {
-    const t = new Date(m.sentAt).getTime()
-    const sameAuthor = lastFromMe === m.fromMe
-    const closeInTime = t - lastTime < 1000 * 60 * 5
-    if (sameAuthor && closeInTime && current.length > 0) {
-      current.push(m)
-    } else {
-      if (current.length > 0) groups.push(current)
-      current = [m]
-    }
-    lastFromMe = m.fromMe
-    lastTime = t
-  }
-  if (current.length > 0) groups.push(current)
-  return groups
-}
-
-function formatTimestamp(iso: string) {
-  try {
-    const d = new Date(iso)
-    return d.toLocaleString("es-MX", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  } catch {
-    return iso
-  }
 }
