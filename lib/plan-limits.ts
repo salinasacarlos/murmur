@@ -2,10 +2,10 @@ import type { DiscoverFeedFilters } from "@/lib/feed-filters"
 import type { Database } from "@/lib/database.types"
 
 /**
- * Límites del plan Free en aplicación. Deben coincidir con las RPCs que
- * aplican los mismos topes (p. ej. `accept_connection` en
- * `supabase/migrations/20260525120000_plan_gates_accept_and_compat.sql` usa el
- * tope de conexiones aceptadas). Ver PRD §7 checklist.
+ * Límites del plan Free en aplicación. Deben coincidir con las RPCs/triggers SQL:
+ * - `accept_connection` — tope al aceptar (20260525120000_plan_gates_accept_and_compat.sql)
+ * - `profile_cities`, `searches`, `connections` — triggers (20260619120000_plan_gates_server_enforcement.sql)
+ * Ver PRD §7 checklist.
  */
 
 export type UserPlan = Database["public"]["Enums"]["user_plan"]
