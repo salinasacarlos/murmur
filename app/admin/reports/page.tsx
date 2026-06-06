@@ -4,9 +4,9 @@ import { redirect } from "next/navigation"
 import { Logo } from "@/components/brand/logo"
 import { getMurmurAdminSession } from "@/lib/murmur-admin"
 
-import { AdminAccessRequestsClient } from "./admin-access-requests-client"
+import { AdminReportsClient } from "./admin-reports-client"
 
-export default async function AdminAccessRequestsPage() {
+export default async function AdminReportsPage() {
   const session = await getMurmurAdminSession()
   if (!session) {
     redirect("/feed")
@@ -27,15 +27,10 @@ export default async function AdminAccessRequestsPage() {
       </header>
       <main className="flex-1 px-4 md:px-10 py-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-2">
-            Solicitudes de acceso
+          <h1 className="text-[20px] font-extrabold tracking-[-0.4px] mb-6">
+            Reportes de usuarios
           </h1>
-          <p className="text-[12px] text-[var(--text2)] mb-6">
-            <Link href="/admin/reports" className="text-[var(--p)] font-semibold">
-              Ver reportes de usuarios
-            </Link>
-          </p>
-          <AdminAccessRequestsClient />
+          <AdminReportsClient />
         </div>
       </main>
     </div>

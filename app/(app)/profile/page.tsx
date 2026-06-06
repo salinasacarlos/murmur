@@ -61,6 +61,10 @@ import {
   profileFromCurrentUserForCompleteness,
 } from "@/lib/profile-completeness"
 import { isPremiumPlan } from "@/lib/plan-limits"
+import {
+  DEFAULT_SEARCH_RADIUS_KM,
+  FUN_FACT_MAX_LENGTH,
+} from "@/lib/platform-defaults"
 import { useVisibility } from "@/components/providers/visibility-provider"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
@@ -242,7 +246,7 @@ export default function ProfilePage() {
   const [locationDraft, setLocationDraft] = React.useState({
     city: "",
     cities: [] as string[],
-    searchRadiusKm: 50,
+    searchRadiusKm: DEFAULT_SEARCH_RADIUS_KM,
   })
 
   const [workPrefsDraft, setWorkPrefsDraft] = React.useState<{
@@ -492,7 +496,7 @@ export default function ProfilePage() {
       initials: nextInitials,
       role: profileDraft.role.trim(),
       bio: profileDraft.bio,
-      fun_fact: profileDraft.funFact.trim().slice(0, 500),
+      fun_fact: profileDraft.funFact.trim().slice(0, FUN_FACT_MAX_LENGTH),
       photo_url: profileDraft.photoUrl ?? null,
     }
     try {
@@ -706,7 +710,7 @@ export default function ProfilePage() {
             ? [profileUser.city]
             : []
         : [],
-      searchRadiusKm: profileUser.searchRadiusKm ?? 50,
+      searchRadiusKm: profileUser.searchRadiusKm ?? DEFAULT_SEARCH_RADIUS_KM,
     })
     setLocationEditOpen(true)
   }
@@ -1171,13 +1175,13 @@ export default function ProfilePage() {
               onChange={(e) =>
                 setProfileDraft((prev) => ({
                   ...prev,
-                  funFact: e.target.value.slice(0, 500),
+                  funFact: e.target.value.slice(0, FUN_FACT_MAX_LENGTH),
                 }))
               }
               placeholder="Ej. Colecciono vinilos de jazz coreano, o completé una carrera benéfica que me marcó…"
             />
             <p className="text-[11px] text-[var(--text3)] mt-1">
-              {profileDraft.funFact.length}/500 caracteres
+              {profileDraft.funFact.length}/{FUN_FACT_MAX_LENGTH} caracteres
             </p>
           </Field>
         </div>

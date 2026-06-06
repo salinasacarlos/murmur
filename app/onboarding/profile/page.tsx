@@ -13,6 +13,7 @@ import {
   persistOnboardingProfileStep,
   requireUserId,
 } from "@/lib/onboarding-persist"
+import { FUN_FACT_MAX_LENGTH } from "@/lib/platform-defaults"
 import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding-intent-options"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
@@ -128,12 +129,12 @@ export default function ProfileStepPage() {
 
         <Field
           label="Dato curioso (opcional)"
-          hint={`${funFact.length}/500`}
+          hint={`${funFact.length}/${FUN_FACT_MAX_LENGTH}`}
         >
           <Textarea
             placeholder="Un hobby raro, un viaje memorable, algo que sorprenda en buen sentido…"
             value={funFact}
-            onChange={(e) => setFunFact(e.target.value.slice(0, 500))}
+            onChange={(e) => setFunFact(e.target.value.slice(0, FUN_FACT_MAX_LENGTH))}
             rows={4}
           />
         </Field>

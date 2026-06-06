@@ -17,6 +17,7 @@ import {
   requireUserId,
 } from "@/lib/onboarding-persist"
 import { userHasProjectIntent, userIsInvestor } from "@/lib/profile-project-guard"
+import { DEFAULT_SEARCH_RADIUS_KM } from "@/lib/platform-defaults"
 import { reverseGeocodeClient } from "@/lib/reverse-geocode"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
@@ -29,7 +30,7 @@ export default function LocationStepPage() {
   const router = useRouter()
   const [city, setCity] = React.useState("")
   const [extraCities, setExtraCities] = React.useState<string[]>([])
-  const [radius, setRadius] = React.useState(50)
+  const [radius, setRadius] = React.useState(DEFAULT_SEARCH_RADIUS_KM)
   const [geoBusy, setGeoBusy] = React.useState(false)
   const [geoHint, setGeoHint] = React.useState<string | null>(null)
 

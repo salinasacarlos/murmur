@@ -12,6 +12,7 @@ export type OnboardingMurmStep =
   | "intent"
   | "location"
   | "done"
+  | "first-actions"
 
 const MURM_LEADS: Record<OnboardingMurmStep, string[]> = {
   intro: [
@@ -27,7 +28,10 @@ const MURM_LEADS: Record<OnboardingMurmStep, string[]> = {
     "Ciudad y radio para el radar. Nunca mostramos dónde estás exactamente.",
   ],
   done: [
-    "Listo. Crea una búsqueda, explora el feed o invita a alguien con tus códigos.",
+    "Listo. Activa visibilidad, crea una búsqueda y enciende el radar para empezar.",
+  ],
+  "first-actions": [
+    "Estos tres pasos te ponen en juego: visible, con criterio de match y radar activo.",
   ],
 }
 

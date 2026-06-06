@@ -12,9 +12,11 @@ import { RadarCTA } from "@/components/feed/radar-cta"
 import { DiscoverProfileSearch } from "@/components/feed/discover-profile-search"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
 import { FiltersDrawer } from "@/components/feed/filters-drawer"
+import { FirstActionsCard } from "@/components/onboarding/first-actions-card"
 import { IconSpark, IconX } from "@/components/icons"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
+import { useFirstActions } from "@/hooks/use-first-actions"
 import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/connections"
 import { profileMatchesDiscoverFilters, profileMatchesDiscoverQuery } from "@/lib/feed-filters"
 import {
@@ -26,6 +28,68 @@ import { isPremiumPlan } from "@/lib/plan-limits"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import type { FirstActionsProgress } from "@/lib/first-actions"
+
+function discoverEmptyCopy(args: {
+  hasProfileQuery: boolean
+  activeEvent: boolean
+  progress: FirstActionsProgress
+  hasActiveSearches: boolean
+}): { title: string; body: string; showSearchCta: boolean; showVisibilityCta: boolean } {
+  const { hasProfileQuery, activeEvent, progress, hasActiveSearches } = args
+
+  if (hasProfileQuery) {
+    return {
+      title: "Nadie coincide con tu búsqueda",
+      body: "Prueba otro nombre, rol o ciudad, o limpia la búsqueda de texto.",
+      showSearchCta: false,
+      showVisibilityCta: false,
+    }
+  }
+
+  if (activeEvent) {
+    return {
+      title: "Aún no hay nadie más conectado a este evento",
+      body: "Cuando alguien se una con el código del evento, aparecerá aquí.",
+      showSearchCta: false,
+      showVisibilityCta: false,
+    }
+  }
+
+  if (!progress.visibility && !hasActiveSearches) {
+    return {
+      title: "Empieza con visibilidad y una búsqueda",
+      body: "Activa visibilidad para que te vean, crea una búsqueda para el match score y explora perfiles visibles en la red.",
+      showSearchCta: true,
+      showVisibilityCta: true,
+    }
+  }
+
+  if (!progress.visibility) {
+    return {
+      title: "Estás oculto — otros no te ven aún",
+      body: "Puedes explorar perfiles, pero nadie podrá encontrarte ni conectarse contigo hasta que actives visibilidad.",
+      showSearchCta: false,
+      showVisibilityCta: true,
+    }
+  }
+
+  if (!hasActiveSearches) {
+    return {
+      title: "Crea una búsqueda para ver compatibilidad",
+      body: "Sin búsqueda activa ves todos los perfiles, pero sin badges de match. Define a quién buscas para rankear mejor.",
+      showSearchCta: true,
+      showVisibilityCta: false,
+    }
+  }
+
+  return {
+    title: "Aún no hay perfiles en Descubrir",
+    body: "Vuelve más tarde o amplía filtros. Mientras tanto, revisa que tu búsqueda tenga criterios amplios.",
+    showSearchCta: false,
+    showVisibilityCta: false,
+  }
+}
 
 function FeedPageContent() {
   const router = useRouter()
@@ -75,6 +139,19 @@ function FeedPageContent() {
   const [filtersOpen, setFiltersOpen] = React.useState(false)
   const [eventOpen, setEventOpen] = React.useState(false)
   const [profileQuery, setProfileQuery] = React.useState("")
+
+  const {
+    progress: firstActionsProgress,
+    showChecklist,
+    dismiss: dismissFirstActions,
+    persistVisibility,
+    visibilitySaving,
+  } = useFirstActions()
+
+  const radarStartRef = React.useRef<(() => void) | null>(null)
+  const registerRadarStart = React.useCallback((start: () => void) => {
+    radarStartRef.current = start
+  }, [])
 
   const poolForMatchCounts = React.useMemo(
     () =>
@@ -126,6 +203,12 @@ function FeedPageContent() {
   ])
 
   const hasProfileQuery = profileQuery.trim().length > 0
+  const emptyCopy = discoverEmptyCopy({
+    hasProfileQuery,
+    activeEvent: activeEvent !== null,
+    progress: firstActionsProgress,
+    hasActiveSearches,
+  })
 
   React.useEffect(() => {
     const spotlight = searchParams.get("spotlight")
@@ -137,7 +220,24 @@ function FeedPageContent() {
   }, [searchParams, visibleProfiles, feedLoading, setSelected, router])
 
   if (!activated) {
-    return <RadarCTA onActivate={activateFeed} />
+    return (
+      <div className="flex flex-col gap-6 px-4 md:px-6 py-6 max-w-xl mx-auto w-full">
+        <RadarCTA
+          onActivate={activateFeed}
+          registerStart={registerRadarStart}
+        />
+        {showChecklist ? (
+          <FirstActionsCard
+            progress={firstActionsProgress}
+            variant="banner"
+            onActivateVisibility={() => void persistVisibility(true)}
+            visibilitySaving={visibilitySaving}
+            onActivateRadar={() => radarStartRef.current?.()}
+            onDismiss={dismissFirstActions}
+          />
+        ) : null}
+      </div>
+    )
   }
 
   return (
@@ -213,6 +313,17 @@ function FeedPageContent() {
       </div>
 
       <div className="px-4 md:px-6 py-5">
+        {showChecklist ? (
+          <FirstActionsCard
+            progress={firstActionsProgress}
+            variant="banner"
+            onActivateVisibility={() => void persistVisibility(true)}
+            visibilitySaving={visibilitySaving}
+            onDismiss={dismissFirstActions}
+            className="mb-5"
+          />
+        ) : null}
+
         {feedLoading && visibleProfiles.length === 0 ? (
           <p className="text-center text-[12px] text-[var(--text2)] py-16">
             Cargando perfiles…
@@ -227,22 +338,18 @@ function FeedPageContent() {
               <IconSpark size={20} />
             </div>
             <h3 className="text-[15px] font-bold text-[var(--text)]">
-              {hasProfileQuery
-                ? "Nadie coincide con tu búsqueda"
-                : activeEvent
-                  ? "Aún no hay nadie más conectado a este evento"
-                  : "Aún no hay perfiles en Descubrir"}
+              {emptyCopy.title}
             </h3>
-            <p className="mt-1 max-w-xs text-[12px] text-[var(--text2)]">
+            <p className="mt-1 max-w-sm text-[12px] text-[var(--text2)]">
               {hasProfileQuery ? (
                 <>
-                  Prueba otro nombre, rol o ciudad, o{" "}
+                  {emptyCopy.body}{" "}
                   <button
                     type="button"
                     onClick={() => setProfileQuery("")}
                     className="font-semibold text-[var(--p)] hover:underline underline-offset-2"
                   >
-                    limpia la búsqueda
+                    Limpia la búsqueda
                   </button>
                   .
                 </>
@@ -258,25 +365,36 @@ function FeedPageContent() {
                   , aparecerá aquí.
                 </>
               ) : (
-                <>
-                  Vuelve más tarde o amplía filtros. Si creas una búsqueda
-                  activa, verás compatibilidad alta, media o baja en cada
-                  perfil.
-                </>
+                emptyCopy.body
               )}
             </p>
-            {!hasActiveSearches ? (
-              <Link
-                href="/searches/new"
-                className={buttonVariants({
-                  variant: "secondary",
-                  size: "lg",
-                  className: "mt-5 min-w-[200px] justify-center",
-                })}
-              >
-                Crear búsqueda
-              </Link>
-            ) : null}
+            <div className="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
+              {emptyCopy.showVisibilityCta ? (
+                <button
+                  type="button"
+                  onClick={() => void persistVisibility(true)}
+                  disabled={visibilitySaving}
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "min-w-[200px] justify-center",
+                  })}
+                >
+                  {visibilitySaving ? "Activando…" : "Activar visibilidad"}
+                </button>
+              ) : null}
+              {emptyCopy.showSearchCta ? (
+                <Link
+                  href="/searches/new"
+                  className={buttonVariants({
+                    variant: emptyCopy.showVisibilityCta ? "secondary" : "primary",
+                    size: "lg",
+                    className: "min-w-[200px] justify-center",
+                  })}
+                >
+                  Crear búsqueda
+                </Link>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

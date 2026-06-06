@@ -4,6 +4,7 @@
  * Tiers: alta ≥ 60, media ≥ 30, baja < 30.
  */
 
+import { MATCH_CITY_SCORE_BOOST } from "@/lib/platform-defaults"
 import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
 import type { Compatibility, Profile, RelationType, Search } from "@/lib/types"
 
@@ -188,7 +189,7 @@ export function computeMatchScore(
       .join(" ")
       .toLowerCase()
     if (haystack.includes(cityQuery)) {
-      score = Math.min(100, score + 10)
+      score = Math.min(100, score + MATCH_CITY_SCORE_BOOST)
     }
   }
 

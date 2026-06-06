@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { AuthDivider, GoogleAuthButton } from "@/components/auth/google-auth-button"
@@ -72,8 +73,18 @@ export function LoginForm() {
     }
   }
 
+  const resetOk = searchParams.get("reset") === "1"
+
   return (
     <>
+      {resetOk ? (
+        <p
+          className="text-[12px] text-[var(--g)] mb-3 -mt-2"
+          role="status"
+        >
+          Contraseña actualizada. Ya puedes entrar.
+        </p>
+      ) : null}
       <GoogleAuthButton
         nextPath={nextParam}
         onError={(message) => setError(message)}
@@ -104,6 +115,15 @@ export function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
+
+        <p className="text-[11px] text-right -mt-1">
+          <Link
+            href="/auth/forgot-password"
+            className="text-[var(--p)] font-semibold hover:underline underline-offset-2"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
 
         <Button
           type="submit"

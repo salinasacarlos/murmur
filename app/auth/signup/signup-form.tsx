@@ -15,6 +15,7 @@ import {
   normalizeInviteCodeInput,
 } from "@/lib/invite-code"
 import type { InvitePreviewResponse } from "@/lib/invite-preview"
+import { INVITE_PREVIEW_DEBOUNCE_MS } from "@/lib/platform-defaults"
 import { getClientAuthOrigin } from "@/lib/site-origin"
 
 function useDebouncedValue<T>(value: T, ms: number): T {
@@ -58,7 +59,7 @@ export function SignupForm() {
   const [previewLoading, setPreviewLoading] = React.useState(false)
   const [preview, setPreview] = React.useState<InvitePreviewResponse | null>(null)
 
-  const debouncedInvite = useDebouncedValue(inviteInput, 400)
+  const debouncedInvite = useDebouncedValue(inviteInput, INVITE_PREVIEW_DEBOUNCE_MS)
 
   React.useEffect(() => {
     const fromUrl = searchParams.get("invite")?.trim() ?? ""

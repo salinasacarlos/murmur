@@ -3,49 +3,49 @@
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Isotipo } from "@/components/brand/isotipo"
+import { FirstActionsCard } from "@/components/onboarding/first-actions-card"
+import { MurmVoice } from "@/components/murm/murm-voice"
+import type { FirstActionsProgress } from "@/lib/first-actions"
+
+const EMPTY_PROGRESS: FirstActionsProgress = {
+  visibility: false,
+  search: false,
+  radar: false,
+}
 
 export default function OnboardingDonePage() {
   return (
-    <Card padding="none" className="bg-[var(--bg)] p-8 text-center">
-      <div className="flex justify-center mb-5">
-        <div
-          className="w-20 h-20 rounded-full flex items-center justify-center"
-          style={{
-            background: "var(--pl)",
-            border: "1px solid var(--pm)",
-          }}
-        >
-          <Isotipo size={48} color="var(--p)" />
-        </div>
+    <div className="flex flex-col gap-4">
+      <div className="text-center mb-1">
+        <h1 className="text-[22px] font-extrabold tracking-[-0.4px] mb-1">
+          Perfil listo
+        </h1>
+        <p className="text-[13px] text-[var(--text2)] leading-relaxed">
+          Tres pasos más y empiezas a conectar en Murmur.
+        </p>
       </div>
 
-      <h1 className="text-[22px] font-extrabold tracking-[-0.4px] mb-2">
-        Perfil listo
-      </h1>
-      <p className="text-[13px] text-[var(--text2)] leading-relaxed mb-3">
-        Sigues oculto hasta que actives visibilidad. Cuando lo hagas, otros verán
-        tu perfil, entenderán el match y podrán mandarte la conexión con contexto.
-      </p>
-      <p className="text-[12px] text-[var(--text3)] leading-relaxed mb-6">
-        En la beta recibes códigos para invitar a otras personas. ¿En un evento?
-        Usa el botón <strong className="text-[var(--text2)]">Evento</strong> en el
-        feed e ingresa el código del meetup o hackathon.
-      </p>
+      <MurmVoice step="first-actions" />
 
-      <div className="flex flex-col gap-2">
-        <Link href="/searches/new">
+      <FirstActionsCard progress={EMPTY_PROGRESS} variant="onboarding" />
+
+      <div className="flex flex-col gap-2 pt-1">
+        <Link href="/feed">
           <Button size="lg" className="w-full justify-center">
+            Ir a Descubrir
+          </Button>
+        </Link>
+        <Link href="/searches/new">
+          <Button variant="secondary" size="lg" className="w-full justify-center">
             Crear mi primera búsqueda
           </Button>
         </Link>
-        <Link href="/feed">
-          <Button variant="secondary" size="lg" className="w-full justify-center">
-            Ir al feed
-          </Button>
-        </Link>
       </div>
-    </Card>
+
+      <p className="text-[11px] text-center text-[var(--text3)] leading-relaxed px-2">
+        En la beta recibes códigos para invitar. ¿En un evento? Usa{" "}
+        <strong className="text-[var(--text2)]">Evento</strong> en Descubrir.
+      </p>
+    </div>
   )
 }

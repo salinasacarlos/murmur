@@ -11,7 +11,7 @@ import type { Database } from "@/lib/database.types"
 export type UserPlan = Database["public"]["Enums"]["user_plan"]
 
 export const FREE_MAX_ACTIVE_SEARCHES = 1
-export const FREE_MAX_ACCEPTED_CONNECTIONS = 10
+export const FREE_MAX_ACCEPTED_CONNECTIONS = 11
 export const FREE_MAX_PROFILE_CITY_SLUGS = 1
 
 export const MSG_FREE_SEARCH_LIMIT =

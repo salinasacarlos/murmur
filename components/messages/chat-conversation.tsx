@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Avatar } from "@/components/ui/avatar"
 import { ChatBubble } from "@/components/messages/chat-bubble"
 import { MessageComposer } from "@/components/messages/message-composer"
+import { ReportUserDrawer } from "@/components/report/report-user-drawer"
 import { IconArrowLeft, IconUser } from "@/components/icons"
 import { sendChatMessage } from "@/lib/data/chats"
 import { useChatMessagesRealtime } from "@/hooks/use-chat-messages-realtime"
@@ -26,6 +27,7 @@ export function ChatConversation({
   const [messages, setMessages] = React.useState<Message[]>(
     initialChat.messages
   )
+  const [reportOpen, setReportOpen] = React.useState(false)
 
   const appendIfNew = React.useCallback((msg: Message) => {
     setMessages((prev) => {
@@ -94,6 +96,13 @@ export function ChatConversation({
         >
           <IconUser size={14} />
         </Link>
+        <button
+          type="button"
+          onClick={() => setReportOpen(true)}
+          className="text-[11px] font-medium text-[var(--text3)] hover:text-[var(--red)] px-2 py-1 rounded-md transition-colors"
+        >
+          Reportar
+        </button>
       </header>
 
       <div
@@ -120,6 +129,15 @@ export function ChatConversation({
       </div>
 
       <MessageComposer onSend={(t) => void handleSend(t)} />
+
+      <ReportUserDrawer
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        reportedUserId={chat.profile.id}
+        reportedUserName={chat.profile.name}
+        contextType="chat"
+        contextId={chatId}
+      />
     </div>
   )
 }

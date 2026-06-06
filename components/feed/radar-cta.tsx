@@ -2,30 +2,43 @@
 
 import * as React from "react"
 
+import { RADAR_ACTIVATION_MS } from "@/lib/platform-defaults"
 import { Button } from "@/components/ui/button"
 import { Isotipo } from "@/components/brand/isotipo"
 import { IconCompass } from "@/components/icons"
 
 interface RadarCTAProps {
   onActivate: () => void | Promise<void>
+  /** Permite disparar la animación del radar desde fuera (p. ej. checklist). */
+  registerStart?: (start: () => void) => void
 }
 
-export function RadarCTA({ onActivate }: RadarCTAProps) {
+export function RadarCTA({ onActivate, registerStart }: RadarCTAProps) {
   const [searching, setSearching] = React.useState(false)
+
+  const startSearch = React.useCallback(() => {
+    setSearching((prev) => {
+      if (prev) return prev
+      return true
+    })
+  }, [])
+
+  React.useEffect(() => {
+    registerStart?.(startSearch)
+  }, [registerStart, startSearch])
 
   React.useEffect(() => {
     if (!searching) return
 
     const timeout = window.setTimeout(() => {
       void Promise.resolve(onActivate())
-    }, 3800)
+    }, RADAR_ACTIVATION_MS)
 
     return () => window.clearTimeout(timeout)
   }, [onActivate, searching])
 
-  function startSearch() {
-    if (searching) return
-    setSearching(true)
+  function handleStartSearch() {
+    startSearch()
   }
 
   return (
@@ -99,7 +112,7 @@ export function RadarCTA({ onActivate }: RadarCTAProps) {
 
       <Button
         size="lg"
-        onClick={startSearch}
+        onClick={handleStartSearch}
         disabled={searching}
         className="px-6"
       >

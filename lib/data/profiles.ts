@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/lib/database.types"
 import { mapProfileBareRow, mapProfileJoinRow } from "@/lib/data/mappers"
+import { DISCOVER_FEED_PROFILE_LIMIT } from "@/lib/platform-defaults"
 import type { Profile } from "@/lib/types"
 
 type Client = SupabaseClient<Database>
@@ -48,7 +49,7 @@ export async function fetchVisibleProfilesForFeed(
     .eq("visible", true)
     .neq("id", excludeUserId)
     .order("updated_at", { ascending: false })
-    .limit(48)
+    .limit(DISCOVER_FEED_PROFILE_LIMIT)
 
   if (error || !data) return []
   return data.map((row) => mapProfileJoinRow(row))

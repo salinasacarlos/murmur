@@ -10,7 +10,15 @@ function key(userId: string, part: string) {
 
 export function readFeedActivated(userId: string): boolean {
   try {
-    return sessionStorage.getItem(key(userId, "activated")) === "1"
+    const local = localStorage.getItem(key(userId, "activated"))
+    if (local === "1") return true
+    const legacy = sessionStorage.getItem(key(userId, "activated"))
+    if (legacy === "1") {
+      localStorage.setItem(key(userId, "activated"), "1")
+      sessionStorage.removeItem(key(userId, "activated"))
+      return true
+    }
+    return false
   } catch {
     return false
   }
@@ -18,8 +26,9 @@ export function readFeedActivated(userId: string): boolean {
 
 export function writeFeedActivated(userId: string, on: boolean) {
   try {
-    if (on) sessionStorage.setItem(key(userId, "activated"), "1")
-    else sessionStorage.removeItem(key(userId, "activated"))
+    if (on) localStorage.setItem(key(userId, "activated"), "1")
+    else localStorage.removeItem(key(userId, "activated"))
+    sessionStorage.removeItem(key(userId, "activated"))
   } catch {
     /* ignore */
   }

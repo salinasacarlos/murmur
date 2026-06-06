@@ -8,6 +8,7 @@ import type {
   FunctionalArea,
   Profile,
 } from "@/lib/types"
+import { DEFAULT_SEARCH_RADIUS_KM } from "@/lib/platform-defaults"
 
 const DEFAULT_AREA: FunctionalArea = "negocio"
 const DEFAULT_EXPERIENCE: ExperienceRange = "3-5"
@@ -63,7 +64,7 @@ export function deriveCurrentUser(
     workStyle: [],
     city: profile?.city ?? "",
     cities: profile?.city ? [profile.city] : [],
-    searchRadiusKm: profile?.search_radius_km ?? 50,
+    searchRadiusKm: profile?.search_radius_km ?? DEFAULT_SEARCH_RADIUS_KM,
     relationsLooking: [],
     plan: profile?.plan === "premium" ? "premium" : "free",
     stats: {

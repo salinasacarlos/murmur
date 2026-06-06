@@ -14,6 +14,7 @@ import {
   MAX_PROFILE_VERTICAL_SLUGS,
   MAX_TALENT_SLUGS,
 } from "@/lib/product-config"
+import { DEFAULT_SEARCH_RADIUS_KM, FUN_FACT_MAX_LENGTH } from "@/lib/platform-defaults"
 import { resolveProfileArea, MAX_EXPERTISE_SLUGS } from "@/lib/profile-taxonomy"
 import { userHasProjectIntent } from "@/lib/profile-project-guard"
 import type {
@@ -178,7 +179,7 @@ export async function persistOnboardingProfileStep(
       initials: initialsFromName(name) || "U",
       role,
       bio: input.bio.trim(),
-      fun_fact: input.funFact.trim().slice(0, 500),
+      fun_fact: input.funFact.trim().slice(0, FUN_FACT_MAX_LENGTH),
       achievement: input.achievement.trim(),
       primary_industry_slug: input.primaryIndustrySlug,
       vertical_slugs: verticals,

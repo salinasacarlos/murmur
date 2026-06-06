@@ -4,13 +4,13 @@ import * as React from "react"
 
 import { mapMessageRow } from "@/lib/data/mappers"
 import type { Database } from "@/lib/database.types"
+import { REALTIME_IN_FILTER_MAX } from "@/lib/platform-defaults"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Message } from "@/lib/types"
 
 type MessagesRow = Database["public"]["Tables"]["messages"]["Row"]
 
-/** Supabase Realtime permite hasta 100 valores en filtros `in.()`. */
-export const REALTIME_IN_FILTER_MAX = 100
+export { REALTIME_IN_FILTER_MAX }
 
 /**
  * Suscripción a INSERT en `messages` para un solo chat (pantalla de conversación).

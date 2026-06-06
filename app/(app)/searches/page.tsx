@@ -2,11 +2,14 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { SearchCard } from "@/components/searches/search-card"
+import { FirstActionsCard } from "@/components/onboarding/first-actions-card"
 import { IconPlus } from "@/components/icons"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
+import { useFirstActions } from "@/hooks/use-first-actions"
 import {
   deleteSearchForOwner,
   fetchSearchesForOwner,
@@ -18,7 +21,16 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Search } from "@/lib/types"
 
 export default function SearchesPage() {
+  const router = useRouter()
   const { user, profile } = useCurrentUser()
+  const {
+    progress: firstActionsProgress,
+    showChecklist,
+    dismiss: dismissFirstActions,
+    persistVisibility,
+    visibilitySaving,
+    activateFeed,
+  } = useFirstActions()
   const [searches, setSearches] = React.useState<Search[]>([])
   const [loading, setLoading] = React.useState(true)
   const [statusError, setStatusError] = React.useState<string | null>(null)
@@ -140,16 +152,46 @@ export default function SearchesPage() {
         </p>
       ) : null}
 
+      {showChecklist ? (
+        <FirstActionsCard
+          progress={firstActionsProgress}
+          variant="banner"
+          onActivateVisibility={() => void persistVisibility(true)}
+          visibilitySaving={visibilitySaving}
+          onActivateRadar={() => {
+            activateFeed()
+            router.push("/feed")
+          }}
+          onDismiss={dismissFirstActions}
+          className="mb-5"
+        />
+      ) : null}
+
       {loading ? (
         <div className="ds-card p-10 text-center">
           <p className="text-[12px] text-[var(--text2)]">Cargando…</p>
         </div>
       ) : searches.length === 0 ? (
         <div className="ds-card p-10 text-center">
-          <h3 className="text-[14px] font-bold mb-1">No tienes búsquedas</h3>
-          <p className="text-[12px] text-[var(--text2)] mb-4">
-            Crea una para empezar a recibir matches.
+          <h3 className="text-[14px] font-bold mb-1">Tu primera búsqueda</h3>
+          <p className="text-[12px] text-[var(--text2)] mb-2 max-w-sm mx-auto leading-relaxed">
+            Define a quién buscas (socio, talento, mentor, inversor…) para que
+            Descubrir rankee perfiles con compatibilidad alta, media o baja.
           </p>
+          {!firstActionsProgress.visibility ? (
+            <p className="text-[11px] text-[var(--text3)] mb-4 max-w-sm mx-auto">
+              Tip: después de crear la búsqueda, activa visibilidad y el radar en
+              Descubrir para empezar a conectar.
+            </p>
+          ) : !firstActionsProgress.radar ? (
+            <p className="text-[11px] text-[var(--text3)] mb-4 max-w-sm mx-auto">
+              Ya eres visible. Crea la búsqueda y activa el radar en Descubrir.
+            </p>
+          ) : (
+            <p className="text-[11px] text-[var(--text3)] mb-4 max-w-sm mx-auto">
+              El radar ya está activo — solo falta tu búsqueda para ver matches.
+            </p>
+          )}
           {canCreateNewSearch ? (
             <Link href="/searches/new">
               <Button size="md">

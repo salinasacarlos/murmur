@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Drawer, DrawerHeader, SidePanel } from "@/components/ui/drawer"
 import { Tag } from "@/components/ui/tag"
 import { Textarea } from "@/components/ui/input"
+import { ReportUserDrawer } from "@/components/report/report-user-drawer"
 import { useCurrentUser } from "@/components/providers/current-user-provider"
 import {
   countAcceptedConnectionsForProfile,
@@ -78,6 +79,7 @@ export function ProfileDetailPanel({
   >(null)
   const [sending, setSending] = React.useState(false)
   const [sendError, setSendError] = React.useState<string | null>(null)
+  const [reportOpen, setReportOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (!authUser?.id || !open) {
@@ -407,6 +409,15 @@ export function ProfileDetailPanel({
               </Link>
             )}
             </div>
+            {!isSelf && authUser?.id ? (
+              <button
+                type="button"
+                onClick={() => setReportOpen(true)}
+                className="text-[11px] text-[var(--text3)] hover:text-[var(--red)] transition-colors self-center"
+              >
+                Reportar perfil
+              </button>
+            ) : null}
           </div>
         </div>
       </SidePanel>
@@ -512,6 +523,16 @@ export function ProfileDetailPanel({
           </Button>
         </div>
       </Drawer>
+
+      {!isSelf ? (
+        <ReportUserDrawer
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          reportedUserId={profile.id}
+          reportedUserName={profile.name}
+          contextType="profile"
+        />
+      ) : null}
     </>
   )
 }
