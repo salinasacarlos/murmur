@@ -16,38 +16,15 @@ import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
 import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/connections"
 import { profileMatchesDiscoverFilters, profileMatchesDiscoverQuery } from "@/lib/feed-filters"
+import {
+  countProfilesMatchingSearch,
+  profileMatchesSearchCriteria,
+  rankProfilesForDiscover,
+  searchToMatchCriteria,
+} from "@/lib/match-score"
 import { isPremiumPlan } from "@/lib/plan-limits"
-import { resolveHeroIndustrySlug } from "@/lib/profile-taxonomy"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import type { Profile, Search } from "@/lib/types"
-
-/** Alinea tarjeta de búsqueda activa con criterios del perfil. */
-function profileMatchesSearchChip(p: Profile, s: Search): boolean {
-  if (s.primaryIndustrySlug) {
-    const hero = resolveHeroIndustrySlug({
-      primaryIndustrySlug: p.primaryIndustrySlug,
-      expertiseSlugs: p.expertiseSlugs,
-      functionalAreaTags: p.functionalAreaTags,
-      area: p.area,
-    })
-    if (hero !== s.primaryIndustrySlug) return false
-  }
-  if (s.expertiseSlugs?.length) {
-    const pe = new Set(
-      p.expertiseSlugs?.length ? p.expertiseSlugs : p.functionalAreaTags ?? []
-    )
-    if (!s.expertiseSlugs.some((x) => pe.has(x))) return false
-  }
-  if (s.talentSlugs?.length) {
-    const pt = new Set(p.talentSlugs ?? [])
-    if (!s.talentSlugs.some((x) => pt.has(x))) return false
-  }
-  if (s.relations?.length) {
-    if (!s.relations.some((r) => p.relationsLooking.includes(r))) return false
-  }
-  return true
-}
 
 function FeedPageContent() {
   const router = useRouter()
@@ -93,31 +70,62 @@ function FeedPageContent() {
   const [eventOpen, setEventOpen] = React.useState(false)
   const [profileQuery, setProfileQuery] = React.useState("")
 
+  const poolForMatchCounts = React.useMemo(
+    () =>
+      profiles.filter((p) => profileMatchesDiscoverFilters(p, discoverFilters)),
+    [profiles, discoverFilters]
+  )
+
+  const searchesForBar = React.useMemo(
+    () =>
+      searches.map((s) =>
+        s.status === "active"
+          ? {
+              ...s,
+              matchesCount: countProfilesMatchingSearch(poolForMatchCounts, s),
+            }
+          : s
+      ),
+    [searches, poolForMatchCounts]
+  )
+
+  const visibleProfiles = React.useMemo(() => {
+    let list = poolForMatchCounts
+
+    if (activeSearch !== "all") {
+      const s = searches.find((x) => x.id === activeSearch)
+      if (!s) return list
+      const criteria = searchToMatchCriteria(s)
+      list = list.filter((p) => profileMatchesSearchCriteria(p, criteria))
+    }
+
+    if (profileQuery.trim()) {
+      list = list.filter((p) => profileMatchesDiscoverQuery(p, profileQuery))
+    }
+
+    return rankProfilesForDiscover(list, {
+      activeSearchId: activeSearch,
+      activeSearches: searches,
+      cityQuery: discoverFilters.city,
+    })
+  }, [
+    poolForMatchCounts,
+    activeSearch,
+    searches,
+    profileQuery,
+    discoverFilters.city,
+  ])
+
+  const hasProfileQuery = profileQuery.trim().length > 0
+
   React.useEffect(() => {
     const spotlight = searchParams.get("spotlight")
     if (!spotlight || feedLoading) return
 
-    const match = profiles.find((p) => p.id === spotlight)
+    const match = visibleProfiles.find((p) => p.id === spotlight)
     if (match) setSelected(match)
     router.replace("/feed")
-  }, [searchParams, profiles, feedLoading, setSelected, router])
-
-  const visibleProfiles = React.useMemo(() => {
-    let list = profiles.filter((p) =>
-      profileMatchesDiscoverFilters(p, discoverFilters)
-    )
-    if (activeSearch !== "all") {
-      const s = searches.find((x) => x.id === activeSearch)
-      if (!s) return list
-      list = list.filter((p) => profileMatchesSearchChip(p, s))
-    }
-    if (profileQuery.trim()) {
-      list = list.filter((p) => profileMatchesDiscoverQuery(p, profileQuery))
-    }
-    return list
-  }, [profiles, discoverFilters, activeSearch, searches, profileQuery])
-
-  const hasProfileQuery = profileQuery.trim().length > 0
+  }, [searchParams, visibleProfiles, feedLoading, setSelected, router])
 
   if (!activated) {
     return <RadarCTA onActivate={activateFeed} />
@@ -136,7 +144,7 @@ function FeedPageContent() {
         )}
       >
         <SearchChipBar
-          searches={searches}
+          searches={searchesForBar}
           activeId={activeSearch}
           onSelect={setActiveSearch}
           onOpenFilters={() => setFiltersOpen(true)}
