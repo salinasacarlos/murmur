@@ -218,6 +218,8 @@ export default function ProfilePage() {
   const [savingExperience, setSavingExperience] = React.useState(false)
   const [savingRelations, setSavingRelations] = React.useState(false)
   const [savingVisibility, setSavingVisibility] = React.useState(false)
+  const [savingShowRecommendationCount, setSavingShowRecommendationCount] =
+    React.useState(false)
 
   const emptyDraft = React.useMemo(
     () => ({
@@ -933,6 +935,29 @@ export default function ProfilePage() {
     void afterSuccessfulSave()
   }
 
+  async function persistShowRecommendationCount(next: boolean) {
+    if (!authUser || savingShowRecommendationCount) return
+    const blocked = profileSaveBlockedMessage(profile)
+    if (blocked) {
+      setSaveBarrierMessage(blocked)
+      return
+    }
+    setSaveBarrierMessage(null)
+    setSavingShowRecommendationCount(true)
+    const supabase = getSupabaseBrowserClient()
+    const { error } = await supabase
+      .from("profiles")
+      .update({ show_recommendation_count: next })
+      .eq("id", authUser.id)
+    setSavingShowRecommendationCount(false)
+    if (error) {
+      console.error("Failed to save show_recommendation_count", error)
+      return
+    }
+    mergeProfile({ show_recommendation_count: next })
+    void afterSuccessfulSave()
+  }
+
   if (!authUser || !profileUser) {
     return (
       <div className="px-4 md:px-6 py-10 text-[13px] text-[var(--text2)]">
@@ -1412,6 +1437,27 @@ export default function ProfilePage() {
           onCheckedChange={(next) => void persistVisibility(next)}
           label="Visibilidad"
           disabled={savingVisibility}
+        />
+      </Card>
+
+      <Card padding="default" className="ds-fade-up flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-[14px] font-bold tracking-[-0.2px]">
+            Recomendaciones
+          </h3>
+          <p className="text-[12px] text-[var(--text2)] mt-0.5">
+            {profile?.show_recommendation_count !== false
+              ? profile?.recommendation_count
+                ? `Otros ven que tienes ${profile.recommendation_count} recomendación${profile.recommendation_count === 1 ? "" : "es"} en tu card.`
+                : "Cuando recibas recomendaciones, otros verán el contador en tu card."
+              : "El contador de recomendaciones está oculto para otros."}
+          </p>
+        </div>
+        <Toggle
+          checked={profile?.show_recommendation_count !== false}
+          onCheckedChange={(next) => void persistShowRecommendationCount(next)}
+          label="Mostrar recomendaciones"
+          disabled={savingShowRecommendationCount}
         />
       </Card>
 

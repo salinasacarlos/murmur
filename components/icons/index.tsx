@@ -207,6 +207,15 @@ export function IconHeart({ size = 16, ...props }: IconProps) {
   )
 }
 
+export function IconHeartOff({ size = 16, ...props }: IconProps) {
+  return (
+    <svg {...baseProps(size)} {...props}>
+      <path d="M20.4 4.6a5.5 5.5 0 0 0-7.8 0L12 5.2l-.6-.6a5.5 5.5 0 0 0-7.8 7.8l.6.6L12 21l7.8-7.8.6-.6a5.5 5.5 0 0 0 0-7.8z" />
+      <path d="M4 4l16 16" />
+    </svg>
+  )
+}
+
 export function IconEye({ size = 16, ...props }: IconProps) {
   return (
     <svg {...baseProps(size)} {...props}>

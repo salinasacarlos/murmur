@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 
-import { IconPlus, IconFilter, IconMapPin } from "@/components/icons"
+import { IconPlus, IconFilter, IconMapPin, IconHeart } from "@/components/icons"
 import { MSG_FREE_SEARCH_LIMIT } from "@/lib/plan-limits"
 import { cn } from "@/lib/utils"
 import type { Search } from "@/lib/types"
@@ -18,6 +18,9 @@ interface SearchChipBarProps {
   /** Free: false cuando ya hay una búsqueda activa (no abrir /searches/new). */
   canAddSearch?: boolean
   addSearchBlockedTitle?: string
+  recommendedOnly?: boolean
+  recommendedCount?: number
+  onToggleRecommendedOnly?: () => void
 }
 
 export function SearchChipBar({
@@ -29,15 +32,30 @@ export function SearchChipBar({
   eventActive,
   canAddSearch = true,
   addSearchBlockedTitle = MSG_FREE_SEARCH_LIMIT,
+  recommendedOnly = false,
+  recommendedCount,
+  onToggleRecommendedOnly,
 }: SearchChipBarProps) {
   return (
     <div className="flex items-center gap-2 px-4 md:px-6 py-3 border-b-[0.5px] border-[var(--border)] bg-[var(--bg)]">
       <div className="flex items-center gap-1.5 overflow-x-auto flex-1 [&::-webkit-scrollbar]:hidden">
         <Chip
           label="Todas"
-          active={activeId === "all"}
-          onClick={() => onSelect("all")}
+          active={activeId === "all" && !recommendedOnly}
+          onClick={() => {
+            if (recommendedOnly) onToggleRecommendedOnly?.()
+            onSelect("all")
+          }}
         />
+        {onToggleRecommendedOnly ? (
+          <Chip
+            label="Recomendados"
+            icon={<IconHeart size={11} />}
+            count={recommendedCount}
+            active={recommendedOnly}
+            onClick={onToggleRecommendedOnly}
+          />
+        ) : null}
         {searches
           .filter((s) => s.status === "active")
           .map((s) => (
@@ -112,11 +130,13 @@ function Chip({
   count,
   active,
   onClick,
+  icon,
 }: {
   label: string
   count?: number
   active: boolean
   onClick: () => void
+  icon?: React.ReactNode
 }) {
   return (
     <button
@@ -129,6 +149,7 @@ function Chip({
           : "bg-[var(--bg)] text-[var(--text2)] border-[var(--border)] hover:border-[var(--border2)] hover:text-[var(--text)]"
       )}
     >
+      {icon}
       {label}
       {typeof count === "number" && (
         <span

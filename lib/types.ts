@@ -80,6 +80,10 @@ export interface Profile {
   opportunitySeekSummary?: string | null
   contributorPitch?: string | null
   investorActivity?: InvestorActivity | null
+  /** Total de votos «Recomendar» (denormalizado). */
+  recommendationCount?: number
+  /** Si false, otros no ven el contador aunque sea > 0. */
+  showRecommendationCount?: boolean
 }
 
 export interface EventEntry {

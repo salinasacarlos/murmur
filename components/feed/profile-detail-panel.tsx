@@ -16,6 +16,12 @@ import {
   sendConnectionRequest,
   type PeerConnectionHint,
 } from "@/lib/data/connections"
+import {
+  clearProfileRecommendation,
+  setProfileRecommendation,
+} from "@/lib/data/recommendations"
+import { profileShowsRecommendationCount } from "@/lib/recommendation-display"
+import type { ProfileRecommendationVote } from "@/lib/recommendation-types"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import {
@@ -51,6 +57,8 @@ import {
   IconClock,
   IconX,
   IconSpark,
+  IconHeart,
+  IconHeartOff,
 } from "@/components/icons"
 
 interface ProfileDetailPanelProps {
@@ -60,6 +68,11 @@ interface ProfileDetailPanelProps {
   /** Desde Descubrir: evita ofrecer conectar de nuevo si ya hay vínculo. */
   connectionHint?: PeerConnectionHint
   onConnectionsChanged?: () => void
+  myRecommendationVote?: ProfileRecommendationVote | null
+  onRecommendationChange?: (
+    vote: ProfileRecommendationVote | null,
+    recommendationCount: number
+  ) => void
 }
 
 export function ProfileDetailPanel({
@@ -68,6 +81,8 @@ export function ProfileDetailPanel({
   onOpenChange,
   connectionHint = { state: "none" },
   onConnectionsChanged,
+  myRecommendationVote = null,
+  onRecommendationChange,
 }: ProfileDetailPanelProps) {
   const router = useRouter()
   const { user: authUser, profile: myProfile } = useCurrentUser()
@@ -80,6 +95,16 @@ export function ProfileDetailPanel({
   const [sending, setSending] = React.useState(false)
   const [sendError, setSendError] = React.useState<string | null>(null)
   const [reportOpen, setReportOpen] = React.useState(false)
+  const [recommendationVote, setRecommendationVote] =
+    React.useState<ProfileRecommendationVote | null>(myRecommendationVote)
+  const [recommendationSaving, setRecommendationSaving] = React.useState(false)
+  const [recommendationError, setRecommendationError] = React.useState<
+    string | null
+  >(null)
+
+  React.useEffect(() => {
+    setRecommendationVote(myRecommendationVote)
+  }, [myRecommendationVote, profile?.id])
 
   React.useEffect(() => {
     if (!authUser?.id || !open) {
@@ -117,6 +142,32 @@ export function ProfileDetailPanel({
     !isPremiumPlan(myProfile?.plan) &&
     acceptedCount !== null &&
     acceptedCount >= FREE_MAX_ACCEPTED_CONNECTIONS
+
+  const handleRecommendationClick = (vote: ProfileRecommendationVote) => {
+    void (async () => {
+      if (!authUser?.id) return
+      const togglingOff = recommendationVote === vote
+      setRecommendationSaving(true)
+      setRecommendationError(null)
+      const supabase = getSupabaseBrowserClient()
+      const res = togglingOff
+        ? await clearProfileRecommendation(supabase, authUser.id, profile.id)
+        : await setProfileRecommendation(
+            supabase,
+            authUser.id,
+            profile.id,
+            vote
+          )
+      setRecommendationSaving(false)
+      if (!res.ok) {
+        setRecommendationError(res.error)
+        return
+      }
+      const nextVote = togglingOff ? null : vote
+      setRecommendationVote(nextVote)
+      onRecommendationChange?.(nextVote, res.recommendationCount)
+    })()
+  }
 
   const heroIndustrySlug =
     profile.primaryIndustrySlug ??
@@ -180,18 +231,29 @@ export function ProfileDetailPanel({
                 <p className="text-[13px] text-[var(--text2)] mt-0.5">
                   {profile.role}
                 </p>
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.05em] mt-2"
-                  style={{ color: COMPATIBILITY_COLORS[profile.compatibility] }}
-                >
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{
-                      background: COMPATIBILITY_COLORS[profile.compatibility],
-                    }}
-                  />
-                  {COMPATIBILITY_LABELS[profile.compatibility]}
-                </span>
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.05em]"
+                    style={{ color: COMPATIBILITY_COLORS[profile.compatibility] }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{
+                        background: COMPATIBILITY_COLORS[profile.compatibility],
+                      }}
+                    />
+                    {COMPATIBILITY_LABELS[profile.compatibility]}
+                  </span>
+                  {profileShowsRecommendationCount(profile) ? (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-[var(--p)]">
+                      <IconHeart size={11} />
+                      {profile.recommendationCount}{" "}
+                      {profile.recommendationCount === 1
+                        ? "recomendación"
+                        : "recomendaciones"}
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -409,6 +471,53 @@ export function ProfileDetailPanel({
               </Link>
             )}
             </div>
+            {!isSelf && authUser?.id ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] uppercase tracking-wide text-[var(--text3)]">
+                  Tu señal
+                </p>
+                <p className="text-[11px] text-[var(--text3)] leading-snug">
+                  Pulsa de nuevo el mismo botón para quitar tu voto.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={
+                      recommendationVote === "recommend" ? "primary" : "secondary"
+                    }
+                    size="sm"
+                    className="flex-1 min-h-[40px]"
+                    disabled={recommendationSaving}
+                    aria-pressed={recommendationVote === "recommend"}
+                    onClick={() => handleRecommendationClick("recommend")}
+                  >
+                    <IconHeart size={14} className="mr-1.5" />
+                    Recomendar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={
+                      recommendationVote === "not_recommend"
+                        ? "primary"
+                        : "secondary"
+                    }
+                    size="sm"
+                    className="flex-1 min-h-[40px]"
+                    disabled={recommendationSaving}
+                    aria-pressed={recommendationVote === "not_recommend"}
+                    onClick={() => handleRecommendationClick("not_recommend")}
+                  >
+                    <IconHeartOff size={14} className="mr-1.5" />
+                    No recomendar
+                  </Button>
+                </div>
+                {recommendationError ? (
+                  <p className="text-[11px] text-red-600 dark:text-red-400">
+                    {recommendationError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             {!isSelf && authUser?.id ? (
               <button
                 type="button"

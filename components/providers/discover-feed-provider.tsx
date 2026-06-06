@@ -41,6 +41,7 @@ type DiscoverFeedContextValue = {
   searches: Search[]
   feedLoading: boolean
   refreshFeed: () => Promise<void>
+  patchProfile: (id: string, partial: Partial<Profile>) => void
   pendingEventCode: string | null
 }
 
@@ -207,6 +208,15 @@ export function DiscoverFeedProvider({ children }: { children: React.ReactNode }
     }
   }, [activated, userId, activeEvent?.code])
 
+  const patchProfile = React.useCallback((id: string, partial: Partial<Profile>) => {
+    setProfiles((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...partial } : p))
+    )
+    setSelected((prev) =>
+      prev?.id === id ? { ...prev, ...partial } : prev
+    )
+  }, [])
+
   const value = React.useMemo(
     (): DiscoverFeedContextValue => ({
       activated,
@@ -223,6 +233,7 @@ export function DiscoverFeedProvider({ children }: { children: React.ReactNode }
       searches,
       feedLoading,
       refreshFeed,
+      patchProfile,
       pendingEventCode,
     }),
     [
@@ -239,6 +250,7 @@ export function DiscoverFeedProvider({ children }: { children: React.ReactNode }
       searches,
       feedLoading,
       refreshFeed,
+      patchProfile,
       pendingEventCode,
     ]
   )

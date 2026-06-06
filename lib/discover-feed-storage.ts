@@ -74,6 +74,7 @@ export function readFeedFilters(userId: string): DiscoverFeedFilters {
       talentSlugs: Array.isArray(p.talentSlugs)
         ? (p.talentSlugs as string[])
         : base.talentSlugs,
+      recommendedOnly: p.recommendedOnly === true,
     }
   } catch {
     return emptyDiscoverFeedFilters()

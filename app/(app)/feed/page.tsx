@@ -18,7 +18,9 @@ import { useCurrentUser } from "@/components/providers/current-user-provider"
 import { useDiscoverFeed } from "@/components/providers/discover-feed-provider"
 import { useFirstActions } from "@/hooks/use-first-actions"
 import { fetchPeerConnectionHints, type PeerConnectionHint } from "@/lib/data/connections"
+import { fetchMyRecommendationsForProfiles } from "@/lib/data/recommendations"
 import { profileMatchesDiscoverFilters, profileMatchesDiscoverQuery } from "@/lib/feed-filters"
+import type { ProfileRecommendationVote } from "@/lib/recommendation-types"
 import {
   countProfilesMatchingSearch,
   MATCH_TIER_MEDIA,
@@ -35,8 +37,19 @@ function discoverEmptyCopy(args: {
   activeEvent: boolean
   progress: FirstActionsProgress
   hasActiveSearches: boolean
+  recommendedOnly: boolean
 }): { title: string; body: string; showSearchCta: boolean; showVisibilityCta: boolean } {
-  const { hasProfileQuery, activeEvent, progress, hasActiveSearches } = args
+  const { hasProfileQuery, activeEvent, progress, hasActiveSearches, recommendedOnly } =
+    args
+
+  if (recommendedOnly) {
+    return {
+      title: "Aún no has recomendado a nadie",
+      body: "Abre un perfil en Descubrir y pulsa Recomendar para verlo aquí.",
+      showSearchCta: false,
+      showVisibilityCta: false,
+    }
+  }
 
   if (hasProfileQuery) {
     return {
@@ -101,6 +114,10 @@ function FeedPageContent() {
     Map<string, PeerConnectionHint>
   >(() => new Map())
 
+  const [myRecommendations, setMyRecommendations] = React.useState<
+    Map<string, ProfileRecommendationVote>
+  >(() => new Map())
+
   const loadPeerHints = React.useCallback(async () => {
     if (!userId) return
     const supabase = getSupabaseBrowserClient()
@@ -126,6 +143,7 @@ function FeedPageContent() {
     profiles,
     searches,
     feedLoading,
+    patchProfile,
   } = useDiscoverFeed()
 
   const activeSearches = React.useMemo(
@@ -153,11 +171,42 @@ function FeedPageContent() {
     radarStartRef.current = start
   }, [])
 
-  const poolForMatchCounts = React.useMemo(
-    () =>
-      profiles.filter((p) => profileMatchesDiscoverFilters(p, discoverFilters)),
-    [profiles, discoverFilters]
-  )
+  React.useEffect(() => {
+    if (!userId || profiles.length === 0) {
+      setMyRecommendations(new Map())
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const supabase = getSupabaseBrowserClient()
+      const map = await fetchMyRecommendationsForProfiles(
+        supabase,
+        profiles.map((p) => p.id)
+      )
+      if (!cancelled) setMyRecommendations(map)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [userId, profiles])
+
+  const recommendedCount = React.useMemo(() => {
+    let n = 0
+    for (const vote of myRecommendations.values()) {
+      if (vote === "recommend") n += 1
+    }
+    return n
+  }, [myRecommendations])
+
+  const poolForMatchCounts = React.useMemo(() => {
+    let list = profiles.filter((p) =>
+      profileMatchesDiscoverFilters(p, discoverFilters)
+    )
+    if (discoverFilters.recommendedOnly) {
+      list = list.filter((p) => myRecommendations.get(p.id) === "recommend")
+    }
+    return list
+  }, [profiles, discoverFilters, myRecommendations])
 
   const searchesForBar = React.useMemo(
     () =>
@@ -208,6 +257,7 @@ function FeedPageContent() {
     activeEvent: activeEvent !== null,
     progress: firstActionsProgress,
     hasActiveSearches,
+    recommendedOnly: discoverFilters.recommendedOnly,
   })
 
   React.useEffect(() => {
@@ -260,6 +310,14 @@ function FeedPageContent() {
           onOpenEvent={() => setEventOpen(true)}
           eventActive={activeEvent !== null}
           canAddSearch={canAddSearch}
+          recommendedOnly={discoverFilters.recommendedOnly}
+          recommendedCount={recommendedCount > 0 ? recommendedCount : undefined}
+          onToggleRecommendedOnly={() =>
+            setDiscoverFilters((f) => ({
+              ...f,
+              recommendedOnly: !f.recommendedOnly,
+            }))
+          }
         />
 
         <DiscoverProfileSearch
@@ -424,6 +482,19 @@ function FeedPageContent() {
             ? (peerHints.get(selected.id) ?? { state: "none" })
             : { state: "none" }
         }
+        myRecommendationVote={
+          selected ? (myRecommendations.get(selected.id) ?? null) : null
+        }
+        onRecommendationChange={(vote, recommendationCount) => {
+          if (!selected) return
+          setMyRecommendations((prev) => {
+            const next = new Map(prev)
+            if (vote === null) next.delete(selected.id)
+            else next.set(selected.id, vote)
+            return next
+          })
+          patchProfile(selected.id, { recommendationCount })
+        }}
         onConnectionsChanged={() => void loadPeerHints()}
         onOpenChange={(open) => {
           if (!open) setSelected(null)

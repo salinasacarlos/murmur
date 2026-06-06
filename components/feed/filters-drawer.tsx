@@ -225,6 +225,19 @@ export function FiltersDrawer({
             Filtro por {PROFILE_FIELD_COPY.softSkills.toLowerCase()} en Descubrir está disponible con Premium.
           </p>
         )}
+
+        <Field label="Recomendados">
+          <FilterChip
+            label="Solo perfiles que recomendé"
+            selected={filters.recommendedOnly}
+            onClick={() =>
+              onFiltersChange({
+                ...filters,
+                recommendedOnly: !filters.recommendedOnly,
+              })
+            }
+          />
+        </Field>
       </div>
 
       <div className="flex gap-2">

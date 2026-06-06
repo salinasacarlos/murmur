@@ -24,8 +24,9 @@ import {
 } from "@/lib/profile-taxonomy"
 import { labelProjectStageShort } from "@/lib/project-stage"
 import { labelInvestorActivityShort } from "@/lib/investor-activity"
-import { IconMapPin } from "@/components/icons"
+import { IconMapPin, IconHeart } from "@/components/icons"
 import { cn } from "@/lib/utils"
+import { profileShowsRecommendationCount } from "@/lib/recommendation-display"
 
 interface ProfileCardProps {
   profile: Profile
@@ -81,9 +82,14 @@ export function ProfileCard({
             <h3 className="text-[14px] font-bold tracking-[-0.2px] text-[var(--text)] truncate">
               {profile.name}
             </h3>
-            {showMatchBadge ? (
-              <CompatibilityBadge level={profile.compatibility} />
-            ) : null}
+            <div className="flex shrink-0 items-center gap-2">
+              {profileShowsRecommendationCount(profile) ? (
+                <RecommendationCountBadge count={profile.recommendationCount ?? 0} />
+              ) : null}
+              {showMatchBadge ? (
+                <CompatibilityBadge level={profile.compatibility} />
+              ) : null}
+            </div>
           </div>
           {matchedSearchTitle ? (
             <p className="text-[10px] text-[var(--text3)] mt-0.5 truncate">
@@ -257,6 +263,18 @@ function CompatibilityBadge({
         style={{ background: COMPATIBILITY_COLORS[level] }}
       />
       {COMPATIBILITY_LABELS[level].replace("Compatibilidad ", "")}
+    </span>
+  )
+}
+
+function RecommendationCountBadge({ count }: { count: number }) {
+  return (
+    <span
+      className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-[var(--p)]"
+      title={`${count} recomendación${count === 1 ? "" : "es"}`}
+    >
+      <IconHeart size={11} />
+      {count}
     </span>
   )
 }

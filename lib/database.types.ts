@@ -744,6 +744,8 @@ export type Database = {
           updated_at: string
           vertical_slugs: string[]
           visible: boolean
+          recommendation_count: number
+          show_recommendation_count: boolean
         }
         Insert: {
           achievement?: string
@@ -792,6 +794,8 @@ export type Database = {
           updated_at?: string
           vertical_slugs?: string[]
           visible?: boolean
+          recommendation_count?: number
+          show_recommendation_count?: boolean
         }
         Update: {
           achievement?: string
@@ -840,8 +844,52 @@ export type Database = {
           updated_at?: string
           vertical_slugs?: string[]
           visible?: boolean
+          recommendation_count?: number
+          show_recommendation_count?: boolean
         }
         Relationships: []
+      }
+      profile_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          recommender_id: string
+          updated_at: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          recommender_id: string
+          updated_at?: string
+          vote: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          recommender_id?: string
+          updated_at?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_recommendations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_recommendations_recommender_id_fkey"
+            columns: ["recommender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       search_relations: {
         Row: {

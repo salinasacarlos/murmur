@@ -95,6 +95,8 @@ export function mapProfileJoinRow(row: ProfileJoinRow): Profile {
     opportunitySeekSummary: row.opportunity_seek_summary ?? undefined,
     contributorPitch: row.contributor_pitch ?? undefined,
     investorActivity: row.investor_activity ?? undefined,
+    recommendationCount: row.recommendation_count ?? 0,
+    showRecommendationCount: row.show_recommendation_count ?? true,
   }
 }
 

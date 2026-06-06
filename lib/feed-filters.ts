@@ -24,6 +24,8 @@ export interface DiscoverFeedFilters {
   expertiseSlugs: string[]
   /** Soft skills; vacío = sin filtrar. */
   talentSlugs: string[]
+  /** Solo perfiles que yo marqué como Recomendar. */
+  recommendedOnly: boolean
 }
 
 export function emptyDiscoverFeedFilters(): DiscoverFeedFilters {
@@ -37,6 +39,7 @@ export function emptyDiscoverFeedFilters(): DiscoverFeedFilters {
     verticalSlugs: [],
     expertiseSlugs: [],
     talentSlugs: [],
+    recommendedOnly: false,
   }
 }
 
