@@ -73,7 +73,6 @@ import {
   replaceProfileWorkStyles,
 } from "@/lib/data/profile-mutations"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { IconX } from "@/components/icons"
 import { cn } from "@/lib/utils"
 import { PROFILE_FIELD_COPY } from "@/lib/profile-field-copy"
 import {
@@ -97,12 +96,20 @@ export default function ProfilePage() {
   const [enrichedProfile, setEnrichedProfile] = React.useState<Profile | null>(
     null
   )
+  const [profileEnrichedLoaded, setProfileEnrichedLoaded] =
+    React.useState(false)
 
   const reloadEnriched = React.useCallback(async () => {
     if (!authUser?.id) return
     const supabase = getSupabaseBrowserClient()
     const next = await fetchProfileById(supabase, authUser.id)
     setEnrichedProfile(next)
+    setProfileEnrichedLoaded(true)
+  }, [authUser?.id])
+
+  React.useEffect(() => {
+    setEnrichedProfile(null)
+    setProfileEnrichedLoaded(false)
   }, [authUser?.id])
 
   const [liveStats, setLiveStats] = React.useState<LiveProfileStats | null>(null)
@@ -294,37 +301,8 @@ export default function ProfilePage() {
     )
   }, [profileUser])
 
-  const ONBOARDING_DISMISS_KEY = "murmur:profile-onboarding-dismissed"
-  const [onboardingDismissed, setOnboardingDismissed] =
-    React.useState(false)
-
-  React.useEffect(() => {
-    try {
-      if (sessionStorage.getItem(ONBOARDING_DISMISS_KEY) === "1") {
-        setOnboardingDismissed(true)
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [])
-
-  const prevMissingCountRef = React.useRef<number | null>(null)
-  React.useEffect(() => {
-    const n = completeness.missing.length
-    const prev = prevMissingCountRef.current
-    prevMissingCountRef.current = n
-    if (prev === 0 && n > 0) {
-      try {
-        sessionStorage.removeItem(ONBOARDING_DISMISS_KEY)
-      } catch {
-        /* ignore */
-      }
-      setOnboardingDismissed(false)
-    }
-  }, [completeness.missing.length])
-
-  const showOnboardingCard =
-    !onboardingDismissed && completeness.missing.length > 0
+  const showCompletenessCard =
+    profileEnrichedLoaded && completeness.missing.length > 0
 
   async function afterSuccessfulSave() {
     await refresh()
@@ -1004,35 +982,36 @@ export default function ProfilePage() {
         </Card>
       ) : null}
 
-      {showOnboardingCard ? (
-        <Card padding="default" className="ds-fade-up relative flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              try {
-                sessionStorage.setItem(ONBOARDING_DISMISS_KEY, "1")
-              } catch {
-                /* ignore */
-              }
-              setOnboardingDismissed(true)
-            }}
-            className="absolute right-3 top-3 rounded-md p-1.5 text-[var(--text3)] hover:bg-[var(--bg2)] hover:text-[var(--text)]"
-            aria-label="Ocultar aviso de perfil hasta recargar la página"
+      {showCompletenessCard ? (
+        <Card padding="default" className="ds-fade-up flex flex-col gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-[var(--text3)]">
+              Perfil incompleto
+            </p>
+            <p className="text-[20px] font-extrabold tracking-[-0.4px] mt-1">
+              Perfil al {completeness.percent}%
+            </p>
+            <p className="text-[12px] text-[var(--text2)] mt-1 leading-snug">
+              Completa estos datos para aparecer mejor en búsquedas y matches.
+            </p>
+          </div>
+          <div
+            className="h-1.5 rounded-full bg-[var(--bg2)] overflow-hidden"
+            role="progressbar"
+            aria-valuenow={completeness.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Perfil completado al ${completeness.percent} por ciento`}
           >
-            <IconX size={16} />
-          </button>
-          <div className="flex items-start justify-between gap-3 pr-8">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-[var(--text3)]">
-                ONBOARDING
-              </p>
-              <p className="text-[20px] font-extrabold tracking-[-0.4px] mt-1">
-                Perfil al {completeness.percent}%
-              </p>
-            </div>
+            <div
+              className="h-full rounded-full bg-[var(--amber)] transition-[width] duration-300"
+              style={{ width: `${completeness.percent}%` }}
+            />
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-[12px] text-[var(--text2)]">Falta completar:</p>
+            <p className="text-[12px] font-semibold text-[var(--text2)]">
+              Falta completar:
+            </p>
             <ul className="flex flex-wrap gap-1.5">
               {completeness.missing.map((item) => (
                 <li key={item.id}>

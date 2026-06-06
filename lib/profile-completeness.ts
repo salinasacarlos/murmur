@@ -195,8 +195,8 @@ export function computeProfileCompleteness(
   )
   const okCore = core.filter((i) => i.ok).length
   const percent = Math.round((okCore / core.length) * 100)
-  /** Detalle que el usuario puede completar después en perfil; no bloquea % ni la tarjeta. */
-  const OPTIONAL_GAP_IDS = new Set<string>(["fun_fact"])
+  /** No cuenta para el % ni en la lista de pendientes (mejora opcional). */
+  const OPTIONAL_GAP_IDS = new Set<string>(["fun_fact", "photo"])
 
   const missing = items.filter(
     (i) => !i.ok && !OPTIONAL_GAP_IDS.has(i.id)
