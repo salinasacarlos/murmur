@@ -16,34 +16,32 @@ const FOUNDER_OPTIONS: OnboardingRelationshipOption[] = [
   {
     id: "co-founder",
     title: "Co-founder",
-    description:
-      "Buscas alguien que comparta visión y riesgo contigo desde el inicio.",
+    description: "Busco socio/a desde el inicio, con visión y riesgo compartidos.",
   },
   {
     id: "empleo",
     title: "Contratar talento",
-    description: "Quieres incorporar a alguien a tu equipo.",
+    description: "Necesito sumar a alguien al equipo con un rol claro.",
   },
   {
     id: "colaboracion",
     title: "Colaboración",
-    description:
-      "Te sirve un encargo definido, apoyo puntual o un proyecto acotado en el tiempo.",
+    description: "Proyecto acotado, encargo puntual o apoyo por tiempo limitado.",
   },
   {
     id: "mentoria",
     title: "Mentoría",
-    description: "Buscas retro de alguien que ya haya recorrido el camino.",
+    description: "Busco guía de alguien que ya recorrió el camino en mi sector.",
   },
   {
     id: "inversion",
     title: "Inversión",
-    description: "Buscas capital o socios/as inversionistas para tu proyecto.",
+    description: "Busco capital o un inversionista que sume al proyecto.",
   },
   {
     id: "abierto",
     title: "Abierto a explorar",
-    description: "Prefieres no cerrarte de antemano y ver qué encaja conversando.",
+    description: "Prefiero conversar y ver qué match aparece.",
   },
 ]
 
@@ -51,30 +49,27 @@ const CONTRIBUTOR_OPTIONS: OnboardingRelationshipOption[] = [
   {
     id: "co-founder",
     title: "Co-founder",
-    description:
-      "Quieres unirte como socio/a desde el inicio, con visión compartida y riesgo repartido.",
+    description: "Quiero entrar como socio/a desde el inicio del proyecto.",
   },
   {
     id: "empleo",
     title: "Empleo en equipo",
-    description:
-      "Buscas un rol dentro de un proyecto o negocio que ya esté en marcha.",
+    description: "Busco un rol en un proyecto que ya esté en marcha.",
   },
   {
     id: "colaboracion",
     title: "Colaboración por proyecto",
-    description:
-      "Te interesa apoyar en algo concreto, con alcance y plazo definidos.",
+    description: "Apoyo en algo concreto, con alcance y plazo definidos.",
   },
   {
     id: "mentoria",
     title: "Mentoría",
-    description: "Buscas guía de alguien con experiencia en tu área o sector.",
+    description: "Busco guía de alguien con experiencia en mi área.",
   },
   {
     id: "abierto",
     title: "Abierto a explorar",
-    description: "Prefieres conversar primero y ver qué tipo de encaje aparece.",
+    description: "Prefiero conversar primero y ver qué match hay.",
   },
 ]
 
@@ -82,25 +77,22 @@ const INVESTOR_OPTIONS: OnboardingRelationshipOption[] = [
   {
     id: "inversion",
     title: "Inversión",
-    description:
-      "Conectar con proyectos o founders para evaluar oportunidades de capital.",
+    description: "Evalúo proyectos y oportunidades de capital.",
   },
   {
     id: "mentoria",
     title: "Mentoría / advisory",
-    description:
-      "Apoyar equipos con experiencia, red o criterio, sin liderar el día a día.",
+    description: "Apoyo equipos con red, criterio o experiencia operativa.",
   },
   {
     id: "colaboracion",
     title: "Colaboración puntual",
-    description:
-      "Due diligence, intros o apoyo en temas concretos cuando haga falta.",
+    description: "Due diligence, intros o apoyo en temas específicos.",
   },
   {
     id: "abierto",
     title: "Abierto a explorar",
-    description: "Prefieres conocer equipos sin un formato fijo de antemano.",
+    description: "Conozco equipos sin un formato fijo de antemano.",
   },
 ]
 
@@ -108,37 +100,32 @@ const BOTH_OPTIONS: OnboardingRelationshipOption[] = [
   {
     id: "co-founder",
     title: "Co-founder",
-    description:
-      "Buscar socios/as para tu proyecto o unirte como socio/a a otro equipo.",
+    description: "Busco socios/as o quiero unirme como socio/a a otro proyecto.",
   },
   {
     id: "empleo",
     title: "Talento en equipo",
-    description:
-      "Contratar para tu proyecto o sumarte a uno con un rol definido.",
+    description: "Contratar para mi proyecto o sumarme con un rol definido.",
   },
   {
     id: "colaboracion",
     title: "Colaboración",
-    description:
-      "Encargos puntuales, apoyo por proyecto o trabajo acotado en el tiempo.",
+    description: "Encargo puntual, apoyo por proyecto o trabajo acotado.",
   },
   {
     id: "mentoria",
     title: "Mentoría",
-    description:
-      "Recibir guía, ofrecerla o intercambiar retro con otros perfiles.",
+    description: "Recibir guía, ofrecerla o intercambiar retro.",
   },
   {
     id: "inversion",
     title: "Inversión",
-    description:
-      "Buscar capital, invertir o conectar oportunidades con equipos.",
+    description: "Buscar capital, invertir o conectar oportunidades.",
   },
   {
     id: "abierto",
     title: "Abierto a explorar",
-    description: "Prefieres no cerrarte de antemano y ver qué encaja conversando.",
+    description: "Prefiero conversar y ver qué match aparece.",
   },
 ]
 
@@ -148,31 +135,27 @@ export function getOnboardingRelationshipsStepCopy(
   switch (intent) {
     case "contributor":
       return {
-        title: "¿En qué formato quieres unirte?",
-        description:
-          "Marca los tipos de oportunidad que te interesan.",
+        title: "¿En qué formato te sumas?",
+        description: "Marca los tipos de oportunidad que te interesan.",
         options: CONTRIBUTOR_OPTIONS,
       }
     case "investor":
       return {
         title: "¿Cómo te relacionas con equipos?",
-        description:
-          "Indica cómo sueles trabajar con founders y proyectos.",
+        description: "Indica cómo sueles conectar con founders y proyectos.",
         options: INVESTOR_OPTIONS,
       }
     case "both":
       return {
-        title: "¿Qué conexiones te interesan?",
-        description:
-          "Tienes proyecto propio y también quieres sumarte a otros. Marca lo que aplique.",
+        title: "¿Qué conexiones buscas?",
+        description: "Tienes proyecto y también quieres sumarte a otros. Marca lo que aplique.",
         options: BOTH_OPTIONS,
       }
     case "founder":
     default:
       return {
-        title: "¿Qué tipo de conexiones buscas?",
-        description:
-          "Elige las que apliquen para tu proyecto. Puedes cambiarlo después.",
+        title: "¿Qué conexiones buscas?",
+        description: "Elige las que aplican a tu proyecto. Puedes cambiarlo después.",
         options: FOUNDER_OPTIONS,
       }
   }

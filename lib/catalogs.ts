@@ -12,6 +12,7 @@ export const CITIES_CATALOG = [
   WORLDWIDE_CITY_LABEL,
   "Ciudad de México",
   "Guadalajara",
+  "Zapopan",
   "Monterrey",
   "Querétaro",
   "Puebla",
@@ -32,6 +33,23 @@ export const CITIES_CATALOG = [
   "Torreón",
   "Mexicali",
   "Ciudad Juárez",
+  "Tepic",
+  "Pachuca",
+  "Cuernavaca",
+  "Villahermosa",
+  "Xalapa",
+  "Durango",
+  "Colima",
+  "Ensenada",
+  "Puerto Vallarta",
+  "Nuevo Laredo",
+  "Reynosa",
+  "Matamoros",
+  "La Paz",
+  "Campeche",
+  "Chetumal",
+  "Tuxtla Gutiérrez",
+  "Irapuato",
   "Bogotá",
   "Medellín",
   "Cali",
@@ -85,6 +103,12 @@ export const CITIES_CATALOG = [
   "Porto Alegre",
   "Recife",
 ] as const
+
+/** Ciudades reales para ciudad principal (sin «Todo el mundo»). */
+export const PRIMARY_CITIES_CATALOG = CITIES_CATALOG.filter(
+  (city): city is Exclude<(typeof CITIES_CATALOG)[number], typeof WORLDWIDE_CITY_LABEL> =>
+    city !== WORLDWIDE_CITY_LABEL
+)
 
 /** Slug for `cities_catalog.slug` / `profile_cities.city_slug` (same normalization as industries). */
 export const cityLabelToSlug = industryLabelToSlug

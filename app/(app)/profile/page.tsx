@@ -6,8 +6,12 @@ import { Avatar } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CitySelector } from "@/components/ui/city-selector"
+import { CitySingleSelect } from "@/components/ui/city-single-select"
 import { Drawer, DrawerHeader } from "@/components/ui/drawer"
 import { Field, Input, Textarea } from "@/components/ui/input"
+import { InvestorActivitySelect } from "@/components/ui/investor-activity-select"
+import { OnboardingIntentSelect } from "@/components/ui/onboarding-intent-select"
+import { ProjectStageSelect } from "@/components/ui/project-stage-select"
 import { Tag } from "@/components/ui/tag"
 import { Toggle } from "@/components/ui/toggle"
 import { ProfilePhotoPicker } from "@/components/profile/profile-photo-picker"
@@ -15,7 +19,6 @@ import { IndustrySingleSelect } from "@/components/ui/industry-single-select"
 import { ExpertiseMultiSelect } from "@/components/ui/expertise-multi-select"
 import { VerticalMultiSelect } from "@/components/ui/vertical-multi-select"
 import { TalentMultiSelect } from "@/components/ui/talent-multi-select"
-import { CITIES_CATALOG } from "@/lib/catalogs"
 import {
   defaultIndustryForFunctionalArea,
   deriveEditableTaxonomy,
@@ -80,14 +83,8 @@ import {
   userHasProjectIntent,
   userIsInvestor,
 } from "@/lib/profile-project-guard"
-import {
-  INVESTOR_ACTIVITY_OPTIONS,
-  labelInvestorActivityShort,
-} from "@/lib/investor-activity"
-import {
-  PROJECT_STAGE_OPTIONS,
-  labelProjectStageShort,
-} from "@/lib/project-stage"
+import { labelInvestorActivityShort } from "@/lib/investor-activity"
+import { labelProjectStageShort } from "@/lib/project-stage"
 
 export default function ProfilePage() {
   const { user: authUser, profile, refresh, mergeProfile } = useCurrentUser()
@@ -1587,28 +1584,10 @@ export default function ProfilePage() {
         />
         <div className="flex flex-col gap-3 mb-4">
           <Field label="¿Cómo usas Murmur?" required>
-            <select
-              className={cn(
-                "ds-input",
-                !intentDraft ? "text-[var(--text3)]" : ""
-              )}
+            <OnboardingIntentSelect
               value={intentDraft}
-              onChange={(e) =>
-                setIntentDraft(
-                  (e.target.value || "") as OnboardingIntent | ""
-                )
-              }
-              aria-required
-            >
-              <option value="">Elige una opción…</option>
-              {(
-                Object.keys(ONBOARDING_INTENT_LABELS) as OnboardingIntent[]
-              ).map((id) => (
-                <option key={id} value={id}>
-                  {ONBOARDING_INTENT_LABELS[id]}
-                </option>
-              ))}
-            </select>
+              onChange={setIntentDraft}
+            />
           </Field>
 
           {intentDraft &&
@@ -1622,26 +1601,10 @@ export default function ProfilePage() {
                 />
               </Field>
               <Field label="Etapa del proyecto" required>
-                <select
-                  className={cn(
-                    "ds-input",
-                    !projectStageDraft ? "text-[var(--text3)]" : ""
-                  )}
+                <ProjectStageSelect
                   value={projectStageDraft}
-                  onChange={(e) =>
-                    setProjectStageDraft(
-                      (e.target.value || "") as ProjectStage | ""
-                    )
-                  }
-                  aria-required
-                >
-                  <option value="">Elige una etapa…</option>
-                  {PROJECT_STAGE_OPTIONS.map((opt) => (
-                    <option key={opt.slug} value={opt.slug}>
-                      {opt.title} — {opt.description}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setProjectStageDraft}
+                />
               </Field>
               <Field label="Qué busco">
                 <Textarea
@@ -1654,26 +1617,10 @@ export default function ProfilePage() {
             </>
           ) : intentDraft === "investor" ? (
             <Field label="Situación como inversionista" required>
-              <select
-                className={cn(
-                  "ds-input",
-                  !investorActivityDraft ? "text-[var(--text3)]" : ""
-                )}
+              <InvestorActivitySelect
                 value={investorActivityDraft}
-                onChange={(e) =>
-                  setInvestorActivityDraft(
-                    (e.target.value || "") as InvestorActivity | ""
-                  )
-                }
-                aria-required
-              >
-                <option value="">Elige una opción…</option>
-                {INVESTOR_ACTIVITY_OPTIONS.map((opt) => (
-                  <option key={opt.slug} value={opt.slug}>
-                    {opt.title} — {opt.description}
-                  </option>
-                ))}
-              </select>
+                onChange={setInvestorActivityDraft}
+              />
             </Field>
           ) : intentDraft === "contributor" ? (
             <>
@@ -1772,29 +1719,25 @@ export default function ProfilePage() {
         />
 
         <div className="flex flex-col gap-3 mb-4">
-          <Field label="Ciudad principal">
-            <Input
-              list="profile-cities-list"
+          <Field
+            label="Ciudad principal"
+            hint="Tu ciudad base. Debe ser una ciudad concreta."
+          >
+            <CitySingleSelect
               value={locationDraft.city}
-              onChange={(e) =>
+              onChange={(city) =>
                 setLocationDraft((prev) => ({
                   ...prev,
-                  city: e.target.value,
+                  city,
                 }))
               }
-              placeholder="ej. Ciudad de México"
             />
-            <datalist id="profile-cities-list">
-              {CITIES_CATALOG.map((city) => (
-                <option key={city} value={city} />
-              ))}
-            </datalist>
           </Field>
 
           {isPremiumPlan(profileUser.plan) ? (
             <Field
               label="Ciudades donde mi búsqueda está activa"
-              hint="Puedes seleccionar varias ciudades principales de México, Colombia, EE.UU. y LatAm."
+              hint="Puedes incluir «Todo el mundo» o varias ciudades de México, Colombia, EE.UU. y LatAm."
             >
               <CitySelector
                 value={locationDraft.cities}

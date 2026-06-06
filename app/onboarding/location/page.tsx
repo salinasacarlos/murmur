@@ -7,10 +7,10 @@ import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { Button } from "@/components/ui/button"
 import { CitySelector } from "@/components/ui/city-selector"
+import { CitySingleSelect } from "@/components/ui/city-single-select"
 import { Field, Input } from "@/components/ui/input"
 import { Tag } from "@/components/ui/tag"
 import { IconMapPin } from "@/components/icons"
-import { CITIES_CATALOG } from "@/lib/catalogs"
 import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding-intent-options"
 import {
   persistOnboardingLocationFinish,
@@ -94,8 +94,8 @@ export default function LocationStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={4} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
-        title="¿Dónde estás?"
-        description="Ciudad y radio; nunca mostramos tu ubicación exacta."
+        title="¿Dónde buscas?"
+        description="Ciudad y radio para el radar. Sin mostrar tu ubicación exacta."
         back="/onboarding/project"
         next="/onboarding/done"
         nextDisabled={!city.trim()}
@@ -170,24 +170,14 @@ export default function LocationStepPage() {
         <Field
           label="Ciudad principal"
           required
-          hint="Escribe o elige del listado. También puedes usar «Todo el mundo» si no aplica una ciudad fija."
+          hint="Tu ciudad base. Debe ser una ciudad concreta — aquí no aplica «Todo el mundo»."
         >
-          <Input
-            placeholder="ej. Ciudad de México"
-            list="cities-list"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
-          <datalist id="cities-list">
-            {CITIES_CATALOG.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
+          <CitySingleSelect value={city} onChange={setCity} />
         </Field>
 
         <Field
           label="Ciudades donde mi búsqueda estará activa"
-          hint="Opcional. Incluye «Todo el mundo» si no quieres limitar por ciudad. También puedes elegir ciudades en México, Colombia, EE.UU. y LatAm."
+          hint="Opcional. Puedes incluir «Todo el mundo» o varias ciudades de México, Colombia, EE.UU. y LatAm."
         >
           <CitySelector value={extraCities} onChange={setExtraCities} />
         </Field>

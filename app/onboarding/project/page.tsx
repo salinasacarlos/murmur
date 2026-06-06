@@ -6,19 +6,18 @@ import { PublicFieldNotice } from "@/components/murm/public-field-notice"
 import { Stepper } from "@/components/onboarding/stepper"
 import { OnboardingCard } from "@/components/onboarding/onboarding-card"
 import { Field, Input, Textarea } from "@/components/ui/input"
+import { InvestorActivitySelect } from "@/components/ui/investor-activity-select"
+import { ProjectStageSelect } from "@/components/ui/project-stage-select"
 import {
   persistOnboardingProjectContext,
   requireUserId,
 } from "@/lib/onboarding-persist"
-import { PROJECT_STAGE_OPTIONS } from "@/lib/project-stage"
-import { INVESTOR_ACTIVITY_OPTIONS } from "@/lib/investor-activity"
 import {
   userHasProjectIntent,
   userIsInvestor,
 } from "@/lib/profile-project-guard"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding-intent-options"
-import { cn } from "@/lib/utils"
 import type {
   InvestorActivity,
   OnboardingIntent,
@@ -79,20 +78,23 @@ export default function ProjectStepPage() {
     (isInvestor ? !investorActivity : false)
 
   let description =
-    "Cuéntanos qué oportunidad buscas y qué puedes aportar."
+    "Un poco más de contexto para que otros entiendan el match contigo."
   if (hasProject) {
     description =
-      "Cuéntanos tu proyecto o iniciativa y qué buscas en Murmur."
+      "Tu proyecto y qué buscas. Así la IA te acerca a quien hace match contigo."
   } else if (isInvestor) {
     description =
-      "Indica si inviertes activamente, puedes ayudar a conseguir capital o no estás invirtiendo por ahora."
+      "Cómo participas con capital: inviertes, conectas o exploras por ahora."
+  } else {
+    description =
+      "Qué aportas y qué buscas. Así otros ven el match antes de mandarte la conexión."
   }
 
   return (
     <div className="flex flex-col gap-4">
       <Stepper current={3} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
-        title="Contexto"
+        title={hasProject ? "Tu proyecto" : isInvestor ? "Tu perfil de inversionista" : "Lo que aportas"}
         description={description}
         back="/onboarding/intent"
         next="/onboarding/location"
@@ -137,23 +139,10 @@ export default function ProjectStepPage() {
             </Field>
             <Field label="Etapa del proyecto" required>
               <PublicFieldNotice className="mb-1" compact />
-              <select
-                className={cn("ds-input", !projectStage ? "text-[var(--text3)]" : "")}
+              <ProjectStageSelect
                 value={projectStage}
-                onChange={(e) =>
-                  setProjectStage(
-                    (e.target.value || "") as ProjectStage | ""
-                  )
-                }
-                aria-required
-              >
-                <option value="">Elige una etapa…</option>
-                {PROJECT_STAGE_OPTIONS.map((opt) => (
-                  <option key={opt.slug} value={opt.slug}>
-                    {opt.title} — {opt.description}
-                  </option>
-                ))}
-              </select>
+                onChange={setProjectStage}
+              />
             </Field>
             <Field label="Qué busco">
               <PublicFieldNotice className="mb-1" />
@@ -169,26 +158,10 @@ export default function ProjectStepPage() {
           <div className="ds-card p-4 flex flex-col gap-3 mt-2">
             <Field label="Tu situación como inversionista" required>
               <PublicFieldNotice className="mb-1" compact />
-              <select
-                className={cn(
-                  "ds-input",
-                  !investorActivity ? "text-[var(--text3)]" : ""
-                )}
+              <InvestorActivitySelect
                 value={investorActivity}
-                onChange={(e) =>
-                  setInvestorActivity(
-                    (e.target.value || "") as InvestorActivity | ""
-                  )
-                }
-                aria-required
-              >
-                <option value="">Elige una opción…</option>
-                {INVESTOR_ACTIVITY_OPTIONS.map((opt) => (
-                  <option key={opt.slug} value={opt.slug}>
-                    {opt.title} — {opt.description}
-                  </option>
-                ))}
-              </select>
+                onChange={setInvestorActivity}
+              />
             </Field>
           </div>
         ) : (

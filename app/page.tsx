@@ -40,8 +40,8 @@ export default function LandingPage() {
             <a href="#funcionalidades" className="hover:text-[var(--text)] transition-colors">
               Funcionalidades
             </a>
-            <a href="#precios" className="hover:text-[var(--text)] transition-colors">
-              Precios
+            <a href="#beta" className="hover:text-[var(--text)] transition-colors">
+              Beta
             </a>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
@@ -51,7 +51,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             <Link href="/auth/signup" title="Requiere código de invitación">
-              <Button size="md">Únete gratis</Button>
+              <Button size="md">Únete</Button>
             </Link>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto grid lg:grid-cols-[1fr_1.05fr] gap-12 lg:gap-10 items-center">
             <div>
               <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-4">
-                Para quien crea proyectos
+                Para los builders &amp; launchers
               </p>
               <h1
                 className="font-extrabold tracking-[-2px] mb-5"
@@ -77,12 +77,12 @@ export default function LandingPage() {
               </h1>
               <p className="text-[15px] md:text-[16px] text-[var(--text2)] leading-relaxed max-w-lg mb-8">
                 Murmur te acerca a socios, talento, mentores e inversionistas
-                que encajan con lo que haces.
+                que hacen match con lo que haces.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/auth/signup">
                   <Button size="lg" className="w-full sm:w-auto">
-                    Empezar gratis
+                    Únete a la beta
                   </Button>
                 </Link>
                 <a href="#como-funciona">
@@ -92,7 +92,7 @@ export default function LandingPage() {
                 </a>
               </div>
               <p className="text-[11px] text-[var(--text3)] mt-3 max-w-lg leading-snug">
-                Solo con código de invitación. ¿Sin código?{" "}
+                Acceso solo con código de invitación. ¿No tienes uno?{" "}
                 <Link
                   href="/auth/request-access"
                   className="text-[var(--p)] font-semibold underline-offset-2 hover:underline"
@@ -105,9 +105,7 @@ export default function LandingPage() {
             <HeroMockup />
           </div>
           <p className="max-w-6xl mx-auto text-center text-[13px] text-[var(--text2)] mt-12 md:mt-16">
-            Más de{" "}
-            <strong className="text-[var(--text)] font-semibold">400 personas</strong>{" "}
-            ya usan Murmur en México
+            Únete a la beta
           </p>
         </section>
 
@@ -124,10 +122,10 @@ export default function LandingPage() {
               className="font-extrabold tracking-[-1px] mb-4 max-w-xl"
               style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
             >
-              Así funciona Murmur
+              Murmur es simple y poderoso al mismo tiempo
             </h2>
             <p className="text-[15px] text-[var(--text2)] max-w-2xl mb-12 md:mb-16">
-              Sin swipes ni mensajes al azar. Cada paso tiene un sentido.
+              Sin swipes ni mensajes al azar. Cada conexión tiene un por qué.
             </p>
             <div className="grid md:grid-cols-3 gap-8 md:gap-6">
               <StepCard
@@ -137,13 +135,13 @@ export default function LandingPage() {
               />
               <StepCard
                 n="02"
-                title="Ves gente relevante"
-                body="Industria, ciudad, skills y lo que cada quien busca. Murmur te acerca a perfiles que encajan contigo."
+                title="La IA te ayuda a encontrar"
+                body="Cruza industria, ciudad, skills y lo que buscas. Te filtra perfiles y prioriza con los que haces match."
               />
               <StepCard
                 n="03"
-                title="Mandas una solicitud clara"
-                body='Ves el perfil, entiendes por qué encajan y escribes con contexto. Nada de un "hola" suelto.'
+                title="Te mandan la conexión"
+                body="Ven tu perfil, entienden por qué hay match y mandan la conexión con contexto."
               />
             </div>
           </div>
@@ -160,7 +158,7 @@ export default function LandingPage() {
                 className="font-extrabold tracking-[-1px] mb-4"
                 style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
               >
-                Dices lo que buscas. Ves quién encaja.
+                Dices lo que buscas. Ves quién hace match.
               </h2>
               <p className="text-[15px] text-[var(--text2)] leading-relaxed">
                 Tu perfil y tus búsquedas forman un radar: Murmur prioriza
@@ -181,72 +179,70 @@ export default function LandingPage() {
               Funcionalidades
             </p>
             <h2
-              className="font-extrabold tracking-[-1px] mb-12 md:mb-14 max-w-xl"
+              className="font-extrabold tracking-[-1px] mb-12 md:mb-14 max-w-2xl"
               style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
             >
-              Todo lo que necesitas para encontrar a quien construye contigo
+              Herramientas concretas para encontrar socio, talento o proyecto
             </h2>
             <div className="grid sm:grid-cols-2 gap-6">
               <FeatureCard
+                kicker="Búsquedas"
+                title="Radar con filtros reales"
+                body="Crea búsquedas con rol, industria, skills y tipo de conexión. Pausa una búsqueda cuando dejes de buscar y retómala después."
+              />
+              <FeatureCard
                 kicker="Eventos"
-                title="Modo evento"
-                body="En un meetup o conferencia puedes hacerte visible para que otros asistentes te encuentren. Tú decides cuándo."
-                bullets={["Compatible con meetups y conferencias", "Tú controlas cuándo apareces"]}
+                title="Modo evento con código"
+                body="Ingresa el código del evento y ves solo a quienes también lo activaron. Eventos masivos, meetups, hackatones y demo days."
               />
               <FeatureCard
                 kicker="Privacidad"
-                title="Tú decides cuándo aparecer"
-                body="Por defecto nadie te ve. Sin mensajes de desconocidos. Te activas cuando quieres buscar o estás en un evento."
-                stats={[
-                  { label: "Mensajes no solicitados", value: "0" },
-                  { label: "Solicitudes con mensaje", value: "100%" },
-                ]}
+                title="Invisible hasta que actives"
+                body="Nadie te escribe de la nada: solo recibes solicitudes con mensaje. Fuera de eventos, tu perfil no aparece en Descubrir hasta que enciendes visibilidad."
               />
               <FeatureCard
-                kicker="Chat"
-                title="Todo dentro de Murmur"
-                body="Cuando alguien acepta tu solicitud, el chat abre aquí. Sin pasar WhatsApps antes de conocerse. La conversación empieza con contexto."
-              />
-              <FeatureCard
-                kicker="México"
-                title="Donde está el ecosistema"
-                body="CDMX, GDL, MTY, QRO y creciendo. Filtra por ciudad o abre tu radar a toda la república — el talento no siempre está en tu colonia."
+                kicker="Conexiones"
+                title="Chat tras aceptación mutua"
+                body="Mandas una solicitud explicando el contexto. Si la otra persona acepta, se abre el chat dentro de Murmur — sin intercambiar WhatsApp antes de tiempo."
               />
             </div>
           </div>
         </section>
 
-        {/* Historias */}
-        <section className="px-4 md:px-8 py-16 md:py-24 border-b-[0.5px] border-[var(--border)]">
-          <div className="max-w-6xl mx-auto">
+        {/* Beta */}
+        <section
+          id="beta"
+          className="px-4 md:px-8 py-16 md:py-24 border-b-[0.5px] border-[var(--border)] scroll-mt-[72px]"
+        >
+          <div className="max-w-3xl mx-auto text-center">
             <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
-              Historias
+              Beta cerrada
             </p>
             <h2
-              className="font-extrabold tracking-[-1px] mb-12"
+              className="font-extrabold tracking-[-1px] mb-4"
               style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
             >
-              Gente que ya encontró socio, talento o proyecto
+              Únete a la beta
             </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <TestimonialCard
-                quote="Llevaba 6 meses buscando un co-founder técnico. En Murmur encontré a alguien en 3 semanas que no solo tenía las skills, sino la misma visión."
-                initials="LM"
-                name="Luis Mendoza"
-                role="Fundador · SaaS B2B · CDMX"
-              />
-              <TestimonialCard
-                quote="Lo usé en Talent Land. Activé el modo evento y en una tarde hablé con 4 personas que encajaban con mi proyecto."
-                initials="VR"
-                name="Valentina Ríos"
-                role="CPO · Edtech · GDL"
-              />
-              <TestimonialCard
-                quote="No tenía proyecto propio pero quería construir algo. Murmur me conectó con equipos que buscaban mi perfil, sin mandar mensajes en frío."
-                initials="CA"
-                name="Carlos Álvarez"
-                role="Diseñador · MTY"
-              />
+            <p className="text-[15px] text-[var(--text2)] leading-relaxed mb-3 max-w-xl mx-auto">
+              Murmur está en beta. Entras con código de invitación o postulando:
+              leemos cada solicitud, respondemos a diario.
+            </p>
+            <p className="text-[15px] text-[var(--text2)] leading-relaxed mb-8 max-w-xl mx-auto">
+              Cuando entras, recibes códigos para invitar a otras personas.
+              Así crece la red: builder invita a builder.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/auth/signup">
+                <Button size="lg" className="w-full sm:w-auto min-w-[200px]">
+                  Tengo código — únete
+                </Button>
+              </Link>
+              <Link href="/auth/request-access">
+                <Button variant="secondary" size="lg" className="w-full sm:w-auto min-w-[200px]">
+                  Pedir acceso
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
@@ -255,14 +251,17 @@ export default function LandingPage() {
         <section id="precios" className="px-4 md:px-8 py-16 md:py-24 scroll-mt-[72px] bg-[var(--bg2)]">
           <div className="max-w-5xl mx-auto">
             <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2 text-center">
-              Precios
+              Planes
             </p>
             <h2
               className="font-extrabold tracking-[-1px] mb-4 text-center"
               style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
             >
-              Empieza gratis. Escala cuando lo necesites.
+              Planes
             </h2>
+            <p className="text-[14px] text-[var(--text2)] text-center max-w-lg mx-auto mb-2">
+              Entra con invitación. Premium desbloquea más alcance cuando lo necesites.
+            </p>
             <div className="grid md:grid-cols-2 gap-6 mt-12 max-w-4xl mx-auto">
               <Card padding="page" className="flex flex-col border border-[var(--border)]">
                 <h3 className="text-[18px] font-bold mb-1">Free</h3>
@@ -292,7 +291,7 @@ export default function LandingPage() {
                 </ul>
                 <Link href="/auth/signup" className="block" title="Requiere código de invitación">
                   <Button variant="secondary" size="lg" className="w-full justify-center">
-                    Empezar gratis
+                    Únete
                   </Button>
                 </Link>
                 <p className="text-[10px] text-[var(--text3)] text-center mt-2">
@@ -340,7 +339,7 @@ export default function LandingPage() {
                 </ul>
                 <Link href="/upgrade" className="block">
                   <Button size="lg" className="w-full justify-center">
-                    Empezar Premium
+                    Ver Premium
                   </Button>
                 </Link>
               </Card>
@@ -380,10 +379,10 @@ export default function LandingPage() {
                       lineHeight: 1.12,
                     }}
                   >
-                    Empieza en Murmur
+                    Sé parte de Murmur
                   </h2>
                   <p className="text-[15px] leading-relaxed text-white/60">
-                    Socios, talento, mentores e inversionistas en un solo lugar.
+                    Socios, talento, mentores e inversionistas. Solo con código de invitación.
                   </p>
                 </div>
                 <div className="flex flex-col items-center gap-4 w-full sm:w-auto">
@@ -394,10 +393,10 @@ export default function LandingPage() {
                       "w-full justify-center rounded-full border-0 bg-white text-[#0a0a0f] px-8 py-3 text-[14px] font-semibold shadow-lg shadow-black/30 hover:bg-neutral-100 hover:text-[#0a0a0f] focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050508] sm:w-auto"
                     )}
                   >
-                    Crear cuenta
+                    Únete a la beta
                   </Link>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45 text-center">
-                    Gratis · sin tarjeta · requiere invitación
+                    Beta cerrada · requiere invitación
                   </p>
                 </div>
               </div>
@@ -416,8 +415,11 @@ export default function LandingPage() {
             <a href="#como-funciona" className={footerLink}>
               Cómo funciona
             </a>
+            <a href="#beta" className={footerLink}>
+              Beta
+            </a>
             <a href="#precios" className={footerLink}>
-              Precios
+              Planes
             </a>
             <Link href="/privacy" className={footerLink}>
               Privacidad
@@ -457,14 +459,10 @@ function FeatureCard({
   kicker,
   title,
   body,
-  bullets,
-  stats,
 }: {
   kicker: string
   title: string
   body: string
-  bullets?: string[]
-  stats?: { label: string; value: string }[]
 }) {
   return (
     <Card padding="page" className="h-full border border-[var(--border)] bg-[var(--bg)]">
@@ -472,61 +470,7 @@ function FeatureCard({
         {kicker}
       </p>
       <h3 className="text-[17px] font-bold mb-2">{title}</h3>
-      <p className="text-[14px] text-[var(--text2)] leading-relaxed mb-4">{body}</p>
-      {bullets ? (
-        <ul className="space-y-1.5 text-[13px] text-[var(--text)]">
-          {bullets.map((b) => (
-            <li key={b} className="flex gap-2">
-              <span className="text-[var(--p)]">·</span>
-              {b}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {stats ? (
-        <div className="flex gap-8 pt-2">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <p className="text-[22px] font-extrabold text-[var(--p)]">{s.value}</p>
-              <p className="text-[11px] text-[var(--text3)] max-w-[120px] leading-tight">
-                {s.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </Card>
-  )
-}
-
-function TestimonialCard({
-  quote,
-  initials,
-  name,
-  role,
-}: {
-  quote: string
-  initials: string
-  name: string
-  role: string
-}) {
-  return (
-    <Card padding="page" className="border border-[var(--border)] h-full flex flex-col">
-      <p className="text-[14px] text-[var(--text)] leading-relaxed mb-6 flex-1">
-        &ldquo;{quote}&rdquo;
-      </p>
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-bold text-[var(--p)]"
-          style={{ background: "var(--pl)" }}
-        >
-          {initials}
-        </div>
-        <div>
-          <p className="text-[13px] font-semibold">{name}</p>
-          <p className="text-[12px] text-[var(--text3)]">{role}</p>
-        </div>
-      </div>
+      <p className="text-[14px] text-[var(--text2)] leading-relaxed">{body}</p>
     </Card>
   )
 }

@@ -9,6 +9,7 @@ import {
 } from "@/lib/data/profile-mutations"
 import { filterProfileVerticalSlugsForIndustry } from "@/lib/industry-tree"
 import { PENDING_EVENT_STORAGE_KEY } from "@/lib/murmur-onboarding"
+import { WORLDWIDE_CITY_LABEL } from "@/lib/catalogs"
 import {
   MAX_PROFILE_VERTICAL_SLUGS,
   MAX_TALENT_SLUGS,
@@ -208,6 +209,9 @@ export async function persistOnboardingLocationFinish(
   }
 ): Promise<{ ok: boolean; error?: string }> {
   const city = input.primaryCity.trim()
+  if (city === WORLDWIDE_CITY_LABEL) {
+    return { ok: false, error: "La ciudad principal debe ser una ciudad concreta." }
+  }
   const { error } = await supabase
     .from("profiles")
     .update({

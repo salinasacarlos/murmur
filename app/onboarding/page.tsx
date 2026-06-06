@@ -6,7 +6,7 @@ import { Isotipo } from "@/components/brand/isotipo"
 import {
   IconCompass,
   IconMessage,
-  IconUser,
+  IconSpark,
 } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -15,18 +15,18 @@ import { cn } from "@/lib/utils"
 const BENEFITS = [
   {
     icon: IconCompass,
-    title: "Gente que encaja",
-    line: "Ves perfiles relacionados con lo que buscas.",
+    title: "Dices qué buscas",
+    line: "¿Proyecto propio, sumarte a uno o explorar? Con eso filtramos.",
   },
   {
-    icon: IconUser,
-    title: "Tú controlas la visibilidad",
-    line: "Empiezas oculto. Te muestras cuando quieras.",
+    icon: IconSpark,
+    title: "La IA te encuentra",
+    line: "Cruza industria, ciudad y skills. Te filtra perfiles con match.",
   },
   {
     icon: IconMessage,
-    title: "Solicitudes con contexto",
-    line: "Cada mensaje dice por qué quieres conectar.",
+    title: "Conexiones con contexto",
+    line: "Ven tu perfil, ven el match y mandan la solicitud — no un hola suelto.",
   },
 ] as const
 
@@ -51,11 +51,14 @@ export default function OnboardingIntroPage() {
             <Isotipo size={56} color="var(--p)" />
           </div>
         </div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2">
+          Beta · builders &amp; launchers
+        </p>
         <h1 className="text-[22px] md:text-[24px] font-extrabold tracking-[-0.45px] text-[var(--text)] mb-2">
-          Arma tu perfil
+          Sé parte de Murmur
         </h1>
         <p className="text-[13px] text-[var(--text2)] leading-relaxed max-w-[340px] mx-auto">
-          Cuéntanos quién eres y qué buscas. En pocos minutos estarás listo.
+          Arma tu perfil en pocos minutos. Empiezas oculto; te activas cuando quieras buscar.
         </p>
       </div>
 
@@ -93,10 +96,10 @@ export default function OnboardingIntroPage() {
           </Button>
         </Link>
         <p className="text-[11px] text-[var(--text3)] text-center mt-3 leading-relaxed">
-          Primero tu perfil, luego qué buscas. Puedes editar todo después.
+          Primero quién eres, luego qué buscas. Puedes editar todo después.
         </p>
         <p className="text-[11px] text-[var(--text3)] text-center mt-2 leading-relaxed">
-          ¿Vienes de un evento? En el feed podrás ingresar el código cuando quieras.
+          ¿En un meetup, hackathon o demo day? Ingresa el código del evento desde el feed.
         </p>
       </div>
     </Card>

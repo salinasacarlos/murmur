@@ -6,10 +6,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Field, Input, Textarea } from "@/components/ui/input"
+import { ProjectStageSelect } from "@/components/ui/project-stage-select"
 import { getPublicSiteUrl } from "@/lib/public-site-url"
-import { PROJECT_STAGE_OPTIONS } from "@/lib/project-stage"
 import type { ProjectStage } from "@/lib/types"
-import { cn } from "@/lib/utils"
 
 type Phase = "form" | "done"
 
@@ -176,25 +175,10 @@ export function RequestAccessClient() {
           />
         </Field>
         <Field label="¿En qué etapa estás?" required>
-          <select
-            className={cn(
-              "ds-input",
-              !projectStage ? "text-[var(--text3)]" : ""
-            )}
+          <ProjectStageSelect
             value={projectStage}
-            onChange={(e) =>
-              setProjectStage((e.target.value || "") as ProjectStage | "")
-            }
-            aria-required
-            required
-          >
-            <option value="">Elige una etapa…</option>
-            {PROJECT_STAGE_OPTIONS.map((opt) => (
-              <option key={opt.slug} value={opt.slug}>
-                {opt.title} — {opt.description}
-              </option>
-            ))}
-          </select>
+            onChange={setProjectStage}
+          />
         </Field>
         <Field
           label="Un enlace que respalde lo que haces"

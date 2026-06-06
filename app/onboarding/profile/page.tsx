@@ -63,8 +63,8 @@ export default function ProfileStepPage() {
     <div className="flex flex-col gap-4">
       <Stepper current={1} total={ONBOARDING_STEP_COUNT} />
       <OnboardingCard
-        title="Cuéntanos quién eres"
-        description="Nombre, industria y skills. Con esto empezamos a sugerirte perfiles."
+        title="Tu perfil"
+        description="Nombre, industria y skills. La IA usa esto para sugerirte match."
         back="/onboarding"
         next="/onboarding/intent"
         nextDisabled={
