@@ -15,7 +15,7 @@ import {
 
 const STATUS_LABEL: Record<ConnectionStatus, string> = {
   pending: "Pendiente",
-  accepted: "Aceptada",
+  accepted: "Conexión activa",
   rejected: "Rechazada",
 }
 
@@ -44,18 +44,22 @@ export function ConnectionCardSent({
           imageUrl={profile.photoUrl}
           alt={`Foto de ${profile.name}`}
           size="md"
+          className="shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="text-[14px] font-bold tracking-[-0.2px] truncate">
-                {profile.name}
-              </h3>
-              <p className="text-[12px] text-[var(--text2)] truncate">
-                {profile.role}
-              </p>
+          <div className="card-header-stack">
+            <div className="min-w-0 flex-1">
+              <h3 className="person-name">{profile.name}</h3>
+              <p className="person-subtitle mt-0.5">{profile.role}</p>
+              {status === "pending" ? (
+                <p className="text-[11px] text-[var(--text3)] mt-1 break-words [overflow-wrap:anywhere]">
+                  Tú enviaste esta solicitud
+                </p>
+              ) : null}
             </div>
-            <Tag variant={STATUS_VARIANT[status]}>{STATUS_LABEL[status]}</Tag>
+            <Tag variant={STATUS_VARIANT[status]} className="card-status-tag shrink-0">
+              {STATUS_LABEL[status]}
+            </Tag>
           </div>
         </div>
       </div>
@@ -64,30 +68,33 @@ export function ConnectionCardSent({
         <Tag variant="brand">{RELATION_LABELS[connection.relation]}</Tag>
       </div>
 
-      <p className="text-[12px] text-[var(--text2)] line-clamp-2 leading-relaxed">
+      <p className="text-[12px] text-[var(--text2)] line-clamp-3 sm:line-clamp-2 leading-relaxed break-words [overflow-wrap:anywhere]">
         {connection.message}
       </p>
 
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-[11px] text-[var(--text3)]">
-          Enviada {connection.sentAt}
+      <div className="card-footer-row">
+        <span className="text-[11px] text-[var(--text3)] break-words [overflow-wrap:anywhere]">
+          {status === "accepted"
+            ? `Activa desde ${connection.sentAt}`
+            : `Enviada ${connection.sentAt}`}
         </span>
-        {status === "pending" && (
-          <Button variant="ghost" size="sm" onClick={onCancel}>
+        {status === "pending" ? (
+          <Button variant="ghost" size="sm" className="shrink-0" onClick={onCancel}>
             Cancelar
           </Button>
-        )}
-        {status === "accepted" && (
+        ) : null}
+        {status === "accepted" ? (
           <Link
             href={
               connection.chatId ? `/messages/${connection.chatId}` : "/messages"
             }
+            className="shrink-0"
           >
             <Button variant="brand" size="sm">
               Ver chat
             </Button>
           </Link>
-        )}
+        ) : null}
       </div>
     </Card>
   )

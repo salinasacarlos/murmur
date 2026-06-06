@@ -206,6 +206,7 @@ export async function fetchConnectionsBoard(
           message: c.message,
           searchTitle: c.search_id ? searchTitles.get(c.search_id) : undefined,
           receivedAt: c.created_at.slice(0, 10),
+          status: "pending",
         })
       } else if (isSender) {
         const p = profileMap.get(c.receiver_id)
@@ -223,9 +224,11 @@ export async function fetchConnectionsBoard(
     }
 
     if (c.status === "accepted") {
+      const peerId = isSender ? c.receiver_id : c.sender_id
+      const p = profileMap.get(peerId)
+      if (!p) continue
+
       if (isSender) {
-        const p = profileMap.get(c.receiver_id)
-        if (!p) continue
         sent.push({
           id: c.id,
           profile: p,
@@ -233,6 +236,21 @@ export async function fetchConnectionsBoard(
           message: c.message,
           status: "accepted",
           sentAt: (c.responded_at ?? c.updated_at ?? c.created_at).slice(0, 10),
+          chatId: chatByConn.get(c.id) ?? null,
+        })
+      } else {
+        received.push({
+          id: c.id,
+          profile: p,
+          relation: c.relation,
+          message: c.message,
+          searchTitle: c.search_id ? searchTitles.get(c.search_id) : undefined,
+          receivedAt: c.created_at.slice(0, 10),
+          status: "accepted",
+          acceptedAt: (c.responded_at ?? c.updated_at ?? c.created_at).slice(
+            0,
+            10
+          ),
           chatId: chatByConn.get(c.id) ?? null,
         })
       }

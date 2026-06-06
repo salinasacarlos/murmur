@@ -82,10 +82,8 @@ export function ChatConversation({
           online={chat.profile.online}
         />
         <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-semibold truncate">
-            {chat.profile.name}
-          </div>
-          <div className="text-[10px] text-[var(--text3)]">
+          <div className="person-name-compact">{chat.profile.name}</div>
+          <div className="card-meta mt-0.5">
             {chat.profile.online ? "En línea" : chat.lastSeen}
           </div>
         </div>

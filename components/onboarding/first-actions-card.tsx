@@ -129,15 +129,17 @@ export function FirstActionsCard({
                 {done ? <IconCheck size={14} /> : index + 1}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-[var(--text)] flex items-center gap-1.5">
-                      <span className="text-[var(--p)] shrink-0">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-semibold text-[var(--text)] flex items-start gap-1.5">
+                      <span className="text-[var(--p)] shrink-0 mt-0.5">
                         <StepIcon size={14} />
                       </span>
-                      <span className="truncate">{step.title}</span>
+                      <span className="break-words leading-snug [overflow-wrap:anywhere]">
+                        {step.title}
+                      </span>
                     </p>
-                    <p className="text-[11px] text-[var(--text2)] mt-0.5 leading-relaxed">
+                    <p className="text-[11px] text-[var(--text2)] mt-0.5 leading-relaxed break-words [overflow-wrap:anywhere]">
                       {step.description}
                     </p>
                   </div>

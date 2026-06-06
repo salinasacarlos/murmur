@@ -225,12 +225,8 @@ export function ProfileDetailPanel({
                 online={profile.online}
               />
               <div className="flex-1 min-w-0">
-                <h3 className="text-[18px] font-extrabold tracking-[-0.4px]">
-                  {profile.name}
-                </h3>
-                <p className="text-[13px] text-[var(--text2)] mt-0.5">
-                  {profile.role}
-                </p>
+                <h3 className="person-name-lg">{profile.name}</h3>
+                <p className="person-subtitle-md mt-0.5">{profile.role}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span
                     className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.05em]"
@@ -445,14 +441,16 @@ export function ProfileDetailPanel({
                   Ir al chat
                 </Link>
               ) : (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="flex-1 justify-center"
-                  disabled
+                <Link
+                  href="/messages"
+                  className={cn(
+                    buttonVariants({ variant: "primary", size: "lg" }),
+                    "flex-1 justify-center no-underline"
+                  )}
+                  onClick={() => onOpenChange(false)}
                 >
-                  Conectado
-                </Button>
+                  Ir al chat
+                </Link>
               )
             ) : connectionHint.state === "request_sent" ? (
               <Button size="lg" className="flex-1 justify-center" disabled>

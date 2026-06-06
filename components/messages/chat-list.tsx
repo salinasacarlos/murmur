@@ -173,22 +173,22 @@ export function ChatList({ className }: { className?: string }) {
                   unread={chat.unread > 0}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2">
                     <span
                       className={cn(
-                        "text-[13px] font-semibold truncate",
-                        active ? "text-[var(--p)]" : "text-[var(--text)]"
+                        "person-name-compact min-w-0 flex-1",
+                        active && "text-[var(--p)]"
                       )}
                     >
                       {chat.profile.name}
                     </span>
-                    <span className="text-[10px] text-[var(--text3)] flex-shrink-0">
+                    <span className="text-[10px] text-[var(--text3)] shrink-0 pt-0.5">
                       {formatTime(last?.sentAt)}
                     </span>
                   </div>
                   <p
                     className={cn(
-                      "text-[12px] truncate mt-0.5",
+                      "text-[12px] line-clamp-2 mt-0.5 break-words [overflow-wrap:anywhere]",
                       chat.unread > 0
                         ? "text-[var(--text)] font-medium"
                         : "text-[var(--text2)]"

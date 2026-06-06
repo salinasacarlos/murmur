@@ -122,8 +122,9 @@ export function ConnectionsClient() {
 
     redirectTimer.current = window.setTimeout(() => {
       setAcceptingId(null)
-      setReceived((prev) => prev.filter((x) => x.id !== c.id))
-      router.push(res.chatId ? `/messages/${res.chatId}` : "/messages")
+      void reload().then(() => {
+        router.push(res.chatId ? `/messages/${res.chatId}` : "/messages")
+      })
     }, 1100)
   }
 
@@ -157,6 +158,10 @@ export function ConnectionsClient() {
     setSent((prev) => prev.filter((c) => c.id !== id))
   }
 
+  const pendingReceived = received.filter((c) => c.status !== "accepted")
+  const acceptedReceived = received.filter((c) => c.status === "accepted")
+  const outgoingSent = sent
+
   return (
     <div className="px-4 md:px-6 py-5 md:py-6 max-w-[820px] mx-auto w-full">
       <div className="mb-4 md:mb-5">
@@ -164,7 +169,10 @@ export function ConnectionsClient() {
           Conexiones
         </h2>
         <p className="text-[12px] text-[var(--text2)]">
-          Recibidas, enviadas y solicitudes que ignoraste.
+          Recibidas: quien te escribió. Enviadas: solicitudes que tú mandaste.
+        </p>
+        <p className="text-[11px] text-[var(--text3)] mt-1">
+          «Conexión activa» = ya aceptaron hablar. No indica si están en línea ahora.
         </p>
       </div>
 
@@ -183,43 +191,65 @@ export function ConnectionsClient() {
           <TabsList>
             <TabsTrigger value="received">
               Recibidas
-              {received.length > 0 && (
+              {pendingReceived.length > 0 && (
                 <span className="ml-1.5 text-[10px] font-bold rounded-full px-1.5 bg-[var(--pl)] text-[var(--p)]">
-                  {received.length}
+                  {pendingReceived.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="sent">Enviadas</TabsTrigger>
+            <TabsTrigger value="sent">
+              Enviadas
+              {outgoingSent.some((c) => c.status === "accepted") && (
+                <span className="ml-1.5 text-[10px] font-bold rounded-full px-1.5 bg-[var(--pl)] text-[var(--p)]">
+                  {outgoingSent.filter((c) => c.status === "accepted").length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="history">Historial</TabsTrigger>
           </TabsList>
 
           <TabsContent value="received">
             {received.length === 0 ? (
               <EmptyState
-                title="Sin solicitudes nuevas"
-                description="Las solicitudes que recibas aparecerán aquí."
+                title="Sin solicitudes recibidas"
+                description="Cuando alguien te escriba, aparecerá aquí. Las que ya aceptaste también."
               />
             ) : (
-              received.map((c) => (
-                <ConnectionCardReceived
-                  key={c.id}
-                  connection={c}
-                  onAccept={() => void accept(c)}
-                  onIgnore={() => void ignore(c)}
-                  accepting={acceptingId === c.id}
-                />
-              ))
+              <>
+                {pendingReceived.map((c) => (
+                  <ConnectionCardReceived
+                    key={c.id}
+                    connection={c}
+                    onAccept={() => void accept(c)}
+                    onIgnore={() => void ignore(c)}
+                    accepting={acceptingId === c.id}
+                  />
+                ))}
+                {acceptedReceived.length > 0 ? (
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text3)] mt-2 mb-3">
+                    Conexiones activas
+                  </p>
+                ) : null}
+                {acceptedReceived.map((c) => (
+                  <ConnectionCardReceived
+                    key={c.id}
+                    connection={c}
+                    onAccept={() => {}}
+                    onIgnore={() => {}}
+                  />
+                ))}
+              </>
             )}
           </TabsContent>
 
           <TabsContent value="sent">
-            {sent.length === 0 ? (
+            {outgoingSent.length === 0 ? (
               <EmptyState
                 title="No has enviado solicitudes"
-                description="Las solicitudes que envíes aparecerán aquí."
+                description="Solo aparecen aquí las conexiones que tú iniciaste."
               />
             ) : (
-              sent.map((c) => (
+              outgoingSent.map((c) => (
                 <ConnectionCardSent
                   key={c.id}
                   connection={c}
@@ -240,23 +270,26 @@ export function ConnectionsClient() {
                 <Card
                   key={c.id}
                   padding="default"
-                  className="ds-fade-up flex items-center gap-3 opacity-75"
+                  className="ds-fade-up flex flex-col gap-3 opacity-75 sm:flex-row sm:items-center"
                 >
-                  <Avatar
-                    initials={c.profile.initials}
-                    imageUrl={c.profile.photoUrl}
-                    alt={`Foto de ${c.profile.name}`}
-                    size="md"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-[13px] font-semibold truncate">
-                      {c.profile.name}
-                    </h3>
-                    <p className="text-[11px] text-[var(--text3)]">
-                      Ignorada · {c.ignoredAt}
-                    </p>
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <Avatar
+                      initials={c.profile.initials}
+                      imageUrl={c.profile.photoUrl}
+                      alt={`Foto de ${c.profile.name}`}
+                      size="md"
+                      className="shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="person-name">{c.profile.name}</h3>
+                      <p className="text-[11px] text-[var(--text3)] mt-0.5 break-words [overflow-wrap:anywhere]">
+                        Ignorada · {c.ignoredAt}
+                      </p>
+                    </div>
                   </div>
-                  <Tag variant="paused">{RELATION_LABELS[c.relation]}</Tag>
+                  <Tag variant="paused" className="card-status-tag self-start shrink-0">
+                    {RELATION_LABELS[c.relation]}
+                  </Tag>
                 </Card>
               ))
             )}

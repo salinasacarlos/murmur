@@ -164,10 +164,8 @@ export function Sidebar() {
             size="sm"
           />
           <div className="min-w-0 flex-1">
-            <div className="text-[12px] font-semibold text-[var(--text)] truncate">
-              {displayName}
-            </div>
-            <div className="text-[10px] text-[var(--text3)] truncate uppercase tracking-wider group-hover:text-[var(--p)] transition-colors">
+            <div className="person-name-xs">{displayName}</div>
+            <div className="card-meta uppercase tracking-wider group-hover:text-[var(--p)] transition-colors">
               {planLabel} · Ver perfil
             </div>
           </div>

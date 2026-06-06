@@ -59,10 +59,8 @@ export function AccountProfileLink({
         size="md"
       />
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-semibold text-[var(--text)] truncate">
-          {displayName}
-        </div>
-        <div className="text-[12px] text-[var(--p)] mt-0.5">
+        <div className="person-name-sm">{displayName}</div>
+        <div className="person-subtitle text-[var(--p)] mt-0.5">
           {planLabel} · Editar perfil
         </div>
       </div>

@@ -176,14 +176,10 @@ export function MyInvitationsSection({
                   imageUrl={row.invitee.photo_url ?? undefined}
                   size="sm"
                 />
-                <div className="min-w-0">
-                  <p className="text-[12px] font-medium text-[var(--text)] truncate">
-                    {row.invitee.name}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <p className="person-name">{row.invitee.name}</p>
                   {row.invitee.role ? (
-                    <p className="text-[11px] text-[var(--text3)] truncate">
-                      {row.invitee.role}
-                    </p>
+                    <p className="person-subtitle">{row.invitee.role}</p>
                   ) : null}
                 </div>
               </div>

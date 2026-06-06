@@ -78,11 +78,18 @@ export function ProfileCard({
           online={profile.online}
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-[14px] font-bold tracking-[-0.2px] text-[var(--text)] truncate">
-              {profile.name}
-            </h3>
-            <div className="flex shrink-0 items-center gap-2">
+          <h3 className="person-name">{profile.name}</h3>
+          {matchedSearchTitle ? (
+            <p className="card-meta mt-0.5">
+              Match con{" "}
+              <span className="font-semibold text-[var(--p)]">
+                {matchedSearchTitle}
+              </span>
+            </p>
+          ) : null}
+          <p className="person-subtitle mt-0.5">{profile.role}</p>
+          {showMatchBadge || profileShowsRecommendationCount(profile) ? (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               {profileShowsRecommendationCount(profile) ? (
                 <RecommendationCountBadge count={profile.recommendationCount ?? 0} />
               ) : null}
@@ -90,18 +97,7 @@ export function ProfileCard({
                 <CompatibilityBadge level={profile.compatibility} />
               ) : null}
             </div>
-          </div>
-          {matchedSearchTitle ? (
-            <p className="text-[10px] text-[var(--text3)] mt-0.5 truncate">
-              Match con{" "}
-              <span className="font-semibold text-[var(--p)]">
-                {matchedSearchTitle}
-              </span>
-            </p>
           ) : null}
-          <p className="text-[12px] text-[var(--text2)] truncate">
-            {profile.role}
-          </p>
         </div>
       </div>
 
@@ -215,14 +211,15 @@ function ProfileCardConnectionRow({
             Ir al chat
           </Link>
         ) : (
-          <span
+          <Link
+            href="/messages"
             className={cn(
-              buttonVariants({ variant: "secondary", size: "sm" }),
-              "flex-1 min-h-[40px] inline-flex items-center justify-center text-[var(--text2)]"
+              buttonVariants({ variant: "primary", size: "sm" }),
+              "flex-1 min-h-[40px] justify-center no-underline touch-manipulation"
             )}
           >
-            Conectado
-          </span>
+            Ir al chat
+          </Link>
         )
       ) : hint.state === "request_sent" ? (
         <span

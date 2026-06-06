@@ -1072,10 +1072,10 @@ export default function ProfilePage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-[20px] font-extrabold tracking-[-0.4px]">
+              <h2 className="person-name-lg text-[20px]">
                 {user.name}
               </h2>
-              <p className="text-[13px] text-[var(--text2)] mt-0.5">
+              <p className="person-subtitle-md mt-0.5">
                 {user.role || (
                   <span className="text-[var(--text3)]">Sin definir</span>
                 )}

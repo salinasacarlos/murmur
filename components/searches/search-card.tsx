@@ -42,16 +42,17 @@ export function SearchCard({
 
   return (
     <Card padding="default" className="ds-fade-up flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-3">
+      <div className="card-header-stack">
         <div className="flex-1 min-w-0">
-          <h3 className="text-[14px] font-bold tracking-[-0.2px] text-[var(--text)] mb-1">
-            {search.title}
-          </h3>
-          <p className="text-[12px] text-[var(--text2)] leading-relaxed line-clamp-2">
+          <h3 className="card-title mb-1">{search.title}</h3>
+          <p className="card-subtitle leading-relaxed line-clamp-3 sm:line-clamp-2">
             {search.description}
           </p>
         </div>
-        <Tag variant={search.status === "active" ? "success" : "paused"}>
+        <Tag
+          variant={search.status === "active" ? "success" : "paused"}
+          className="card-status-tag shrink-0"
+        >
           {search.status === "active" ? "Activa" : "Pausada"}
         </Tag>
       </div>
@@ -86,11 +87,11 @@ export function SearchCard({
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t-[0.5px] border-[var(--border)]">
-        <span className="text-[11px] text-[var(--text3)] uppercase tracking-[0.05em] font-semibold">
+      <div className="flex flex-col gap-3 pt-2 border-t-[0.5px] border-[var(--border)] sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-[11px] text-[var(--text3)] uppercase tracking-[0.05em] font-semibold shrink-0">
           {search.matchesCount} matches
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <Link href={`/searches/${search.id}`}>
             <Button variant="ghost" size="sm">
               <IconEdit size={12} />

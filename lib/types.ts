@@ -120,6 +120,10 @@ export interface ReceivedConnection {
   message: string
   searchTitle?: string
   receivedAt: string
+  /** pending = solicitud nueva; accepted = ya aceptaste su solicitud */
+  status?: "pending" | "accepted"
+  acceptedAt?: string
+  chatId?: string | null
 }
 
 export interface SentConnection {
