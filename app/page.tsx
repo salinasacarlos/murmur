@@ -5,16 +5,7 @@ import { Logo } from "@/components/brand/logo"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
-import {
-  FREE_MAX_ACCEPTED_CONNECTIONS,
-  FREE_MAX_ACTIVE_SEARCHES,
-  FREE_MAX_PROFILE_CITY_SLUGS,
-} from "@/lib/plan-limits"
-import {
-  formatPremiumAnnualLabel,
-  formatPremiumWeeklyLabel,
-  getSupportEmail,
-} from "@/lib/product-config"
+import { getSupportEmail } from "@/lib/product-config"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -247,106 +238,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Precios */}
-        <section id="precios" className="px-4 md:px-8 py-16 md:py-24 scroll-mt-[72px] bg-[var(--bg2)]">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--p)] mb-2 text-center">
-              Planes
-            </p>
-            <h2
-              className="font-extrabold tracking-[-1px] mb-4 text-center"
-              style={{ fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.15 }}
-            >
-              Planes
-            </h2>
-            <p className="text-[14px] text-[var(--text2)] text-center max-w-lg mx-auto mb-2">
-              Entra con invitación. Premium desbloquea más alcance cuando lo necesites.
-            </p>
-            <div className="grid md:grid-cols-2 gap-6 mt-12 max-w-4xl mx-auto">
-              <Card padding="page" className="flex flex-col border border-[var(--border)]">
-                <h3 className="text-[18px] font-bold mb-1">Free</h3>
-                <p className="text-[24px] font-extrabold text-[var(--p)] mb-1">$0 / mes</p>
-                <p className="text-[13px] text-[var(--text2)] mb-6">
-                  Para explorar y hacer tus primeras conexiones.
-                </p>
-                <ul className="space-y-2.5 text-[13px] text-[var(--text2)] mb-8 flex-1">
-                  <PricingLi>
-                    {FREE_MAX_PROFILE_CITY_SLUGS === 1
-                      ? "Una ciudad en tu radar"
-                      : `Hasta ${FREE_MAX_PROFILE_CITY_SLUGS} ciudades en tu radar`}
-                  </PricingLi>
-                  <PricingLi>
-                    {FREE_MAX_ACTIVE_SEARCHES === 1
-                      ? "Una búsqueda activa a la vez"
-                      : `Hasta ${FREE_MAX_ACTIVE_SEARCHES} búsquedas activas`}
-                  </PricingLi>
-                  <PricingLi>
-                    Hasta {FREE_MAX_ACCEPTED_CONNECTIONS} conexiones aceptadas
-                  </PricingLi>
-                  <PricingLi>
-                    Feed Descubrir con filtros básicos (sin filtro por soft skills)
-                  </PricingLi>
-                  <PricingLi>Chat con tus conexiones</PricingLi>
-                  <PricingLi>Sin alertas de alta compatibilidad</PricingLi>
-                </ul>
-                <Link href="/auth/signup" className="block" title="Requiere código de invitación">
-                  <Button variant="secondary" size="lg" className="w-full justify-center">
-                    Únete
-                  </Button>
-                </Link>
-                <p className="text-[10px] text-[var(--text3)] text-center mt-2">
-                  Solo con invitación.
-                </p>
-              </Card>
-              <Card
-                padding="page"
-                className="flex flex-col border-2 border-[var(--p)] relative bg-[var(--pl)]/30"
-              >
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-[0.08em] bg-[var(--primary-solid)] text-[var(--primary-solid-foreground)] px-2.5 py-1 rounded-full">
-                  Más popular
-                </span>
-                <h3 className="text-[18px] font-bold mb-1">Premium</h3>
-                <div className="space-y-2 mb-1">
-                  <p className="text-[24px] font-extrabold text-[var(--p)] leading-tight">
-                    {formatPremiumWeeklyLabel()}{" "}
-                    <span className="text-[15px] font-bold text-[var(--text2)]">
-                      / semana
-                    </span>
-                  </p>
-                  <p className="text-[15px] font-semibold text-[var(--text)]">
-                    o{" "}
-                    <span className="text-[var(--p)]">
-                      {formatPremiumAnnualLabel()}
-                    </span>
-                    <span className="text-[var(--text2)] font-medium"> / año</span>
-                  </p>
-                </div>
-                <p className="text-[12px] text-[var(--text3)] mb-2">
-                  Paga con tarjeta vía Stripe (checkout seguro). Tras el pago,
-                  tu cuenta pasa a Premium automáticamente. También puedes
-                  gestionar la suscripción desde tu cuenta.
-                </p>
-                <p className="text-[13px] text-[var(--text2)] mb-6">
-                  Si necesitas más alcance y más filtros.
-                </p>
-                <ul className="space-y-2.5 text-[13px] text-[var(--text2)] mb-8 flex-1">
-                  <PricingLi>Varias ciudades / radar amplio</PricingLi>
-                  <PricingLi>Búsquedas activas ilimitadas</PricingLi>
-                  <PricingLi>Conexiones aceptadas ilimitadas</PricingLi>
-                  <PricingLi>Filtros completos en Descubrir (incl. soft skills)</PricingLi>
-                  <PricingLi>Alertas de alta compatibilidad con tu búsqueda</PricingLi>
-                  <PricingLi>Solicitudes de conexión sin tope por el plan</PricingLi>
-                </ul>
-                <Link href="/upgrade" className="block">
-                  <Button size="lg" className="w-full justify-center">
-                    Ver Premium
-                  </Button>
-                </Link>
-              </Card>
-            </div>
-          </div>
-        </section>
-
         {/* Cierre */}
         <section className="px-4 md:px-8 py-16 md:py-20">
           <div className="max-w-6xl mx-auto">
@@ -415,11 +306,11 @@ export default function LandingPage() {
             <a href="#como-funciona" className={footerLink}>
               Cómo funciona
             </a>
+            <a href="#funcionalidades" className={footerLink}>
+              Funcionalidades
+            </a>
             <a href="#beta" className={footerLink}>
               Beta
-            </a>
-            <a href="#precios" className={footerLink}>
-              Planes
             </a>
             <Link href="/privacy" className={footerLink}>
               Privacidad
@@ -472,15 +363,6 @@ function FeatureCard({
       <h3 className="text-[17px] font-bold mb-2">{title}</h3>
       <p className="text-[14px] text-[var(--text2)] leading-relaxed">{body}</p>
     </Card>
-  )
-}
-
-function PricingLi({ children }: { children: React.ReactNode }) {
-  return (
-    <li className="flex gap-2">
-      <span className="text-[var(--g)] shrink-0">✓</span>
-      <span>{children}</span>
-    </li>
   )
 }
 
