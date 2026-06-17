@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 
 import { Avatar } from "@/components/ui/avatar"
+import { ProfileDetailPanel } from "@/components/feed/profile-detail-panel"
 import { ChatBubble } from "@/components/messages/chat-bubble"
 import { MessageComposer } from "@/components/messages/message-composer"
 import { ReportUserDrawer } from "@/components/report/report-user-drawer"
@@ -16,9 +17,15 @@ import {
   formatChatMessageTime,
   layoutChatMessages,
 } from "@/lib/chat-message-layout"
+import {
+  fetchPeerConnectionHints,
+  type PeerConnectionHint,
+} from "@/lib/data/connections"
+import { fetchMyRecommendationsForProfiles } from "@/lib/data/recommendations"
 import { sendChatMessage } from "@/lib/data/chats"
 import { useChatMessagesRealtime } from "@/hooks/use-chat-messages-realtime"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import type { ProfileRecommendationVote } from "@/lib/recommendation-types"
 import type { Chat, Message } from "@/lib/types"
 
 interface ChatConversationProps {
@@ -37,8 +44,31 @@ export function ChatConversation({
   )
   const [replyTarget, setReplyTarget] = React.useState<Message | null>(null)
   const [reportOpen, setReportOpen] = React.useState(false)
+  const [profileOpen, setProfileOpen] = React.useState(false)
+  const [connectionHint, setConnectionHint] =
+    React.useState<PeerConnectionHint>({ state: "none" })
+  const [myRecommendationVote, setMyRecommendationVote] =
+    React.useState<ProfileRecommendationVote | null>(null)
 
   const peerName = initialChat.profile.name
+
+  React.useEffect(() => {
+    if (!currentUserId) return
+    const supabase = getSupabaseBrowserClient()
+    const peerId = initialChat.profile.id
+    void fetchPeerConnectionHints(supabase, currentUserId).then((hints) => {
+      setConnectionHint(
+        hints.get(peerId) ?? {
+          state: "connected",
+          connectionId: "",
+          chatId,
+        }
+      )
+    })
+    void fetchMyRecommendationsForProfiles(supabase, [peerId]).then((map) => {
+      setMyRecommendationVote(map.get(peerId) ?? null)
+    })
+  }, [currentUserId, initialChat.profile.id, chatId])
 
   const appendIfNew = React.useCallback(
     (msg: Message) => {
@@ -110,26 +140,34 @@ export function ChatConversation({
         >
           <IconArrowLeft size={16} />
         </Link>
-        <Avatar
-          initials={chat.profile.initials}
-          imageUrl={chat.profile.photoUrl}
-          alt={`Foto de ${chat.profile.name}`}
-          size="sm"
-          online={chat.profile.online}
-        />
-        <div className="flex-1 min-w-0">
-          <div className="person-name-compact">{chat.profile.name}</div>
-          <div className="card-meta mt-0.5">
-            {chat.profile.online ? "En línea" : chat.lastSeen}
+        <button
+          type="button"
+          onClick={() => setProfileOpen(true)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left rounded-md hover:bg-[var(--bg2)]/80 -my-1 py-1 pr-2 transition-colors"
+          aria-label={`Ver perfil de ${chat.profile.name}`}
+        >
+          <Avatar
+            initials={chat.profile.initials}
+            imageUrl={chat.profile.photoUrl}
+            alt={`Foto de ${chat.profile.name}`}
+            size="sm"
+            online={chat.profile.online}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="person-name-compact">{chat.profile.name}</div>
+            <div className="card-meta mt-0.5">
+              {chat.profile.online ? "En línea" : chat.lastSeen}
+            </div>
           </div>
-        </div>
-        <Link
-          href="/feed"
+        </button>
+        <button
+          type="button"
+          onClick={() => setProfileOpen(true)}
           className="p-2 rounded-md hover:bg-[var(--bg2)] text-[var(--text2)]"
           aria-label="Ver perfil"
         >
           <IconUser size={14} />
-        </Link>
+        </button>
         <button
           type="button"
           onClick={() => setReportOpen(true)}
@@ -188,6 +226,17 @@ export function ChatConversation({
         reportedUserName={chat.profile.name}
         contextType="chat"
         contextId={chatId}
+      />
+
+      <ProfileDetailPanel
+        profile={chat.profile}
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        connectionHint={connectionHint}
+        myRecommendationVote={myRecommendationVote}
+        onRecommendationChange={(vote) => {
+          setMyRecommendationVote(vote)
+        }}
       />
     </div>
   )
