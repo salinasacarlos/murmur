@@ -10,8 +10,7 @@ const FEED_HREF = "/feed"
 
 export function DiscoverNavMobile() {
   const pathname = usePathname()
-  const active =
-    pathname === FEED_HREF || pathname.startsWith(`${FEED_HREF}/`)
+  const active = pathname === FEED_HREF
 
   return (
     <Link
@@ -43,8 +42,7 @@ export function DiscoverNavMobile() {
 
 export function DiscoverNavSidebar() {
   const pathname = usePathname()
-  const active =
-    pathname === FEED_HREF || pathname.startsWith(`${FEED_HREF}/`)
+  const active = pathname === FEED_HREF
 
   return (
     <Link

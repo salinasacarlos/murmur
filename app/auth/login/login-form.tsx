@@ -8,6 +8,7 @@ import { AuthDivider, GoogleAuthButton } from "@/components/auth/google-auth-but
 import { Button } from "@/components/ui/button"
 import { Field, Input, PasswordInput } from "@/components/ui/input"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { safeInternalPath } from "@/lib/safe-internal-path"
 
 export function LoginForm() {
   const router = useRouter()
@@ -57,9 +58,7 @@ export function LoginForm() {
 
       const next = searchParams.get("next")
       const target = profile?.onboarding_completed
-        ? next && next.startsWith("/")
-          ? next
-          : "/feed"
+        ? safeInternalPath(next, "/feed")
         : "/onboarding"
 
       router.replace(target)

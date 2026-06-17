@@ -152,7 +152,7 @@ export function Sidebar() {
           className={cn(
             "flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1 py-0.5 -mx-1",
             "hover:bg-[var(--bg2)] transition-colors group",
-            pathname === "/profile" || pathname.startsWith("/profile/")
+            pathname === "/profile"
               ? "bg-[var(--pl)]"
               : undefined
           )}

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Tag } from "@/components/ui/tag"
 import { RELATION_LABELS, type ReceivedConnection } from "@/lib/types"
 import { IconCheck, IconX } from "@/components/icons"
+import { profilePublicPath } from "@/lib/profile-path"
 import { cn } from "@/lib/utils"
 
 interface ConnectionCardReceivedProps {
@@ -31,18 +32,28 @@ export function ConnectionCardReceived({
   return (
     <Card padding="default" className="ds-fade-up flex flex-col gap-3">
       <div className="flex items-start gap-3">
-        <Avatar
-          initials={profile.initials}
-          imageUrl={profile.photoUrl}
-          alt={`Foto de ${profile.name}`}
-          size="md"
-          online={profile.online}
-          className="shrink-0"
-        />
+        <Link
+          href={profilePublicPath(profile.id)}
+          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p)]"
+          aria-label={`Ver perfil de ${profile.name}`}
+        >
+          <Avatar
+            initials={profile.initials}
+            imageUrl={profile.photoUrl}
+            alt={`Foto de ${profile.name}`}
+            size="md"
+            online={profile.online}
+          />
+        </Link>
         <div className="flex-1 min-w-0">
           <div className="card-header-stack">
             <div className="min-w-0 flex-1">
-              <h3 className="person-name">{profile.name}</h3>
+              <Link
+                href={profilePublicPath(profile.id)}
+                className="person-name hover:text-[var(--p)] transition-colors"
+              >
+                {profile.name}
+              </Link>
               <p className="person-subtitle mt-0.5">{profile.role}</p>
             </div>
             {isAccepted ? (

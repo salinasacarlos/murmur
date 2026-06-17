@@ -1075,6 +1075,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_public_profile: {
+        Args: { p_id: string }
+        Returns: Json
+      }
       ignore_connection: {
         Args: { p_connection_id: string }
         Returns: undefined

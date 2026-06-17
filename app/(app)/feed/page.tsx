@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import { EventCodeJoin } from "@/components/feed/event-code-join"
 import { ProfileCard } from "@/components/feed/profile-card"
-import { ProfileDetailPanel } from "@/components/feed/profile-detail-panel"
 import { RadarCTA } from "@/components/feed/radar-cta"
 import { DiscoverProfileSearch } from "@/components/feed/discover-profile-search"
 import { SearchChipBar } from "@/components/feed/search-chip-bar"
@@ -28,6 +27,7 @@ import {
 } from "@/lib/match-score"
 import { isPremiumPlan } from "@/lib/plan-limits"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { profilePublicPath } from "@/lib/profile-path"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import type { FirstActionsProgress } from "@/lib/first-actions"
@@ -134,8 +134,6 @@ function FeedPageContent() {
     activateFeed,
     activeSearch,
     setActiveSearch,
-    selected,
-    setSelected,
     discoverFilters,
     setDiscoverFilters,
     activeEvent,
@@ -143,7 +141,6 @@ function FeedPageContent() {
     profiles,
     searches,
     feedLoading,
-    patchProfile,
   } = useDiscoverFeed()
 
   const activeSearches = React.useMemo(
@@ -262,12 +259,9 @@ function FeedPageContent() {
 
   React.useEffect(() => {
     const spotlight = searchParams.get("spotlight")
-    if (!spotlight || feedLoading) return
-
-    const match = visibleProfiles.find((p) => p.id === spotlight)
-    if (match) setSelected(match)
-    router.replace("/feed")
-  }, [searchParams, visibleProfiles, feedLoading, setSelected, router])
+    if (!spotlight) return
+    router.replace(profilePublicPath(spotlight))
+  }, [searchParams, router])
 
   if (!activated) {
     return (
@@ -467,39 +461,12 @@ function FeedPageContent() {
                     : null
                 }
                 showMatchBadge={hasActiveSearches}
-                onClick={() => setSelected(p)}
+                onClick={() => router.push(profilePublicPath(p.id))}
               />
             ))}
           </div>
         )}
       </div>
-
-      <ProfileDetailPanel
-        profile={selected}
-        open={selected !== null}
-        connectionHint={
-          selected
-            ? (peerHints.get(selected.id) ?? { state: "none" })
-            : { state: "none" }
-        }
-        myRecommendationVote={
-          selected ? (myRecommendations.get(selected.id) ?? null) : null
-        }
-        onRecommendationChange={(vote, recommendationCount) => {
-          if (!selected) return
-          setMyRecommendations((prev) => {
-            const next = new Map(prev)
-            if (vote === null) next.delete(selected.id)
-            else next.set(selected.id, vote)
-            return next
-          })
-          patchProfile(selected.id, { recommendationCount })
-        }}
-        onConnectionsChanged={() => void loadPeerHints()}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null)
-        }}
-      />
 
       <FiltersDrawer
         open={filtersOpen}

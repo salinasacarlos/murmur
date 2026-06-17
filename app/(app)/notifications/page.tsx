@@ -20,6 +20,7 @@ import {
 } from "@/lib/data/notifications"
 import { IconTrash } from "@/components/icons"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { profilePublicPath } from "@/lib/profile-path"
 import { cn } from "@/lib/utils"
 
 export default function NotificationsPage() {
@@ -235,13 +236,13 @@ function NotificationRow({
 function ctaForKind(kind: NotificationKind): { label: string } {
   switch (kind) {
     case "connection_request":
-      return { label: "Ver en Conexiones" }
+      return { label: "Ver perfil" }
     case "connection_accepted":
       return { label: "Abrir el chat" }
     case "discovery_batch":
       return { label: "Ir a Descubrir" }
     case "high_compatibility_suggestion":
-      return { label: "Abrir Descubrir" }
+      return { label: "Ver perfil" }
     case "event_nearby":
       return { label: "Explorar Descubrir" }
     case "project_invite":
@@ -258,8 +259,13 @@ function ctaForKind(kind: NotificationKind): { label: string } {
 function primaryHref(n: AppNotification): string | null {
   const meta = n.metadata as Record<string, unknown> | null
   switch (n.kind) {
-    case "connection_request":
-      return "/connections?tab=received"
+    case "connection_request": {
+      const senderId =
+        typeof meta?.sender_id === "string" ? meta.sender_id : null
+      return senderId
+        ? profilePublicPath(senderId)
+        : "/connections?tab=received"
+    }
     case "connection_accepted": {
       const chatId = typeof meta?.chat_id === "string" ? meta.chat_id : null
       return chatId ? `/messages/${chatId}` : "/messages"
@@ -273,7 +279,7 @@ function primaryHref(n: AppNotification): string | null {
         typeof meta?.suggested_profile_id === "string"
           ? meta.suggested_profile_id
           : null
-      return sid ? `/feed?spotlight=${encodeURIComponent(sid)}` : "/feed"
+      return sid ? profilePublicPath(sid) : "/feed"
     }
     case "project_invite": {
       const path =
