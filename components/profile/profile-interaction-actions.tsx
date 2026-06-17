@@ -20,8 +20,7 @@ import {
   fetchMyRecommendationsForProfiles,
   setProfileRecommendation,
 } from "@/lib/data/recommendations"
-import { profilePublicPath, profilePublicUrl } from "@/lib/profile-path"
-import { safeInternalPath } from "@/lib/safe-internal-path"
+import { profilePublicUrl } from "@/lib/profile-path"
 import type { ProfileRecommendationVote } from "@/lib/recommendation-types"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
@@ -61,6 +60,7 @@ export function ProfileInteractionActions({
 }: ProfileInteractionActionsProps) {
   const router = useRouter()
   const { user: authUser, profile: myProfile } = useCurrentUser()
+
   const [connectionHint, setConnectionHint] = React.useState<PeerConnectionHint>(
     connectionHintProp ?? { state: "none" }
   )
@@ -127,8 +127,6 @@ export function ProfileInteractionActions({
   }, [profile])
 
   const isSelf = Boolean(authUser?.id && profile.id === authUser.id)
-  const profilePath = profilePublicPath(profile.id)
-  const loginNext = safeInternalPath(profilePath, profilePath)
 
   const connectionCapReached =
     Boolean(myProfile) &&
@@ -181,6 +179,8 @@ export function ProfileInteractionActions({
     }
   }
 
+  if (!authUser?.id) return null
+
   return (
     <>
       <div className="flex flex-col gap-2">
@@ -191,95 +191,76 @@ export function ProfileInteractionActions({
         ) : null}
 
         <div className="flex flex-wrap gap-2">
-          {onClose ? (
-            <Button
-              variant="secondary"
-              size="lg"
-              className="flex-1 min-w-[120px] justify-center"
-              onClick={onClose}
-            >
-              Cerrar
-            </Button>
-          ) : null}
+            {onClose ? (
+              <Button
+                variant="secondary"
+                size="lg"
+                className="flex-1 min-w-[120px] justify-center"
+                onClick={onClose}
+              >
+                Cerrar
+              </Button>
+            ) : null}
 
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className={cn(
-              "justify-center",
-              onClose ? "flex-1 min-w-[120px]" : "w-full sm:w-auto sm:flex-1"
-            )}
-            onClick={() => void handleShare()}
-          >
-            {shareDone ? "Enlace copiado" : "Compartir perfil"}
-          </Button>
+            {!isSelf ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                className={cn(
+                  "justify-center",
+                  onClose ? "flex-1 min-w-[120px]" : "w-full sm:w-auto sm:flex-1"
+                )}
+                onClick={() => void handleShare()}
+              >
+                {shareDone ? "Enlace copiado" : "Compartir"}
+              </Button>
+            ) : null}
 
-          {!authUser?.id ? (
-            <>
+            {isSelf ? null : connectionHint.state === "none" ? (
+              <Button
+                size="lg"
+                className="flex-1 min-w-[120px] justify-center"
+                disabled={connectionCapReached}
+                onClick={() => {
+                  setSendError(null)
+                  setConnectOpen(true)
+                }}
+              >
+                Conectar
+              </Button>
+            ) : connectionHint.state === "connected" ? (
               <Link
-                href={`/auth/login?next=${encodeURIComponent(loginNext)}`}
+                href={
+                  connectionHint.chatId
+                    ? `/messages/${connectionHint.chatId}`
+                    : "/messages"
+                }
                 className={cn(
                   buttonVariants({ variant: "primary", size: "lg" }),
                   "flex-1 min-w-[120px] justify-center no-underline"
                 )}
+                onClick={onClose}
               >
-                Iniciar sesión para conectar
+                Ir al chat
               </Link>
+            ) : connectionHint.state === "request_sent" ? (
+              <Button size="lg" className="flex-1 min-w-[120px] justify-center" disabled>
+                Solicitud enviada
+              </Button>
+            ) : (
               <Link
-                href={`/auth/signup?next=${encodeURIComponent(loginNext)}`}
+                href="/connections?tab=received"
                 className={cn(
-                  buttonVariants({ variant: "secondary", size: "lg" }),
+                  buttonVariants({ variant: "primary", size: "lg" }),
                   "flex-1 min-w-[120px] justify-center no-underline"
                 )}
+                onClick={onClose}
               >
-                Crear cuenta
+                Ver solicitud
               </Link>
-            </>
-          ) : isSelf ? null : connectionHint.state === "none" ? (
-            <Button
-              size="lg"
-              className="flex-1 min-w-[120px] justify-center"
-              disabled={connectionCapReached}
-              onClick={() => {
-                setSendError(null)
-                setConnectOpen(true)
-              }}
-            >
-              Conectar
-            </Button>
-          ) : connectionHint.state === "connected" ? (
-            <Link
-              href={
-                connectionHint.chatId
-                  ? `/messages/${connectionHint.chatId}`
-                  : "/messages"
-              }
-              className={cn(
-                buttonVariants({ variant: "primary", size: "lg" }),
-                "flex-1 min-w-[120px] justify-center no-underline"
-              )}
-              onClick={onClose}
-            >
-              Ir al chat
-            </Link>
-          ) : connectionHint.state === "request_sent" ? (
-            <Button size="lg" className="flex-1 min-w-[120px] justify-center" disabled>
-              Solicitud enviada
-            </Button>
-          ) : (
-            <Link
-              href="/connections?tab=received"
-              className={cn(
-                buttonVariants({ variant: "primary", size: "lg" }),
-                "flex-1 min-w-[120px] justify-center no-underline"
-              )}
-              onClick={onClose}
-            >
-              Ver solicitud
-            </Link>
-          )}
-        </div>
+            )}
+          </div>
 
         {!isSelf && authUser?.id ? (
           <div className="flex flex-col gap-2">

@@ -56,5 +56,5 @@ export default async function PublicProfilePage({ params }: PageProps) {
     notFound()
   }
 
-  return <PublicProfileView profile={profile} />
+  return <PublicProfileView profile={profile} isPublicGuest={!user} />
 }
