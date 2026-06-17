@@ -394,24 +394,26 @@ Ancho: 224px
 Border: 0.5px solid var(--border) (right)
 Estructura:
   ├── Top: Logo + Visibility toggle
-  ├── Nav items (flex-1, overflow-y-auto)
-  └── Bottom: User row
+  ├── Nav items + CTA Descubrir (DiscoverNavSidebar → /feed)
+  └── Bottom: User row (avatar → /profile)
 ```
 
-**Nav item activo:** `bg-[var(--pl)] text-[var(--p)] font-medium`
-**Nav item hover:** `bg-[var(--bg2)] text-[var(--text)]`
+**Nav item activo:** `bg-[var(--pl)] text-[var(--p)] font-medium`  
+**Nav item hover:** `bg-[var(--bg2)] text-[var(--text)]`  
+**Mi perfil** no es ítem de nav principal; se abre desde la fila de cuenta.
 
 ### Mobile nav (≤ 640px)
 
 ```
-5 tabs: Descubrir · Conexiones · Mensajes · Búsquedas · Config
+5 tabs: Conexiones · Mensajes · Descubrir (centro, destacado) · Búsquedas · Config
 Height: calc(56px + var(--sab))
 Position: fixed bottom-0
 Background: rgba(255,255,255,0.96) con backdrop-blur
 Z-index: 100 (por encima de panels absolutos)
 ```
 
-**Tab activo:** icono y label en `var(--p)`
+**Tab activo:** icono y label en `var(--p)`  
+**Descubrir** usa CTA visual reforzado en el centro (`DiscoverNavMobile`).
 
 ### More sheet (Config tab)
 
@@ -545,5 +547,40 @@ Tamaños estándar: 14px (sidebar nav), 16px (acciones), 20px (mobile nav), 24px
 ```
 
 `viewport-fit=cover` es **obligatorio** para que las safe areas de iOS funcionen.
+
+---
+
+## 10. Perfil público para visitantes (`/p/[id]`)
+
+Pantallas compartibles fuera del shell autenticado. Componentes: `PublicGuestChrome`, `PublicGuestHeader`, `ProfileGuestConnectButton`, `ProfileViewContent`.
+
+### Layout guest
+
+```
+┌─────────────────────────────────────┐
+│ [logo]          Iniciar sesión · Únete │  ← sticky header
+├─────────────────────────────────────┤
+│ PERFIL EN MURMUR (label meta)       │
+│ Avatar + nombre + compatibilidad    │
+│ Secciones de perfil (bio, proyecto…) │
+│ ─────────────────────────────────── │
+│ [        Conectar (primary)        ] │  ← único CTA inferior
+└─────────────────────────────────────┘
+```
+
+**Reglas de CTAs**
+- **Auth solo en el header** — nunca duplicar Iniciar sesión / Crear cuenta abajo.
+- **Un botón inferior:** `Conectar` a ancho completo (`size="lg"`, `w-full`).
+- Padding inferior en guest: `calc(16px + var(--sab))` para safe area.
+- Enlaces de auth preservan `?next=` a la URL del perfil actual.
+
+### Usuario autenticado en la misma URL
+
+Si hay sesión y onboarding completo, el contenido vive dentro de `AuthenticatedAppShell` (sidebar + topbar + bottom nav). Las acciones de perfil usan `ProfileInteractionActions` (conectar, compartir, recomendar, reportar) — no el CTA guest.
+
+### Contenedor
+
+- Guest: `max-w-3xl`, padding `px-4 md:px-8`
+- In-app: `max-w-2xl`, padding `px-4 md:px-6`
 
 ---

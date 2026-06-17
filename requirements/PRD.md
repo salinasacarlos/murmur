@@ -1,7 +1,7 @@
 # Murmur — Product Requirements Document
 
-**Versión:** 1.2  
-**Última revisión:** Mayo 2026  
+**Versión:** 1.3  
+**Última revisión:** Junio 2026  
 **Estado:** Documento vivo — las secciones 1–11 siguen siendo la referencia de producto; la **§12** describe qué está construido hoy en el código frente a ese alcance. Usar la §12 para planificar iteraciones futuras.
 
 ---
@@ -12,7 +12,7 @@
 
 > *"Construye con las personas correctas."*
 
-La propuesta pública de valor (landing + metadescripción) resume: *la plataforma que ayuda a encontrar a quien necesitas* — socios, talento, mentores, inversionistas y más — sin depender solo del networking casual.
+La propuesta pública de valor (landing + metadescripción) resume: *la red para builders & launchers* — socios, talento, mentores, inversionistas y más — sin depender solo del networking casual.
 
 ---
 
@@ -90,6 +90,8 @@ El proceso de registro captura la información necesaria para el matching desde 
 **Paso 1 — Registro**
 - Email + contraseña; **Google OAuth** (flujo Supabase + `/auth/callback`); *LinkedIn OAuth previsto aquí pero aún no implementado.*
 - Validación básica en cliente (p. ej. longitud mínima de contraseña); *validación de email “en vivo” y medidor de fortaleza pueden ampliarse.*
+- **Recuperación de contraseña** (`/auth/forgot-password`): enlace por email vía Supabase Auth; el login puede precargar el email en la URL (`?email=`).
+- **Cerrar sesión desde onboarding** para cambiar de cuenta sin terminar el flujo.
 
 **Paso 2 — Rol inicial**
 - ¿Tienes un proyecto? (Tengo proyecto / Quiero contribuir / Las dos)
@@ -151,17 +153,36 @@ La pantalla principal donde el usuario encuentra personas afines.
 Cada card muestra:
 - Avatar e iniciales
 - Nombre y rol actual
+- **Bio** (extracto en la card)
 - Área funcional + experiencia
 - Logro destacado
 - Disponibilidad
 - Industria principal, verticales (≤3) y roles de expertise (≤3)
-- Indicador de compatibilidad: Baja / Media / Alta
+- Indicador de compatibilidad: Baja / Media / Alta (derivado del **match score v1** cuando hay búsquedas activas)
+- **Contador de recomendaciones** (si el perfil lo muestra y tiene señales)
 
-**Panel de detalle**
-- Slide desde la derecha (desktop: panel lateral; mobile: pantalla completa)
-- Perfil completo + bio + workStyle
-- Botón de conectar con **mensaje pre-rellenado por plantilla** (heurística a partir del perfil; editable antes de enviar). *No hay modelo de IA generativa en este flujo hoy.*
-- El mensaje es editable antes de enviar
+**Match score v1**
+- Overlap ponderado entre criterios de la búsqueda activa y el perfil (industria, expertise, verticales, talent, relaciones).
+- Score 0–100; tiers: alta ≥ 60, media ≥ 30, baja &lt; 30 (`lib/match-score.ts`).
+- Con búsquedas activas, los perfiles se **rankean** por score; sin búsquedas activas se listan perfiles visibles sin score.
+- El feed muestra **todos los perfiles visibles** de la red (filtrados por ciudad, disponibilidad, etc.), no solo los que hacen match con una búsqueda.
+
+**Búsqueda de texto en Descubrir**
+- Campo para filtrar por nombre, rol, ciudad u otros campos del perfil (`DiscoverProfileSearch`).
+
+**Filtro “solo recomendados”**
+- Toggle para ver únicamente perfiles que el usuario marcó como **Recomendar** (señal privada; ver §6.8).
+
+**Detalle de perfil**
+- Al abrir un perfil desde Descubrir, conexiones, notificaciones o chat, la navegación va a **`/p/[id]`** (URL pública compartible).
+- *El panel lateral/slide-in de detalle en el feed ya no es el flujo principal* (`ProfileDetailPanel` queda como componente legacy sin uso en feed).
+- El query legacy `?spotlight=` en `/feed` redirige a `/p/[id]`.
+
+**Acciones en perfil (usuario autenticado)**
+- Conectar (drawer con mensaje pre-rellenado por plantilla, editable)
+- Compartir enlace público
+- **Recomendar / No recomendar** (señal privada del viewer)
+- **Reportar perfil**
 
 **Filtros**
 - Ciudad / región
@@ -171,6 +192,7 @@ Cada card muestra:
 - Industria principal
 - Verticales (nivel 2) y expertise (nivel 3), mismo criterio que el perfil
 - Soft skills *(solo Premium en cliente)*
+- **Solo perfiles recomendados** *(cualquier plan; filtra por tu propia señal de recomendación)*
 
 ---
 
@@ -234,14 +256,20 @@ Chat entre usuarios con conexión aceptada.
 **Conversación**
 - Mensajes agrupados por emisor
 - Timestamps por grupo
+- **Respuestas (reply)** a un mensaje concreto: cita el mensaje original en la burbuja (`reply_to_message_id` en BD)
 - Enter para enviar, Shift+Enter para nueva línea
-- Botón de acceso al perfil del contacto
+- Botón de acceso al perfil del contacto → **`/p/[id]`**
+- **Reportar usuario** desde el chat (`ReportUserDrawer` + `POST /api/reports`)
 
 ---
 
 ### 6.6 Mi perfil
 
-Pantalla de gestión del perfil propio del usuario.
+Pantalla de gestión del perfil propio del usuario (`/profile`).
+
+**Acceso en la app**
+- El perfil propio **no es un ítem principal del sidebar**; se abre desde el **avatar / fila de cuenta** (sidebar desktop, sheet “Config” en mobile).
+- Los perfiles ajenos se abren siempre en **`/p/[id]`**.
 
 **Secciones editables:**
 - Hero: foto, nombre, rol, bio
@@ -256,6 +284,10 @@ Pantalla de gestión del perfil propio del usuario.
 
 **Cada sección** se edita en un drawer (sheet desde abajo) para no perder el contexto.
 
+**Señales sobre otros perfiles** *(en `/p/[id]` cuando estás autenticado)*
+- Recomendar / No recomendar (privado; alimenta filtro “solo recomendados” en Descubrir)
+- Contador público de recomendaciones en card/perfil si el dueño lo permite (`show_recommendation_count`)
+
 ---
 
 ### 6.7 Visibilidad y privacidad
@@ -265,6 +297,37 @@ Pantalla de gestión del perfil propio del usuario.
 - Estado Oculto: el usuario no aparece en ninguna búsqueda
 - El estado persiste entre sesiones
 - El usuario puede cambiar su visibilidad en cualquier momento sin perder su perfil
+- **Checklist de primeros pasos** post-onboarding en Descubrir (`FirstActionsCard`): activar visibilidad, crear búsqueda, activar radar; dismissible por usuario
+
+---
+
+### 6.8 Perfiles públicos compartibles (`/p/[id]`)
+
+Ruta canónica para ver y compartir un perfil. Sustituye enlaces internos dispersos y el query `?spotlight=` del feed.
+
+**Quién puede ver un perfil**
+- Perfil con `visible = true`
+- El propio dueño (redirige a `/profile` si visitas tu UUID)
+- Usuarios con conexión **pending** o **accepted** con el dueño
+- Resuelto en servidor vía RPC **`get_public_profile`** (campos seguros; sin email ni datos internos)
+
+**Visitante sin sesión**
+- Layout **`PublicGuestChrome`**: header con logo + **Iniciar sesión** + **Únete** (preservan `next` a la URL del perfil)
+- Contenido: `ProfileViewContent` (bio, proyecto, taxonomía, etc.)
+- **Un solo CTA inferior:** botón **Conectar** → `/auth/signup?next=/p/{id}`
+- Sin duplicar login/signup/compartir en el footer
+
+**Usuario autenticado con onboarding completo**
+- Mismo URL pero dentro del **shell de la app** (`AuthenticatedAppShell`: sidebar, topbar, bottom nav)
+- Acciones: conectar, compartir, recomendar, reportar (`ProfileInteractionActions`)
+
+**SEO y sharing**
+- `generateMetadata` por perfil (nombre, rol, bio, Open Graph)
+- URL absoluta: `profilePublicUrl` / `lib/profile-path.ts`
+- Favicon y previews OG/Twitter con isotipo Murmur (`app/opengraph-image`, `app/twitter-image`)
+
+**Deep links de auth**
+- Login/signup respetan `?next=` con validación de ruta interna (`lib/safe-internal-path.ts`, middleware)
 
 ---
 
@@ -289,7 +352,7 @@ Los números de Free viven en **código** ([`lib/plan-limits.ts`](../lib/plan-li
 |--------|--------|
 | Ciudades en perfil | 1 (un slug en `profile_cities`) |
 | Búsquedas con estado `active` | 1 |
-| Conexiones con estado `accepted` | máx. 10 por usuario |
+| Conexiones con estado `accepted` | máx. **11** por usuario |
 | Filtros en Descubrir | Subconjunto: ciudad, disponibilidad, tipo de relación, industria, verticales y expertise. Sin filtro por soft skills. |
 | Notificaciones `high_compatibility_suggestion` | No (la RPC no encola para Free) |
 
@@ -347,6 +410,12 @@ Usuario entra a evento → Activa visibilidad → Aparece en búsquedas
 de otros → Recibe solicitudes → Acepta las relevantes → Desactiva
 ```
 
+### Flujo de perfil compartible
+```
+Usuario visible comparte /p/[id] → Visitante ve perfil (guest chrome) →
+Conectar → Signup con next → Onboarding → Vuelve al perfil → Conectar de verdad
+```
+
 ### Flujo de búsqueda múltiple
 ```
 Crear búsqueda A (co-founder) → Crear búsqueda B (primer dev) →
@@ -361,7 +430,7 @@ Cada búsqueda genera sus propios matches
 - **Sin mensajes en frío a desconocidos** — solo puedes chatear con conexiones aceptadas
 - **Sin notificaciones intrusivas** — el usuario controla cuándo está disponible
 - **Privacidad por default** — oculto hasta que el usuario decide activarse
-- **Moderación** — *reporte desde el chat / flujo de moderación pendiente de diseño e implementación.*
+- **Moderación** — flujo de **reporte de usuario** desde perfil y chat (`POST /api/reports`, tabla `user_reports`); *revisión operativa y panel admin pendientes.*
 - **Solo web por ahora** — app web responsive y `viewport` adaptado a móvil; *manifest / PWA instalable no consolidado como entregable V1.*
 
 ---
@@ -376,61 +445,72 @@ Cada búsqueda genera sus propios matches
 
 ---
 
-## 12. Estado de implementación (snapshot mayo 2026)
+## 12. Estado de implementación (snapshot junio 2026)
 
-Esta sección describe **lo que ya existe en el repositorio / producción** respecto a las especificaciones anteriores. Sirve como línea base para priorizar el backlog; las secciones 1–11 pueden seguir aspirando a más alcance del aquí listado como “hecho”.
+Esta sección describe **lo que ya existe en el repositorio / producción** (`https://joinmurmur.xyz`) respecto a las especificaciones anteriores. Sirve como línea base para priorizar el backlog; las secciones 1–11 pueden seguir aspirando a más alcance del aquí listado como “hecho”.
 
 ### 12.1 Construido y operativo (alineado al PRD)
 
 | Área | Qué cubre hoy |
 |------|----------------|
-| **Auth** | Registro e inicio de sesión con **email y contraseña**; **Google** (`signInWithOAuth`, ruta `app/auth/callback/route.ts`). Perfil `public.profiles` creado vía trigger en `auth.users`. |
+| **Auth** | Registro e inicio de sesión con **email y contraseña**; **Google** (`signInWithOAuth`, `app/auth/callback/route.ts`). **Recuperación de contraseña** (`/auth/forgot-password`). Perfil `public.profiles` creado vía trigger en `auth.users`. **Cerrar sesión** desde onboarding y app. Deep links `?next=` en login/signup con validación de ruta interna. |
 | **Gating onboarding** | Sin `onboarding_completed`, el usuario **no entra** al layout de la app (`app/(app)/layout.tsx`): siempre redirige a `/onboarding`. El callback OAuth aplica la misma lógica antes de enviar a `/feed`. |
-| **Onboarding** | Flujo multipaso: intro (`/onboarding`), evento (código), rol (proyecto / contribuir / ambos), relaciones buscadas, **perfil** con taxonomía **industria → verticales → expertise** (15 industrias, verticales en BD, seeds `industry-expertise-role-seeds` / `profile-taxonomy`), talent/soft skills, **ubicación** con geolocalización + geocodificado inverso y ciudades/radio (`app/onboarding/location`), pantalla de cierre (`/onboarding/done`). Ruta **`/onboarding/project`** disponible para capturar contexto de proyecto u oportunidad; **enlace en la secuencia y persistencia** pueden estar incompletos hasta integrarlo del todo. Componentes **`HierarchicalIndustrySelector`** y **`FunctionalAreasOnboardingSelect`** existen para evolucionar la UI por industria/área. |
-| **Landing** | Home público; copy de hero y metadescripción alineados al mensaje de “plataforma” y foco en personas correctas; **favicon** en `app/favicon.ico`. Textos legales solo en **`/terms`** y **`/privacy`** (fuentes `lib/terms-generic-content.ts`, `lib/privacy-generic-content.ts`); enlaces en **footer** de la landing y en signup. |
-| **Feed / Descubrir** | Activación tipo radar, selector de búsquedas, cards, panel lateral/detalle, filtros (con límites **Free vs Premium** en cliente), **modo evento** (código activo + RPC de perfiles por evento). |
-| **Búsquedas** | CRUD de búsquedas, estados activa/pausada, límites **Free** (una activa) vs **Premium**. |
-| **Conexiones** | Envío, pendiente/aceptada/rechazada, integración con límites Free; notificaciones en BD para solicitudes. |
-| **Mensajes** | Chat solo entre usuarios con conexión aceptada; UI lista + conversación; **Realtime** de mensajes en conversación y helpers de inbox (`use-chat-messages-realtime`); lista de chats optimizada con RPC **`last_messages_for_chats`** e índices asociados en migraciones. |
-| **Perfil** | Edición enriquecida, stats en vivo, completitud; visibilidad global sincronizada con BD. |
-| **Visibilidad** | Oculto por defecto; toggle para mostrarse en descubrimiento; persiste en `profiles.visible` con sincronización cliente–BD (p. ej. hook de persistencia + contexto de usuario). |
-| **Monetización** | **Stripe Checkout** (`/upgrade`), API checkout + **webhook** que actualiza `profiles.plan`; límites y precios referenciados en `lib/plan-limits.ts`, `lib/product-config.ts` y este documento (§7). |
-| **Middleware** | Rutas de app protegidas por sesión Supabase; páginas de login/signup redirigen si ya hay sesión. |
+| **Onboarding** | Flujo multipaso: intro, evento (código), rol, relaciones, **perfil** con taxonomía industria → verticales → expertise, talent/soft skills, **ubicación** (GPS + geocodificado + ciudades/radio), cierre (`/onboarding/done`). Ruta **`/onboarding/project`** disponible; integración completa en secuencia/persistencia aún parcial. |
+| **Landing** | Home público; copy **builders & launchers** (`lib/site-metadata.ts`); hero sin precios en nav. **Favicon** + **OG/Twitter** con isotipo. Legales en `/terms` y `/privacy`. |
+| **Feed / Descubrir** | Radar de activación, selector de búsquedas con conteo de matches, **todas las cards de perfiles visibles**, **bio en card**, **match score v1** y ranking, búsqueda de texto, filtros (Free vs Premium), filtro **solo recomendados**, modo evento. **Descubrir** destacado en nav mobile (centro) y sidebar (CTA). Cards abren **`/p/[id]`**. Checklist **primeros pasos** post-onboarding. |
+| **Perfiles públicos** | Ruta **`/p/[id]`**, RPC **`get_public_profile`**, metadata SEO, guest chrome (login/únete arriba, **Conectar** abajo), shell autenticado si hay sesión + onboarding. Enlaces unificados vía `lib/profile-path.ts`. `?spotlight=` → redirect a `/p/[id]`. |
+| **Búsquedas** | CRUD, estados activa/pausada, límites Free (una activa) vs Premium. |
+| **Conexiones** | Envío, pendiente/aceptada/rechazada, cards responsivas; enlaces a perfil en `/p/[id]`; límites Free (**11** aceptadas) con enforcement en cliente y **triggers/RPCs Postgres**. |
+| **Mensajes** | Chat entre conexiones aceptadas; **replies** con cita; Realtime; inbox con RPC `last_messages_for_chats`; perfil del peer en `/p/[id]`; **reportar** desde chat. |
+| **Recomendaciones** | Voto privado recomendar / no recomendar; contador opcional en perfil ajeno; filtro en Descubrir. |
+| **Reportes** | `ReportUserDrawer` + `POST /api/reports` desde perfil y chat. |
+| **Perfil propio** | `/profile` vía avatar/cuenta (no nav principal). Edición en drawers, stats, visibilidad. |
+| **Visibilidad** | Oculto por defecto; toggle; persiste en `profiles.visible`. |
+| **Monetización** | Stripe Checkout (`/upgrade`), webhook → `profiles.plan`; límites en `lib/plan-limits.ts` y SQL. |
+| **Middleware** | Rutas de app protegidas; login/signup redirigen si hay sesión; preserva query en `next`. |
 
 ### 12.2 Diferencias notables respecto al texto original del PRD
 
-- **Componentes de onboarding** como `HierarchicalIndustrySelector` / `FunctionalAreasOnboardingSelect` pueden no estar aún cableados en el paso de perfil producción; el selector activo hoy es el trío **IndustrySingleSelect + VerticalMultiSelect + ExpertiseMultiSelect**.
-
-- **LinkedIn OAuth** — no implementado; solo Google además de email/contraseña.
-- **Mensaje de conexión “IA”** — hoy es **plantilla automática** (`generateMessage` u equivalente), editable por el usuario; no hay integración LLM.
-- **Moderación / reportes** — mencionado en §10; **sin UI ni backend de reporte** dedicado en el código revisado.
-- **PWA** — experiencia web móvil sí; **sin manifest / instalación PWA** como entregable explícito.
-- **Branding OAuth** — la pantalla de Google puede seguir mostrando el dominio `*.supabase.co` salvo **dominio personalizado** en Supabase (comercial) y ajustes en Google Cloud consent screen.
+- **Panel lateral de detalle en feed** — sustituido por navegación a **`/p/[id]`**; `ProfileDetailPanel` sin uso activo en feed.
+- **Componentes de onboarding** `HierarchicalIndustrySelector` / `FunctionalAreasOnboardingSelect` pueden no estar cableados; selector activo: **IndustrySingleSelect + VerticalMultiSelect + ExpertiseMultiSelect**.
+- **LinkedIn OAuth** — no implementado.
+- **Mensaje de conexión “IA”** — plantilla automática (`generateMessage`), editable; sin LLM.
+- **Moderación operativa** — reportes se guardan; sin panel admin ni workflows de revisión.
+- **PWA** — web responsive sí; sin manifest instalable como entregable.
+- **Branding OAuth** — pantalla Google puede mostrar `*.supabase.co` sin dominio custom Supabase.
 
 ### 12.3 Backlog sugerido (próximas ampliaciones)
 
-Priorizar según eventos, crecimiento o riesgo:
-
-1. **LinkedIn OAuth** (o más proveedores) si reduce fricción de registro.
-2. **Reportar usuario / contenido** y política operativa de moderación.
-3. **PWA** (manifest, iconos, offline mínimo) si se busca install en móvil.
-4. **Mensaje de conexión con IA** (opcional, con coste y políticas claras).
-5. **Validación y UX de registro**: email en vivo, medidor de contraseña, recuperación de cuenta.
-6. **Dominio custom Supabase** + consent screen Google para marca uniforme en OAuth.
-7. Cualquier ampliación **explícita** de métricas (§8) vía analítica producto.
-8. **Integrar `/onboarding/project`** en el flujo (navegación, Stepper, persistencia en Supabase) cuando el contexto de proyecto/pitch sea requisito de onboarding.
+1. **LinkedIn OAuth** (o más proveedores).
+2. **Panel admin / moderación** para revisar `user_reports`.
+3. **PWA** (manifest, iconos).
+4. **Mensaje de conexión con IA** (opcional).
+5. **Validación UX de registro**: email en vivo, medidor de contraseña.
+6. **Dominio custom Supabase** + consent screen Google.
+7. Analítica explícita de métricas (§8).
+8. **Integrar `/onboarding/project`** en flujo y persistencia completa.
 
 ### 12.4 Referencias rápidas en código
 
-- Límites y mensajes Free: `lib/plan-limits.ts`
-- Precios MXN y soporte: `lib/product-config.ts`
-- Taxonomía industrias / expertise / verticales (TS + helpers): `lib/profile-taxonomy.ts`, `lib/industry-expertise-role-seeds.ts`, `lib/leaf-catalog.ts`
-- OAuth Google (UI): `components/auth/google-auth-button.tsx`
-- Callback sesión: `app/auth/callback/route.ts`
-- Onboarding persistencia / bandera `onboarding_completed`: `lib/onboarding-persist.ts`
-- Realtime chat / inbox: `hooks/use-chat-messages-realtime.ts`, `lib/data/chats.ts`
-- Webhook: `app/api/webhooks/stripe/route.ts`
-- Variables de entorno ejemplo: `.env.local.example`
+| Tema | Archivos |
+|------|----------|
+| Límites Free | `lib/plan-limits.ts`, `lib/product-config.ts` |
+| Taxonomía | `lib/profile-taxonomy.ts`, `lib/industry-expertise-role-seeds.ts` |
+| Match score | `lib/match-score.ts` |
+| Perfil público | `app/p/[id]/`, `lib/data/public-profiles.ts`, `supabase/migrations/20260624120000_public_profile_rpc.sql` |
+| Rutas de perfil | `lib/profile-path.ts` |
+| Guest chrome | `components/layout/public-guest-chrome.tsx`, `public-guest-header.tsx`, `profile-guest-actions.tsx` |
+| Acciones autenticadas en perfil | `components/profile/profile-interaction-actions.tsx`, `profile-view-content.tsx` |
+| Recomendaciones | `lib/data/recommendations.ts`, `lib/recommendation-types.ts` |
+| Reportes | `components/report/report-user-drawer.tsx`, `app/api/reports/` |
+| Chat replies | `lib/chat-replies.ts`, `components/messages/chat-conversation.tsx` |
+| Auth deep links | `lib/safe-internal-path.ts`, `middleware.ts` |
+| SEO / branding | `lib/site-metadata.ts`, `app/opengraph-image.tsx` |
+| Primeros pasos | `lib/first-actions.ts`, `components/onboarding/first-actions-card.tsx` |
+| OAuth / callback | `components/auth/google-auth-button.tsx`, `app/auth/callback/route.ts` |
+| Realtime chat | `hooks/use-chat-messages-realtime.ts`, `lib/data/chats.ts` |
+| Stripe | `app/api/webhooks/stripe/route.ts` |
+| Env ejemplo | `.env.local.example` |
 
 ---
 
