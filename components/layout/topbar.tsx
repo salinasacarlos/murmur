@@ -30,6 +30,7 @@ function getTitle(pathname: string) {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
   if (pathname.startsWith("/searches/")) return "Editar búsqueda"
   if (pathname.startsWith("/messages/")) return "Mensajes"
+  if (pathname.startsWith("/p/")) return "Perfil"
   return ""
 }
 
